@@ -3,44 +3,34 @@ package com.foxden.fitnessapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.foxden.fitnessapp.ui.HomeScreen
+import com.foxden.fitnessapp.ui.LoginScreen
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
+
+object Routes {
+    const val HOME_SCREEN = "HomeScreen"
+    const val LOGIN_SCREEN = "LoginScreen"
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             FitnessAppTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Android")
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = Routes.HOME_SCREEN ) {
+                    composable(Routes.HOME_SCREEN) {
+                        HomeScreen(navigation = navController)
+                    }
+
+                    composable(Routes.LOGIN_SCREEN) {
+                        LoginScreen(navigation = navController)
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FitnessAppTheme {
-        Greeting("Android")
     }
 }
