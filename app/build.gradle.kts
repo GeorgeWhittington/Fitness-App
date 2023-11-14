@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    kotlin("kapt")
 }
 
 android {
@@ -30,11 +31,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -50,6 +51,7 @@ android {
 }
 
 dependencies {
+    val room_version = "2.6.0"
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
@@ -67,4 +69,15 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    implementation("androidx.room:room-runtime:$room_version")
+    //annotationProcessor("androidx.room:room-compiler:$room_version")
+    // optional - Kotlin Extensions and Coroutines support for Room
+    //implementation("androidx.room:room-ktx:$room_version")
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:$room_version")
+    // To use Kotlin Symbol Processing (KSP)
+    //ksp("androidx.room:room-compiler:$room_version")
+
 }

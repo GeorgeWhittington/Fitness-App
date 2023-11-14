@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Database
+import androidx.room.Room
+import com.foxden.fitnessapp.data.FitnessAppDatabase
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.LoginScreen
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
@@ -18,12 +21,13 @@ object Routes {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             FitnessAppTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = Routes.HOME_SCREEN ) {
                     composable(Routes.HOME_SCREEN) {
-                        HomeScreen(navigation = navController)
+                        HomeScreen(navigation = navController, application)
                     }
 
                     composable(Routes.LOGIN_SCREEN) {
