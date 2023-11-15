@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room.Database
 import androidx.room.Room
 import com.foxden.fitnessapp.data.FitnessAppDatabase
+import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.LoginScreen
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
@@ -16,6 +17,7 @@ import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
     const val LOGIN_SCREEN = "LoginScreen"
+    const val DBTEST_SCREEN = "DBTestScreen"
 }
 
 class MainActivity : ComponentActivity() {
@@ -32,6 +34,10 @@ class MainActivity : ComponentActivity() {
 
                     composable(Routes.LOGIN_SCREEN) {
                         LoginScreen(navigation = navController)
+                    }
+
+                    composable(Routes.DBTEST_SCREEN) {
+                        DBTestScreen(navigation = navController)
                     }
                 }
             }
