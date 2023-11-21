@@ -26,22 +26,21 @@ class MainActivity : ComponentActivity() {
         // Get Database
         val db = DBHelper(this)
 
+
         setContent {
+            val navController = rememberNavController()
+
             FitnessAppTheme {
-                val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = Routes.HOME_SCREEN ) {
                     composable(Routes.HOME_SCREEN) {
                         HomeScreen(navigation = navController, application)
                     }
-
                     composable(Routes.LOGIN_SCREEN) {
                         LoginScreen(navigation = navController)
                     }
-
                     composable(Routes.DBTEST_SCREEN) {
                         DBTestScreen(navigation = navController, db)
                     }
-
                     composable(Routes.MAIN_SETTINGS_SCREEN) {
                         MainSettings(navigation = navController)
                     }
