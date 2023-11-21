@@ -5,8 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,8 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.Routes
-import com.foxden.fitnessapp.data.Activity
-import com.foxden.fitnessapp.data.FitnessAppDatabase
 
 @Composable
 fun HomeScreen(navigation: NavController, application: Application) {

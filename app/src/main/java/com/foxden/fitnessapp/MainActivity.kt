@@ -6,9 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Database
-import androidx.room.Room
-import com.foxden.fitnessapp.data.FitnessAppDatabase
+import com.foxden.fitnessapp.database.DBHelper
 import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.LoginScreen
@@ -23,6 +21,8 @@ object Routes {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Get Database
+        val db = DBHelper(this)
 
         setContent {
             FitnessAppTheme {
@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(Routes.DBTEST_SCREEN) {
-                        DBTestScreen(navigation = navController)
+                        DBTestScreen(navigation = navController, db)
                     }
                 }
             }
