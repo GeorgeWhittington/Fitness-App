@@ -17,11 +17,12 @@ import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
-    const val DBTEST_SCREEN = "DBTestScreen"
     const val SETTINGS_SCREEN = "SettingsScreen"
     const val ACTIVITY_JOURNAL_SCREEN = "ActivityJournalScreen"
     const val ACTIVITY_RECORDING_SCREEN = "ActivityRecordingScreen"
     const val NUTRITION_TRACKING_SCREEN = "NutritionTrackingScreen"
+
+    const val DBTEST_SCREEN = "DBTestScreen"
 }
 
 class MainActivity : ComponentActivity() {
