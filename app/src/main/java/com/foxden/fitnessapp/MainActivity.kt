@@ -10,12 +10,14 @@ import com.foxden.fitnessapp.database.DBHelper
 import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.LoginScreen
+import com.foxden.fitnessapp.ui.MainSettings
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
     const val LOGIN_SCREEN = "LoginScreen"
     const val DBTEST_SCREEN = "DBTestScreen"
+    const val MAIN_SETTINGS_SCREEN = "MainSettings"
 }
 
 class MainActivity : ComponentActivity() {
@@ -38,6 +40,10 @@ class MainActivity : ComponentActivity() {
 
                     composable(Routes.DBTEST_SCREEN) {
                         DBTestScreen(navigation = navController, db)
+                    }
+
+                    composable(Routes.MAIN_SETTINGS_SCREEN) {
+                        MainSettings(navigation = navController)
                     }
                 }
             }
