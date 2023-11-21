@@ -1,5 +1,6 @@
 package com.foxden.fitnessapp.ui
 
+import android.annotation.SuppressLint
 import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.ui.components.NavBar
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navigation: NavController, application: Application) {
@@ -26,7 +29,7 @@ fun HomeScreen(navigation: NavController, application: Application) {
 
     Scaffold (
         bottomBar = { NavBar(navigation = navigation) }
-    ) {innerPadding ->
+    ) {
         Column(
             Modifier.fillMaxWidth().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -39,16 +42,8 @@ fun HomeScreen(navigation: NavController, application: Application) {
             Text(text = "[Recent Activity/Recent Activity with personal best]", Modifier.padding(10.dp))
             Text(text = "[card with statistics]", Modifier.padding(10.dp))
 
-            Button(onClick = { navigation.navigate(Routes.LOGIN_SCREEN) }) {
-                Text(text = "Login")
-            }
-
             Button(onClick = { navigation.navigate(Routes.DBTEST_SCREEN) }) {
                 Text(text = "DBTest")
-            }
-
-            Button(onClick = { navigation.navigate(Routes.MAIN_SETTINGS_SCREEN) }) {
-                Text(text = "Settings")
             }
         }
     }

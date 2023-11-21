@@ -1,4 +1,4 @@
-package com.foxden.fitnessapp.ui
+package com.foxden.fitnessapp.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -38,11 +39,41 @@ fun navButtonSelected(currentDestination: NavDestination?, route: String) : Colo
     }
 }
 
+sealed class Screen(val route: String, val icon: ImageVector, val contentDesc: String) {
+    object Home : Screen(Routes.HOME_SCREEN, Icons.Outlined.Home, "Home Page")
+    object ActivityJournal : Screen(Routes.ACTIVITY_JOURNAL_SCREEN, Icons.Outlined.FitnessCenter, "Activity Journal")
+    object ActivityRecording : Screen(Routes.ACTIVITY_RECORDING_SCREEN, Icons.Outlined.RadioButtonChecked, "Activity Recording")
+    object NutritionTracking : Screen(Routes.NUTRITION_TRACKING_SCREEN, Icons.Outlined.Restaurant, "Nutrition Tracking")
+    object Settings : Screen(Routes.SETTINGS_SCREEN, Icons.Outlined.Settings, "Settings")
+}
+
+// TODO: Exclude nutrition tracking from this list based on settings!
+val navItems = listOf(
+    Screen.Home,
+    Screen.ActivityJournal,
+    Screen.ActivityRecording,
+    Screen.NutritionTracking,
+    Screen.Settings
+)
+
 @Composable
-fun NavBar(navigation: NavController) {
+fun NavIconButton(navigation: NavController, currentDestination: NavDestination?, screen: Screen) {
     val iconButtonModifier = Modifier.padding(horizontal = 10.dp)
     val iconModifier = Modifier.size(40.dp)
 
+    IconButton(
+        onClick = { navigation.navigate(screen.route) },
+        modifier = iconButtonModifier,
+    ) {
+        Icon(
+            screen.icon, contentDescription = screen.contentDesc,
+            modifier = iconModifier, tint = navButtonSelected(currentDestination, screen.route)
+        )
+    }
+}
+
+@Composable
+fun NavBar(navigation: NavController) {
     val navBackStackEntry by navigation.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -51,45 +82,8 @@ fun NavBar(navigation: NavController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            IconButton(
-                onClick = { navigation.navigate(Routes.HOME_SCREEN) },
-                modifier = iconButtonModifier,
-            ) {
-                Icon(
-                    Icons.Outlined.Home, contentDescription = "Home Page",
-                    modifier = iconModifier, tint = navButtonSelected(currentDestination, Routes.HOME_SCREEN)
-                )
-            }
-            IconButton(
-                onClick = { /*TODO*/ },
-                modifier = iconButtonModifier
-            ) {
-                Icon(
-                    Icons.Outlined.FitnessCenter, contentDescription = "Activity Journal",
-                    modifier = iconModifier,
-                    tint = Color(255, 255, 255)
-                )
-            }
-            IconButton(
-                onClick = { /*TODO*/ },
-                modifier = iconButtonModifier
-            ) {
-                Icon(Icons.Outlined.RadioButtonChecked, contentDescription = "Activity Recording", modifier = iconModifier, tint = Color(255, 255, 255))
-            }
-            IconButton(
-                onClick = { /*TODO*/ },
-                modifier = iconButtonModifier
-            ) {
-                Icon(Icons.Outlined.Restaurant, contentDescription = "Nutrition Tracking", modifier = iconModifier, tint = Color(255, 255, 255))
-            }
-            IconButton(
-                onClick = { navigation.navigate(Routes.MAIN_SETTINGS_SCREEN) },
-                modifier = iconButtonModifier
-            ) {
-                Icon(
-                    Icons.Outlined.Settings, contentDescription = "Settings",
-                    modifier = iconModifier, tint = navButtonSelected(currentDestination, Routes.MAIN_SETTINGS_SCREEN)
-                )
+            navItems.forEach { screen ->
+                NavIconButton(navigation, currentDestination, screen)
             }
         }
     }
@@ -97,7 +91,7 @@ fun NavBar(navigation: NavController) {
 
 @Preview
 @Composable
-fun previewNavBar() {
+fun PreviewNavBar() {
     val navController = rememberNavController()
     NavBar(navigation = navController)
 }
