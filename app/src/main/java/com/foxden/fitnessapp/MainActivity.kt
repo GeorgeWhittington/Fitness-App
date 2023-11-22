@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.foxden.fitnessapp.database.DBHelper
+import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.LoginScreen
