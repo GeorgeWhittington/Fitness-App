@@ -3,6 +3,8 @@ package com.foxden.fitnessapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -37,19 +39,39 @@ class MainActivity : ComponentActivity() {
 
             FitnessAppTheme {
                 NavHost(navController = navController, startDestination = Routes.HOME_SCREEN ) {
-                    composable(Routes.HOME_SCREEN) {
+                    composable(
+                        Routes.HOME_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         HomeScreen(navController, application)
                     }
-                    composable(Routes.ACTIVITY_JOURNAL_SCREEN) {
+                    composable(
+                        Routes.ACTIVITY_JOURNAL_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         ActivityJournalScreen(navController)
                     }
-                    composable(Routes.ACTIVITY_RECORDING_SCREEN) {
+                    composable(
+                        Routes.ACTIVITY_RECORDING_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         ActivityRecordingScreen(navController)
                     }
-                    composable(Routes.NUTRITION_TRACKING_SCREEN) {
+                    composable(
+                        Routes.NUTRITION_TRACKING_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         NutritionTrackingScreen(navController)
                     }
-                    composable(Routes.SETTINGS_SCREEN) {
+                    composable(
+                        Routes.SETTINGS_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         SettingsScreen(navController)
                     }
 
