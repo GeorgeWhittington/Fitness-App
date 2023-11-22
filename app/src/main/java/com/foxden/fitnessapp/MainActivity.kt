@@ -11,6 +11,8 @@ import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.LoginScreen
 import com.foxden.fitnessapp.ui.MainSettings
+import com.foxden.fitnessapp.ui.ProfileSettings
+import com.foxden.fitnessapp.ui.DisplaySettings
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 
 object Routes {
@@ -18,6 +20,8 @@ object Routes {
     const val LOGIN_SCREEN = "LoginScreen"
     const val DBTEST_SCREEN = "DBTestScreen"
     const val MAIN_SETTINGS_SCREEN = "MainSettings"
+    const val PROFILE_SETTINGS_SCREEN = "ProfileSettings"
+    const val DISPLAY_SETTINGS_SCREEN = "DisplaySettings"
 }
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +47,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.MAIN_SETTINGS_SCREEN) {
                         MainSettings(navigation = navController)
+                    }
+                    composable(Routes.PROFILE_SETTINGS_SCREEN) {
+                        ProfileSettings(navigation = navController)
+                    }
+                    composable(Routes.DISPLAY_SETTINGS_SCREEN) {
+                        DisplaySettings(navigation = navController)
                     }
                 }
             }
