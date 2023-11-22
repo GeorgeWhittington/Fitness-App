@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.Routes
@@ -63,7 +64,19 @@ fun NavIconButton(navigation: NavController, currentDestination: NavDestination?
     val iconModifier = Modifier.size(40.dp)
 
     IconButton(
-        onClick = { navigation.navigate(screen.route) },
+        onClick = {
+            navigation.navigate(screen.route) {
+                // Pop up to the start destination of the graph to avoid building
+                // up a large stack of destinations on the back stack
+                popUpTo(navigation.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                // Avoid multiple copies of the same destination when reselecting
+                // the same item
+                launchSingleTop = true
+                // Restore state when reselecting a previously selected item
+                restoreState = true
+            } },
         modifier = iconButtonModifier,
     ) {
         Icon(
