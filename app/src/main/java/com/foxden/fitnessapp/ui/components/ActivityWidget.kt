@@ -80,6 +80,8 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
 fun ActivityWidget() {
     val images = listOf(
         SlideshowImage(painterResource(R.drawable.hiking_route), "map showing route taken"),
+        SlideshowImage(painterResource(R.drawable.hiking_picture), null),
+        SlideshowImage(painterResource(R.drawable.hiking_picture), null),
         SlideshowImage(painterResource(R.drawable.hiking_picture), null)
     )
 

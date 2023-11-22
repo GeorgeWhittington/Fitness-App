@@ -33,12 +33,11 @@ class MainActivity : ComponentActivity() {
         // Get Database
         val db = DBHelper(this)
 
-
         setContent {
             val navController = rememberNavController()
 
             FitnessAppTheme {
-                NavHost(navController = navController, startDestination = Routes.HOME_SCREEN ) {
+                NavHost(navController = navController, startDestination = Routes.HOME_SCREEN) {
                     composable(
                         Routes.HOME_SCREEN,
                         enterTransition = { EnterTransition.None },

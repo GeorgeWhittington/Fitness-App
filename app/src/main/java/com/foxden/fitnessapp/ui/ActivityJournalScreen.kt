@@ -14,6 +14,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DirectionsBike
+import androidx.compose.material.icons.outlined.DirectionsRun
+import androidx.compose.material.icons.outlined.DirectionsWalk
+import androidx.compose.material.icons.outlined.Hiking
+import androidx.compose.material.icons.outlined.Pool
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.BottomSheetDefaults
@@ -35,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,22 +50,44 @@ import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 
+class DropdownOption(val text: String, val icon: ImageVector? = null)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetDropdown(options: List<String>, label: String, selectedOptionText: String, updateSelection: (newSelection: String) -> Unit) {
+fun BottomSheetDropdown(
+    options: List<DropdownOption>,
+    label: String,
+    selectedOption: DropdownOption,
+    updateSelection: (newSelection: DropdownOption) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
+
+    var leadingIcon: @Composable() (() -> Unit)? = null
+    if (selectedOption.icon != null) {
+        leadingIcon = @Composable { Icon(selectedOption.icon, selectedOption.text) }
+    }
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         TextField(
-            modifier = Modifier.menuAnchor().fillMaxWidth(), readOnly = true,
-            value = selectedOptionText, onValueChange = {}, label = { Text(label) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(), readOnly = true,
+            value = selectedOption.text, onValueChange = {}, label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            leadingIcon = if (selectedOption.icon != null) leadingIcon else null,
             colors = ExposedDropdownMenuDefaults.textFieldColors()
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach {selectionOption ->
                 DropdownMenuItem(
-                    text = { Text(selectionOption, fontFamily = FontFamily.SansSerif, fontSize = 16.sp) },
+                    text = {
+                        Row () {
+                            if (selectionOption.icon != null) {
+                                Icon(selectionOption.icon, selectionOption.text)
+                                Spacer(modifier = Modifier.size(5.dp))
+                            }
+                            Text(selectionOption.text, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
+                        } },
                     onClick = { updateSelection(selectionOption); expanded = false },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                 )
@@ -76,10 +104,16 @@ fun BottomSheet(onDismiss: () -> Unit) {
     // TODO: This data should be provided with default values by container
     var searchQuery by remember { mutableStateOf("") }
 
-    val sortOptions = listOf("Newest Activities", "Oldest Activities")
+    val sortOptions = listOf(DropdownOption("Newest Activities"), DropdownOption("Oldest Activities"))
     var selectedSort by remember { mutableStateOf( sortOptions[0]) }
 
-    val filterOptions = listOf("All", "Jogging", "Hiking", "Walking", "Swimming", "Cycling")
+    val filterOptions = listOf(
+        DropdownOption("All"),
+        DropdownOption("Jogging",Icons.Outlined.DirectionsRun),
+        DropdownOption("Hiking", Icons.Outlined.Hiking),
+        DropdownOption("Walking", Icons.Outlined.DirectionsWalk),
+        DropdownOption("Swimming", Icons.Outlined.Pool),
+        DropdownOption("Cycling", Icons.Outlined.DirectionsBike))
     var selectedFilter by remember { mutableStateOf(filterOptions[0]) }
 
     ModalBottomSheet(
@@ -102,13 +136,13 @@ fun BottomSheet(onDismiss: () -> Unit) {
             Spacer(modifier = Modifier.size(10.dp))
             BottomSheetDropdown(
                 options = sortOptions, label = "Sort By",
-                selectedOptionText = selectedSort,
+                selectedOption = selectedSort,
                 updateSelection = { newSelection -> selectedSort = newSelection }
             )
             Spacer(modifier = Modifier.size(10.dp))
             BottomSheetDropdown(
                 options = filterOptions, label = "Filter Activity Type",
-                selectedOptionText = selectedFilter,
+                selectedOption = selectedFilter,
                 updateSelection = {newSelection -> selectedFilter = newSelection }
             )
             Spacer(modifier = Modifier.size(10.dp))
