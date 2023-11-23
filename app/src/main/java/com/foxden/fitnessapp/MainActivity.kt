@@ -13,8 +13,10 @@ import com.foxden.fitnessapp.ui.ActivityJournalScreen
 import com.foxden.fitnessapp.ui.ActivityRecordingScreen
 import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
-import com.foxden.fitnessapp.ui.NutritionTrackingScreen
 import com.foxden.fitnessapp.ui.SettingsScreen
+import com.foxden.fitnessapp.ui.NutritionTrackingScreen
+import com.foxden.fitnessapp.ui.ProfileSettings
+import com.foxden.fitnessapp.ui.DisplaySettings
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 
 object Routes {
@@ -23,6 +25,9 @@ object Routes {
     const val ACTIVITY_JOURNAL_SCREEN = "ActivityJournalScreen"
     const val ACTIVITY_RECORDING_SCREEN = "ActivityRecordingScreen"
     const val NUTRITION_TRACKING_SCREEN = "NutritionTrackingScreen"
+
+    const val PROFILE_SETTINGS_SCREEN = "ProfileSettingsScreen"
+    const val DISPLAY_SETTINGS_SCREEN = "DisplaySettingsScreen"
 
     const val DBTEST_SCREEN = "DBTestScreen"
 }
@@ -72,6 +77,13 @@ class MainActivity : ComponentActivity() {
                         exitTransition = { ExitTransition.None }
                     ) {
                         SettingsScreen(navController)
+                    }
+
+                    composable(Routes.PROFILE_SETTINGS_SCREEN) {
+                        ProfileSettings(navigation = navController)
+                    }
+                    composable(Routes.DISPLAY_SETTINGS_SCREEN) {
+                        DisplaySettings(navigation = navController)
                     }
 
                     composable(Routes.DBTEST_SCREEN) {
