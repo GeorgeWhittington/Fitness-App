@@ -1,5 +1,6 @@
 package com.foxden.fitnessapp.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -58,7 +59,9 @@ import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.foxden.fitnessapp.ui.components.NavBar
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSettings(navigation: NavController) {
@@ -66,7 +69,7 @@ fun ProfileSettings(navigation: NavController) {
 
     Scaffold (
         bottomBar = { NavBar(navigation = navigation)}
-    ) {innerPadding ->
+    ) {
         Column(
             Modifier
                 .fillMaxWidth()
@@ -80,7 +83,7 @@ fun ProfileSettings(navigation: NavController) {
                     .height(40.dp)
 
             ) {
-                BackIcon{navigation.navigate(Routes.MAIN_SETTINGS_SCREEN)}
+                BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}
                 PageName(text= "Profile")
             }
             RowDivider()

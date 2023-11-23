@@ -1,6 +1,8 @@
 package com.foxden.fitnessapp.ui
+
+import android.annotation.SuppressLint
+import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.Routes
-import com.foxden.fitnessapp.ui.theme.MainColourScheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,42 +22,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Icon
-import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-
-
-
-
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.painterResource
 
-import androidx.compose.ui.state.ToggleableState
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainSettings(navigation: NavController) {
+fun SettingsScreen(navigation: NavController) {
     Scaffold(
         bottomBar = { NavBar(navigation = navigation) }
-    ) { innerPadding ->
+    ) {
         Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-
+            Modifier.fillMaxWidth().padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             RowOption("Profile") { navigation.navigate(Routes.PROFILE_SETTINGS_SCREEN) }
 
             RowDivider()
@@ -67,11 +55,10 @@ fun MainSettings(navigation: NavController) {
             GPSOption()
             Spacer(modifier = Modifier.height(50.dp))
             DeleteButton()
-
-
         }
     }
 }
+
 @Preview
 @Composable
 fun DeleteButton(){
@@ -86,17 +73,14 @@ fun DeleteButton(){
     }
 
 }
+
 @Composable
 fun RowDivider(
     height: Int = 1,
     color: Color = Color.Gray,
     modifier: Modifier = Modifier
 ) {
-    Divider(
-        modifier = modifier
-            .fillMaxWidth(),
-        color = color
-    )
+    Divider(modifier = modifier.fillMaxWidth(), color = color)
 }
 
 
@@ -104,19 +88,12 @@ fun RowDivider(
 @Composable
 fun PushNotifOption() {
     var checkedState by remember { mutableStateOf(false) }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
 
-    ) {
-        Text(text = "Push notifications",
-            color = Color.Black,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(1f))
-        Switch(
-            checked = checkedState,
-            onCheckedChange = { checkedState = it },
-
-        )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "Push notifications", color = Color.Black,
+            fontSize = 16.sp, modifier = Modifier.weight(1f))
+        Switch(checked = checkedState, onCheckedChange = { checkedState = it })
     }
 }
 
@@ -126,11 +103,11 @@ fun GPSOption() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
 
-    ) {
-        Text(text = "GPS tracking",
-            color = Color.Black,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(1f))
+        ) {
+        Text(
+            text = "GPS tracking", color = Color.Black,
+            fontSize = 16.sp, modifier = Modifier.weight(1f)
+        )
         Switch(
             checked = checkedState,
             onCheckedChange = { checkedState = it }
@@ -138,23 +115,16 @@ fun GPSOption() {
     }
 }
 
-
 @Composable
 fun RowOption(text: String, onClick: () -> Unit) {
     Row(
-
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clickable { onClick() }
-            .padding(vertical = 16.dp)
-
+        modifier = Modifier.clickable { onClick() }.padding(vertical = 16.dp)
     ) {
-        Text(text = text,
-            color = Color.Black,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(1f))
-
-
+        Text(
+            text = text, color = Color.Black,
+            fontSize = 16.sp, modifier = Modifier.weight(1f)
+        )
 
         Icon(
             Icons.Outlined.ArrowForwardIos,
@@ -162,7 +132,3 @@ fun RowOption(text: String, onClick: () -> Unit) {
         )
     }
 }
-
-
-
-

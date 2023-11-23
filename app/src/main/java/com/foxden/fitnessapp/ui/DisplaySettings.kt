@@ -1,5 +1,6 @@
 package com.foxden.fitnessapp.ui
 
+import android.annotation.SuppressLint
 import com.foxden.fitnessapp.ui.theme.MainColourScheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,9 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.ui.components.NavBar
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DisplaySettings(navigation: NavController) {
 
@@ -57,23 +59,17 @@ fun DisplaySettings(navigation: NavController) {
     var selectedCharacter by remember { mutableStateOf(CharacterOptions[0]) }
 
     Scaffold (
-        bottomBar = { NavBar(navigation = navigation)}
-    ) {innerPadding ->
+        bottomBar = { NavBar(navigation = navigation) }
+    ) {
         Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-
+            Modifier.fillMaxWidth().padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(40.dp)
-
-                ) {
-                BackIcon{navigation.navigate(Routes.MAIN_SETTINGS_SCREEN)}
+                modifier = Modifier.height(40.dp)
+            ) {
+                BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}
                 PageName(text= "Display")
             }
             RowDivider()
@@ -90,57 +86,44 @@ fun DisplaySettings(navigation: NavController) {
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(40.dp)
-
+                modifier = Modifier.height(40.dp)
             ) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = "Unit Selection" ,fontSize = 20.sp,)
                 Spacer(modifier = Modifier.weight(1f))
             }
             Spacer(modifier = Modifier.height(10.dp))
-            DropdownOption(options = DistanceUnitOptions,
-                label = "Distance unit",
+            DropdownOption(
+                options = DistanceUnitOptions, label = "Distance unit",
                 selectedOptionText = selectedDistanceUnit,
                 updateSelection = {newSelection -> selectedDistanceUnit = newSelection }
             )
             Spacer(modifier = Modifier.height(10.dp))
-            DropdownOption(options = WeightUnitOptions,
-                label = "Weight unit",
+            DropdownOption(
+                options = WeightUnitOptions, label = "Weight unit",
                 selectedOptionText = selectedWeightUnit,
                 updateSelection = {newSelection -> selectedWeightUnit = newSelection }
             )
             Spacer(modifier = Modifier.height(10.dp))
-            DropdownOption(options = CalorieUnitOptions,
-                label = "Calorie unit",
+            DropdownOption(
+                options = CalorieUnitOptions, label = "Calorie unit",
                 selectedOptionText = selectedCalorieUnit,
                 updateSelection = {newSelection -> selectedCalorieUnit = newSelection }
             )
-
-
-
-
         }
     }
-
 }
 
 @Composable
 fun PageName(text: String) {
-
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            text = text,
-            color = Color.Black,
-            fontSize = 20.sp,
-            modifier = Modifier
-                .weight(1f)
-                .align(Alignment.CenterVertically)
+            text = text, color = Color.Black, fontSize = 20.sp,
+            modifier = Modifier.weight(1f).align(Alignment.CenterVertically)
         )
         Spacer(modifier = Modifier.weight(1f))
     }
@@ -156,8 +139,7 @@ fun BackIcon(onClick: () -> Unit) {
             //.clickable { navController.navigate("home") } // Clickable modifier for the IconButton
     ) {
         Icon(
-            Icons.Outlined.ChevronLeft,
-            contentDescription = "back arrow",
+            Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
             //modifier = Modifier.padding(start = 16.dp),
             tint = MainColourScheme.Lochmara
         )
@@ -167,33 +149,30 @@ fun BackIcon(onClick: () -> Unit) {
 @Composable
 fun AnimationsOption() {
     var checkedState by remember { mutableStateOf(true) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             //.padding( vertical = 5.dp)
     ) {
-        Text(text = "Animations",
-            color = Color.Black,
-            fontSize = 16.sp,
+        Text(
+            text = "Animations", color = Color.Black, fontSize = 16.sp,
             modifier = Modifier.weight(1f))
-        Switch(
-            checked = checkedState,
-            onCheckedChange = { checkedState = it }
-        )
+        Switch(checked = checkedState, onCheckedChange = { checkedState = it })
     }
 }
 @Preview
 @Composable
 fun CalorieOption() {
     var checkedState by remember { mutableStateOf(true) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
         //.padding( vertical = 5.dp)
     ) {
-        Text(text = "Calorie/Nutrition Tracking",
-            color = Color.Black,
-            fontSize = 16.sp,
+        Text(
+            text = "Calorie/Nutrition Tracking", color = Color.Black, fontSize = 16.sp,
             modifier = Modifier.weight(1f))
         Switch(
             checked = checkedState,
@@ -205,19 +184,16 @@ fun CalorieOption() {
 @Composable
 fun DarkModeOption() {
     var checkedState by remember { mutableStateOf(false) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
         //.padding( vertical = 5.dp)
     ) {
-        Text(text = "Dark mode",
-            color = Color.Black,
-            fontSize = 16.sp,
+        Text(
+            text = "Dark mode", color = Color.Black, fontSize = 16.sp,
             modifier = Modifier.weight(1f))
-        Switch(
-            checked = checkedState,
-            onCheckedChange = { checkedState = it }
-        )
+        Switch(checked = checkedState, onCheckedChange = { checkedState = it })
     }
 }
 
@@ -226,13 +202,8 @@ fun DarkModeOption() {
 fun DropdownOption(options: List<String>, label: String, selectedOptionText: String, updateSelection: (newSelection: String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-
-
-
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-
         TextField(
-
             modifier = Modifier
                 .menuAnchor()
                 .clickable(onClick = { expanded = false })
@@ -250,7 +221,6 @@ fun DropdownOption(options: List<String>, label: String, selectedOptionText: Str
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                 )
             }
-
         }
     }
 }
