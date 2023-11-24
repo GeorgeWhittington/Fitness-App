@@ -19,9 +19,10 @@ fun loadData(activityList: MutableList<ActivityLog>, dbHelper: DBHelper) {
 }
 @Composable
 fun DBTestScreen(navigation: NavController, dbHelper: DBHelper) {
-
     var activityList = remember { mutableStateListOf<ActivityLog>() }
     loadData(activityList, dbHelper)
+
+
 
     Column {
         Button(onClick = {
@@ -41,7 +42,7 @@ fun DBTestScreen(navigation: NavController, dbHelper: DBHelper) {
 
         Column {
             for (a in activityList) {
-                Text("Activity - id: ${a.id} title:${a.name}")
+                Text("Activity - id: ${a.id} title: ${a.name}")
             }
         }
 
