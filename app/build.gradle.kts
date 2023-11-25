@@ -61,6 +61,8 @@ dependencies {
     implementation("androidx.compose.material:material:1.5.4")
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("com.mapbox.extension:maps-compose:0.1.0")
+    implementation("com.mapbox.maps:android:11.0.0-beta.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
