@@ -2,13 +2,18 @@ package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,8 +42,13 @@ fun ActivityRecordingScreen(navigation: NavController) {
                 .padding(25.dp)) {
             Text(text = "Record an Activity", fontSize = 20.sp,
                 color = Color(11, 45, 61))
+            Spacer(modifier = Modifier.size(15.dp))
             MapboxMap(
-                modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+//                    .aspectRatio(1f)
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(20.dp)),
                 mapInitOptionsFactory = { context ->
                     MapInitOptions(
                         context = context,
