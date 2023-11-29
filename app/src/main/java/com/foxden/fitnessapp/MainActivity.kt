@@ -18,6 +18,7 @@ import com.foxden.fitnessapp.ui.NutritionTrackingScreen
 import com.foxden.fitnessapp.ui.ProfileSettings
 import com.foxden.fitnessapp.ui.DisplaySettings
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
+import com.foxden.fitnessapp.utils.LocationService
 
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
@@ -35,8 +36,9 @@ object Routes {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Get Database
+
         val db = DBHelper(this)
+        val locationService = LocationService(this.applicationContext)
 
         setContent {
             val navController = rememberNavController()
@@ -62,7 +64,7 @@ class MainActivity : ComponentActivity() {
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None }
                     ) {
-                        ActivityRecordingScreen(navController)
+                        ActivityRecordingScreen(navController, locationService)
                     }
                     composable(
                         Routes.NUTRITION_TRACKING_SCREEN,
