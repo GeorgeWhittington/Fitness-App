@@ -29,10 +29,12 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.ui.theme.LightBlue
+import com.foxden.fitnessapp.ui.theme.MidBlue
 
 fun navButtonSelected(currentDestination: NavDestination?, route: String) : Color {
-    val selectedColor = Color(134, 187, 216)
-    val contentColor = Color(255, 255, 255)
+    val selectedColor = LightBlue
+    val contentColor = Color.White
 
     return if (currentDestination?.hierarchy?.any { it.route == route } == true) {
         selectedColor
@@ -92,7 +94,7 @@ fun NavBar(navigation: NavController) {
     val currentDestination = navBackStackEntry?.destination
 
     BottomAppBar (
-        backgroundColor = Color(64, 117, 156),
+        backgroundColor = MidBlue,
         modifier = Modifier.height(50.dp)
     ) {
         Row (

@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.foxden.fitnessapp.R
+import com.foxden.fitnessapp.ui.theme.MidBlue
 
 class SlideshowImage(val image: Painter, val imageDescription: String?)
 
@@ -90,7 +91,7 @@ fun ActivityWidget() {
             .fillMaxWidth()
             .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(Color(255, 255, 255))
+            .background(Color.White)
     ) {
         ActivitySlideshow(modifier = Modifier.width(112.dp), images)
         Column (
@@ -111,14 +112,14 @@ fun ActivityWidget() {
                     Column {
                         Text(text = "Distance", fontSize = 12.sp)
                         Text(text = "8.01km", fontSize = 12.sp,
-                            color = Color(64, 117, 156),
+                            color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
                         Text(text = "Time", fontSize = 12.sp)
                         Text(text = "1h 55m", fontSize = 12.sp,
-                            color = Color(64, 117, 156),
+                            color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
@@ -126,7 +127,7 @@ fun ActivityWidget() {
                         Text(text = "Calories", fontSize = 12.sp)
                         Text(
                             text = "1200", fontSize = 12.sp,
-                            color = Color(64, 117, 156),
+                            color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                 }

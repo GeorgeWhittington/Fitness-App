@@ -1,19 +1,14 @@
 package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
-import com.foxden.fitnessapp.ui.theme.MainColourScheme
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronLeft
@@ -40,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.ui.components.NavBar
+import com.foxden.fitnessapp.ui.theme.DarkBlue
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -141,7 +137,7 @@ fun BackIcon(onClick: () -> Unit) {
         Icon(
             Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
             //modifier = Modifier.padding(start = 16.dp),
-            tint = MainColourScheme.Lochmara
+            tint = DarkBlue
         )
     }
 }
