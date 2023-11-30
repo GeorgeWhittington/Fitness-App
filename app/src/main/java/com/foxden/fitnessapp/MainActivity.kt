@@ -1,8 +1,11 @@
 package com.foxden.fitnessapp
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.navigation.compose.NavHost
@@ -18,7 +21,8 @@ import com.foxden.fitnessapp.ui.NutritionTrackingScreen
 import com.foxden.fitnessapp.ui.ProfileSettings
 import com.foxden.fitnessapp.ui.DisplaySettings
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
-import com.foxden.fitnessapp.utils.LocationService
+import com.foxden.fitnessapp.utils.LocationViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
@@ -33,12 +37,14 @@ object Routes {
     const val DBTEST_SCREEN = "DBTestScreen"
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val locationViewModel: LocationViewModel by viewModels()
         val db = DBHelper(this)
-        val locationService = LocationService(this.applicationContext)
 
         setContent {
             val navController = rememberNavController()
@@ -64,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None }
                     ) {
-                        ActivityRecordingScreen(navController, locationService)
+                        ActivityRecordingScreen(navController, locationViewModel)
                     }
                     composable(
                         Routes.NUTRITION_TRACKING_SCREEN,
