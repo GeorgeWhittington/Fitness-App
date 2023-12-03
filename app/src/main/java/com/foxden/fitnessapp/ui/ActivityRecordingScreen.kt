@@ -7,6 +7,8 @@ import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,44 +20,49 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material.icons.outlined.DirectionsBike
+import androidx.compose.material.icons.outlined.DirectionsRun
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.Hiking
+import androidx.compose.material.icons.outlined.Pool
+import androidx.compose.material.icons.outlined.SelfImprovement
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.ui.components.ActivitySelector
-import com.foxden.fitnessapp.ui.components.ActivityType
+import com.foxden.fitnessapp.ui.components.AddActivityTypeDialog
 import com.foxden.fitnessapp.ui.components.NavBar
+import com.foxden.fitnessapp.ui.components.AddActivityTypeErrorDialog
 import com.foxden.fitnessapp.ui.theme.DarkBlue
 import com.foxden.fitnessapp.ui.theme.LightBlue
 import com.foxden.fitnessapp.ui.theme.MidBlue
@@ -73,8 +80,24 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.rememberCameraPositionState
 
+// Temporary class for dummy data
+class ActivityType(
+    val name: String,
+    val icon: ImageVector,
+    val gpsTracked: Boolean
+)
+
+val activities = arrayOf(
+    ActivityType("Jogging", Icons.Outlined.DirectionsRun, true),
+    ActivityType("Hiking", Icons.Outlined.Hiking, true),
+    ActivityType("Cycling", Icons.Outlined.DirectionsBike, true),
+    ActivityType("Yoga", Icons.Outlined.SelfImprovement, false),
+    ActivityType("Weightlifting", Icons.Outlined.FitnessCenter, false),
+    ActivityType("Swimming", Icons.Outlined.Pool, true)
+)
+
 @RequiresApi(Build.VERSION_CODES.S)
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ActivityRecordingScreen(navigation: NavController, locationViewModel: LocationViewModel) {
@@ -82,24 +105,60 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
         android.Manifest.permission.ACCESS_FINE_LOCATION,
         android.Manifest.permission.ACCESS_COARSE_LOCATION))
     val viewState by locationViewModel.viewState.collectAsStateWithLifecycle()
-    var selectedActivity: ActivityType? by rememberSaveable { mutableStateOf(null) }
+    var selectedActivity: ActivityType? by remember { mutableStateOf(null) }
+    val focusManager = LocalFocusManager.current
 
-    LaunchedEffect(!LocalContext.current.hasLocationPermission()) {
-        permissionState.launchMultiplePermissionRequest()
+    // TODO: Initial value should be the most commonly used activity type, read from db
+    LaunchedEffect(null) {
+        selectedActivity = activities[0]
+    }
+
+    // --- location permission logic ---
+    LaunchedEffect(!LocalContext.current.hasLocationPermission() && selectedActivity?.gpsTracked ?: true) {
+        if (selectedActivity?.gpsTracked != false)
+            permissionState.launchMultiplePermissionRequest()
     }
 
     when {
         permissionState.allPermissionsGranted -> {
             LaunchedEffect(Unit) { locationViewModel.handle(PermissionEvent.Granted) }}
         permissionState.shouldShowRationale -> {
-            RationaleAlert(onDismiss = {}) { permissionState.launchMultiplePermissionRequest() }}
+            RationaleAlert(selectedActivity, onDismiss = {}) { permissionState.launchMultiplePermissionRequest() }}
         !permissionState.allPermissionsGranted && !permissionState.shouldShowRationale -> {
             LaunchedEffect(Unit) { locationViewModel.handle(PermissionEvent.Revoked) }}
     }
 
+    // --- add activity type dialog ---
+    var showActivityDialog by remember { mutableStateOf(false) }
+    var showActivityDialogError by remember { mutableStateOf(false) }
+    var activityDialogErrorMessage by remember { mutableStateOf("") }
+
+    if (showActivityDialog) {
+        AddActivityTypeDialog(
+            onDismiss = { showActivityDialog = false },
+            onError = {
+                showActivityDialog = false
+                activityDialogErrorMessage = it
+                showActivityDialogError = true
+            })
+    }
+
+    if (showActivityDialogError) {
+        AddActivityTypeErrorDialog(
+            errorMessage = activityDialogErrorMessage,
+            onDismiss = { showActivityDialogError = false })
+    }
+
+    // --- content ---
     Scaffold (
         containerColor = LightBlue,
-        bottomBar = { NavBar(navigation = navigation) }
+        bottomBar = { NavBar(navigation = navigation) },
+        modifier = Modifier
+            .focusable()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { focusManager.moveFocus(FocusDirection.Exit) }
     ) {
         Column(
             Modifier
@@ -113,13 +172,10 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Row (
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-//                    .padding(10.dp)
-                    .clickable {
-                        // TODO: Add new activity type form
-                    },
+                    .clickable { showActivityDialog = true },
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(Icons.Outlined.Add, null)
@@ -129,32 +185,38 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            with (viewState) {
-                when (this) {
-                    ViewState.Loading -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
+            if (selectedActivity?.gpsTracked != false) {
+                with(viewState) {
+                    when (this) {
+                        // TODO: the loading state is only selected if the user has provided
+                        // permissions previously. If they have only just given permissions
+                        // the state goes from RevokedPermissions -> Success instead of
+                        // correctly doing RevokedPermissions -> Loading -> Success
+                        ViewState.Loading -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
-                    }
 
-                    ViewState.RevokedPermissions -> {
-                        RevokedPermsMap()
-                    }
-
-                    is ViewState.Success -> {
-                        val currentLocation = this.location
-                        val cameraPositionState = rememberCameraPositionState()
-
-                        LaunchedEffect(key1 = currentLocation) {
-                            if (currentLocation != null)
-                                cameraPositionState.centerOnLocation(currentLocation)
+                        ViewState.RevokedPermissions -> {
+                            RevokedPermsMap(selectedActivity)
                         }
-                        Map(cameraPositionState)
+
+                        is ViewState.Success -> {
+                            val currentLocation = this.location
+                            val cameraPositionState = rememberCameraPositionState()
+
+                            LaunchedEffect(key1 = currentLocation) {
+                                if (currentLocation != null)
+                                    cameraPositionState.centerOnLocation(currentLocation)
+                            }
+                            Map(cameraPositionState)
+                        }
                     }
                 }
             }
@@ -197,7 +259,7 @@ fun Map(cameraPositionState: CameraPositionState) {
 }
 
 @Composable
-fun RevokedPermsMap() {
+fun RevokedPermsMap(selectedActivity: ActivityType?) {
     val context = LocalContext.current
 
     Column (
@@ -207,12 +269,15 @@ fun RevokedPermsMap() {
             .clip(RoundedCornerShape(20.dp))
             .background(Color.White)
             .padding(15.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        /* TODO: probably specify the activity type currently selected, and change behaviour based
-        * on if that activity actually *needs* gps */
-        Text("Location permissions are required to track a jog")
+        // TODO: probably specify the activity type currently selected, and change behaviour based
+        // on if that activity actually *needs* gps
+        if (selectedActivity != null) {
+            Text("Location permissions are required to track ${selectedActivity.name}")
+        } else {
+            Text(text = "Location permissions are required to track some activities")
+        }
         Button(
             onClick = { startActivity(context, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), null) },
             enabled = !context.hasLocationPermission()
@@ -230,30 +295,22 @@ fun RevokedPermsMap() {
 }
 
 @Composable
-fun RationaleAlert(onDismiss: () -> Unit, onConfirm: () -> Unit) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties()
-    ) {
-        Surface (
-            modifier = Modifier
-                .wrapContentWidth()
-                .wrapContentHeight(),
-            shape = MaterialTheme.shapes.large,
-            tonalElevation = AlertDialogDefaults.TonalElevation
-        ) {
-            Column (modifier = Modifier.padding(16.dp)) {
-                Text(text = "Location permissions are required to record an activity!")
-                Spacer(modifier = Modifier.height(24.dp))
-                TextButton(
-                    onClick = { onConfirm(); onDismiss() },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("OK")
-                }
+fun RationaleAlert(selectedActivity: ActivityType?, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        title = { Text("Please enable location permissions") },
+        text = {
+            if (selectedActivity != null)
+                Text("Location permissions are required to track ${selectedActivity.name}")
+            else
+                Text("Location permissions are required to track some activities")
+        },
+        onDismissRequest = { onDismiss() },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(); onDismiss() }) {
+                Text("OK")
             }
         }
-    }
+    )
 }
 
 private suspend fun CameraPositionState.centerOnLocation(

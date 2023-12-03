@@ -82,7 +82,7 @@ fun BottomSheetDropdown(
             options.forEach {selectionOption ->
                 DropdownMenuItem(
                     text = {
-                        Row () {
+                        Row {
                             if (selectionOption.icon != null) {
                                 Icon(selectionOption.icon, selectionOption.text)
                                 Spacer(modifier = Modifier.size(5.dp))
