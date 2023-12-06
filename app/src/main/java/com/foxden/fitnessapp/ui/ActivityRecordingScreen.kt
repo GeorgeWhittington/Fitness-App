@@ -98,7 +98,6 @@ val activities = arrayOf(
 
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ActivityRecordingScreen(navigation: NavController, locationViewModel: LocationViewModel) {
     val permissionState = rememberMultiplePermissionsState(permissions = listOf(
@@ -160,85 +159,86 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                 interactionSource = remember { MutableInteractionSource() }
             ) { focusManager.moveFocus(FocusDirection.Exit) }
     ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(25.dp)) {
-            Text(text = "Record an Activity", fontSize = 20.sp, color = DarkBlue)
-
-            Spacer(modifier = Modifier.size(15.dp))
-
-            ActivitySelector(selectedActivity, setSelectedActivity = { selectedActivity = it })
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Row(
-                modifier = Modifier
+        Column(modifier = Modifier.padding(it)) {
+            Column(
+                Modifier
                     .fillMaxWidth()
-                    .clickable { showActivityDialog = true },
-                horizontalArrangement = Arrangement.Center
+                    .padding(start = 25.dp, end = 25.dp, top = 25.dp)
             ) {
-                Icon(Icons.Outlined.Add, null)
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Add new activity")
-            }
+                Text(text = "Record an Activity", fontSize = 20.sp, color = DarkBlue)
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.size(15.dp))
 
-            if (selectedActivity?.gpsTracked != false) {
-                with(viewState) {
-                    when (this) {
-                        // TODO: the loading state is only selected if the user has provided
-                        // permissions previously. If they have only just given permissions
-                        // the state goes from RevokedPermissions -> Success instead of
-                        // correctly doing RevokedPermissions -> Loading -> Success
-                        ViewState.Loading -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
+                ActivitySelector(selectedActivity, setSelectedActivity = { selectedActivity = it })
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showActivityDialog = true },
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(Icons.Outlined.Add, null)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Add new activity")
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                if (selectedActivity?.gpsTracked != false) {
+                    with(viewState) {
+                        when (this) {
+                            // TODO: the loading state is only selected if the user has provided
+                            // permissions previously. If they have only just given permissions
+                            // the state goes from RevokedPermissions -> Success instead of
+                            // correctly doing RevokedPermissions -> Loading -> Success
+                            ViewState.Loading -> {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
                             }
-                        }
 
-                        ViewState.RevokedPermissions -> {
-                            RevokedPermsMap(selectedActivity)
-                        }
-
-                        is ViewState.Success -> {
-                            val currentLocation = this.location
-                            val cameraPositionState = rememberCameraPositionState()
-
-                            LaunchedEffect(key1 = currentLocation) {
-                                if (currentLocation != null)
-                                    cameraPositionState.centerOnLocation(currentLocation)
+                            ViewState.RevokedPermissions -> {
+                                RevokedPermsMap(selectedActivity)
                             }
-                            Map(cameraPositionState)
+
+                            is ViewState.Success -> {
+                                val currentLocation = this.location
+                                val cameraPositionState = rememberCameraPositionState()
+
+                                LaunchedEffect(key1 = currentLocation) {
+                                    if (currentLocation != null)
+                                        cameraPositionState.centerOnLocation(currentLocation)
+                                }
+                                Map(cameraPositionState)
+                            }
                         }
                     }
                 }
-            }
 
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                IconButton(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .background(MidBlue, CircleShape)
-                        .size(65.dp)
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        Icons.Filled.PlayArrow, contentDescription = null,
-                        tint = Color.White, modifier = Modifier.size(65.dp))
+                    IconButton(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier
+                            .background(MidBlue, CircleShape)
+                            .size(65.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.PlayArrow, contentDescription = null,
+                            tint = Color.White, modifier = Modifier.size(65.dp)
+                        )
+                    }
                 }
             }
-
-            // To account for navbar
-            Spacer(modifier = Modifier.height(50.dp))
         }
     }
 }

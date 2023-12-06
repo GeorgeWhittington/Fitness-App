@@ -181,7 +181,6 @@ fun AddManualActivityScreen(navigation: NavController) {
                 Divider()
             }
         }
-        // TODO: USE SCAFFOLDING LIKE THIS EVERYWHERE ELSE, LOL
     ) {scaffoldingPaddingValues ->
         Column (modifier = Modifier.padding(scaffoldingPaddingValues)) {
         Column (modifier = Modifier
