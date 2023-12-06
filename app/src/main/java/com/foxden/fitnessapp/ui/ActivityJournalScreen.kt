@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DirectionsBike
 import androidx.compose.material.icons.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.DirectionsWalk
@@ -53,6 +54,83 @@ import com.foxden.fitnessapp.ui.theme.LightBlue
 
 class DropdownOption(val text: String, val icon: ImageVector? = null)
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun ActivityJournalScreen(navigation: NavController) {
+    var showSheet by remember { mutableStateOf(false) }
+
+    if (showSheet) {
+        BottomSheet() {
+            showSheet = false
+        }
+    }
+
+    Scaffold (
+        containerColor = LightBlue,
+        bottomBar = { NavBar(navigation = navigation) }
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(25.dp)) {
+            Row (
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Activity Journal", fontSize = 20.sp,
+                    color = DarkBlue
+                )
+                Row {
+                    IconButton(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
+                    ) {
+                        Icon(
+                            Icons.Outlined.Add, contentDescription = "Add Activity Manually",
+                            tint = DarkBlue, modifier = Modifier.size(30.dp))
+                    }
+
+                    IconButton(
+                        onClick = { showSheet = true },
+                        modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
+                    ) {
+                        Icon(
+                            Icons.Outlined.Tune, contentDescription = "Sort and Filter",
+                            tint = DarkBlue, modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+            }
+
+            // TODO: Make this a LazyColumn when data is read in from db!
+            Column (modifier = Modifier.verticalScroll(rememberScrollState())) {
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+                Spacer(modifier = Modifier.size(10.dp))
+                ActivityWidget()
+
+                // Important! brings the scrollable window above the 50dp high navbar
+                Spacer(modifier = Modifier.size(50.dp))
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetDropdown(
@@ -70,9 +148,7 @@ fun BottomSheetDropdown(
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         TextField(
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(), readOnly = true,
+            modifier = Modifier.menuAnchor().fillMaxWidth(), readOnly = true,
             value = selectedOption.text, onValueChange = {}, label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             leadingIcon = if (selectedOption.icon != null) leadingIcon else null,
@@ -153,73 +229,6 @@ fun BottomSheet(onDismiss: () -> Unit) {
             }
         }
     }
-}
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun ActivityJournalScreen(navigation: NavController) {
-    var showSheet by remember { mutableStateOf(false) }
-
-    if (showSheet) {
-        BottomSheet() {
-            showSheet = false
-        }
-    }
-
-    Scaffold (
-        containerColor = LightBlue,
-        bottomBar = { NavBar(navigation = navigation) }
-    ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(25.dp)) {
-            Row (
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Activity Journal", fontSize = 20.sp,
-                    color = DarkBlue
-                )
-                IconButton(
-                    onClick = { showSheet = true },
-                    modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
-                ) {
-                    Icon(
-                        Icons.Outlined.Tune, contentDescription = "Sort and Filter",
-                        tint = DarkBlue, modifier = Modifier.size(30.dp)
-                    )
-                }
-            }
-
-            // TODO: Make this a LazyColumn when data is read in from db!
-            Column (modifier = Modifier.verticalScroll(rememberScrollState())) {
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-                Spacer(modifier = Modifier.size(10.dp))
-                ActivityWidget()
-
-                // Important! brings the scrollable window above the 50dp high navbar
-                Spacer(modifier = Modifier.size(50.dp))
-            }
-        }
-    }
-
 }
 
 @Preview

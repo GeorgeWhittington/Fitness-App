@@ -292,10 +292,7 @@ fun AddActivityTypeErrorDialog(errorMessage: String, onDismiss: () -> Unit) {
     )
 }
 
-fun addActivity(
-    name: String, icon: String,
-    gpsTracking: Boolean, setTracking: Boolean
-) {
+fun addActivity(name: String, icon: String, gpsTracking: Boolean, setTracking: Boolean) {
     Log.d("FIT", "new activity type: name=${name}, icon=${icon}, gpsTracking=${gpsTracking}, setTracking=${setTracking}")
     // TODO: add to db
 }
