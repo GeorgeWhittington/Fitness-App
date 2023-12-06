@@ -33,7 +33,9 @@ import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.UnfoldMore
+import androidx.compose.material.icons.outlined.ZoomOutMap
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
@@ -74,6 +76,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.foxden.fitnessapp.ui.components.ImageSteppers
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Orange
 import java.time.Instant
@@ -112,6 +115,8 @@ fun AddManualActivityScreen(navigation: NavController) {
         }
     }
     var imageDisplayed by remember { mutableIntStateOf(0) }
+    var fullscreenImageExpanded by remember { mutableStateOf(false) }
+    var fullscreenImageUri: Uri? by remember { mutableStateOf(null) }
 
     
     if (datePickerExpanded) {
@@ -160,6 +165,14 @@ fun AddManualActivityScreen(navigation: NavController) {
         )
     }
 
+    if (fullscreenImageExpanded) {
+        fullscreenImageUri?.let {imageURI ->
+            FullscreenImageDialog(
+                onDismiss = { fullscreenImageExpanded = false },
+                imageURI = imageURI, contentDescription = null)
+        }
+    }
+
     Scaffold (
         topBar = {
             Column {
@@ -188,12 +201,14 @@ fun AddManualActivityScreen(navigation: NavController) {
             .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(10.dp))
+            // Activity Title
             OutlinedTextField(
                 value = title, onValueChange = { title = it }, singleLine = true,
                 modifier = Modifier.fillMaxWidth(), label = { Text("Activity Title") }
             )
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Activity Type
             ExposedDropdownMenuBox(
                 expanded = activityTypeExpanded, onExpandedChange = {activityTypeExpanded = it},
                 modifier = Modifier.fillMaxWidth()
@@ -234,12 +249,14 @@ fun AddManualActivityScreen(navigation: NavController) {
             }
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Activity Notes
             OutlinedTextField(
                 value = notes, onValueChange = { notes = it }, label = { Text("Notes") },
                 modifier = Modifier.fillMaxWidth(), minLines = 5
             )
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Activity datetime
             var datetimeString = ""
             if (datetime != null)
                 datetimeString = datetime!!.format(DateTimeFormatter.ofPattern("d LLLL yyyy, hh:mma"))
@@ -262,15 +279,18 @@ fun AddManualActivityScreen(navigation: NavController) {
             )
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Activity Duration
             var durationString by remember { mutableStateOf("") }
             LaunchedEffect(duration) {
                 if (duration != null) {
                     var str = ""
                     if (duration!!.first != null && duration!!.first != 0) {
-                        str = "${duration!!.first} Hours"
+                        str += "${duration!!.first} Hour"
+                        if (duration!!.first!! > 1) { str += "s" }
                     }
                     if (duration!!.second != null && duration!!.second != 0) {
-                        str += " ${duration!!.second} Minutes"
+                        str += " ${duration!!.second} Minute"
+                        if (duration!!.second!! > 1) { str += "s" }
                     }
                     durationString = str.trim()
                 }
@@ -294,6 +314,7 @@ fun AddManualActivityScreen(navigation: NavController) {
             )
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Activity Distance
             OutlinedTextField(
                 value = distance, suffix = { Text("km") }, label = { Text("Distance" )},
                 trailingIcon = { Icon(Icons.Outlined.UnfoldMore, null) },
@@ -332,6 +353,7 @@ fun AddManualActivityScreen(navigation: NavController) {
             )
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Activity Attachments
             Row (
                 modifier = Modifier
                     .padding(TextFieldDefaults.contentPaddingWithLabel(start = 0.dp, end = 0.dp))
@@ -340,10 +362,11 @@ fun AddManualActivityScreen(navigation: NavController) {
             ) {
                 // when there are no images, this is the placeholder
                 if (imageURIs.size == 0) {
-                    Box (modifier = Modifier
-                        .height(200.dp)
-                        .weight(1f)
-                        .background(Color.Gray, RoundedCornerShape(20.dp)),
+                    Box (
+                        modifier = Modifier
+                            .height(200.dp)
+                            .weight(1f)
+                            .background(Color.Gray, RoundedCornerShape(20.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -371,10 +394,25 @@ fun AddManualActivityScreen(navigation: NavController) {
                             contentDescription = "Attached image ${imageDisplayed + 1}/${imageURIs.size}",
                             contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth()
                         )
-                        // TODO: show steppers that indicate which image is currently displayed
-                        // TODO: does the same thing as activity card, export that functionality?
+                        ImageSteppers(
+                            numImages = imageURIs.size, selectedImage = imageDisplayed,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 5.dp)
+                        )
+                        IconButton(
+                            onClick = {
+                                fullscreenImageUri = imageURIs[imageDisplayed]
+                                fullscreenImageExpanded = true
+                            },
+                            modifier = Modifier
+                                .padding(5.dp)
+                                .background(Color.White, CircleShape)
+                                .align(Alignment.TopEnd)
+                        ) {
+                            Icon(Icons.Outlined.ZoomOutMap, "View Photo in full")
+                        }
                     }
-
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -409,6 +447,11 @@ fun AddManualActivityScreen(navigation: NavController) {
                         }
                     }
                 }
+            }
+
+            // Add Activity
+            Button(onClick = { /* TODO - verify activity and add to db */ }) {
+                Text("Add Activity")
             }
         }}
     }
@@ -452,7 +495,7 @@ fun DurationPicker(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 OutlinedTextField(
-                    modifier = Modifier.width(60.dp),
+                    modifier = Modifier.width(55.dp),
                     value = durationHours, onValueChange = {
                         if (it == "" || it == "0")
                             durationHours = ""
@@ -466,12 +509,12 @@ fun DurationPicker(
                             return@OutlinedTextField
                         }
                     },
-                    singleLine = true, textStyle = TextStyle(fontSize = 20.sp),
+                    singleLine = true, textStyle = TextStyle(fontSize = 16.sp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
-                Text("Hours", fontSize = 20.sp)
+                Text("Hour(s)", fontSize = 18.sp)
                 OutlinedTextField(
-                    modifier = Modifier.width(60.dp),
+                    modifier = Modifier.width(55.dp),
                     value = durationMinutes, onValueChange = {
                         if (it == "" || it == "0")
                             durationMinutes = ""
@@ -488,10 +531,29 @@ fun DurationPicker(
                             return@OutlinedTextField
                         }
                     },
-                    singleLine = true, textStyle = TextStyle(fontSize = 20.sp),
+                    singleLine = true, textStyle = TextStyle(fontSize = 16.sp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-                Text("Minutes", fontSize = 20.sp)
+                Text("Minute(s)", fontSize = 18.sp)
+            }
+        }
+    )
+}
+
+@Composable
+fun FullscreenImageDialog(onDismiss: () -> Unit, imageURI: Uri, contentDescription: String?) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        confirmButton = { TextButton(onClick = { onDismiss() }) {
+            Text("Close")
+        } },
+        text = {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageURI),
+                    contentDescription = contentDescription,
+                    contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     )

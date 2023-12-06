@@ -49,31 +49,10 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
             painter = images[imageIndex].image,
             contentDescription = images[imageIndex].imageDescription
         )
-        // Only render steppers if there are multiple images
-        if (numImages != 0) {
-            Row(modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 5.dp)
-            ) {
-                images.forEachIndexed { index, _ ->
-                    if (index == imageIndex) {
-                        Icon(
-                            painterResource(R.drawable.filled_circle), contentDescription = null,
-                            modifier = Modifier.size(7.dp)
-                        )
-                    } else {
-                        Icon(
-                            painterResource(R.drawable.stroked_circle), contentDescription = null,
-                            modifier = Modifier.size(7.dp)
-                        )
-                    }
-                    // Don't add a spacer if this is the last stepper!
-                    if (index != numImages) {
-                        Spacer(modifier = Modifier.size(2.dp))
-                    }
-                }
-            }
-        }
+        ImageSteppers(
+            numImages = numImages + 1, selectedImage = imageIndex,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 5.dp)
+        )
     }
 }
 

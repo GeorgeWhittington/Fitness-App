@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.database.DBHelper
 import com.foxden.fitnessapp.ui.ActivityJournalScreen
 import com.foxden.fitnessapp.ui.ActivityRecordingScreen
+import com.foxden.fitnessapp.ui.AddManualActivityScreen
 import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.SettingsScreen
@@ -30,6 +31,8 @@ object Routes {
     const val ACTIVITY_JOURNAL_SCREEN = "ActivityJournalScreen"
     const val ACTIVITY_RECORDING_SCREEN = "ActivityRecordingScreen"
     const val NUTRITION_TRACKING_SCREEN = "NutritionTrackingScreen"
+
+    const val ADD_ACTIVITY_FORM_SCREEN = "AddActivityFormScreen"
 
     const val PROFILE_SETTINGS_SCREEN = "ProfileSettingsScreen"
     const val DISPLAY_SETTINGS_SCREEN = "DisplaySettingsScreen"
@@ -65,6 +68,15 @@ class MainActivity : ComponentActivity() {
                     ) {
                         ActivityJournalScreen(navController)
                     }
+
+                    composable(
+                        Routes.ADD_ACTIVITY_FORM_SCREEN,
+                        enterTransition = {EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
+                        AddManualActivityScreen(navController)
+                    }
+
                     composable(
                         Routes.ACTIVITY_RECORDING_SCREEN,
                         enterTransition = { EnterTransition.None },

@@ -1,6 +1,5 @@
 package com.foxden.fitnessapp.ui
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.foxden.fitnessapp.Routes.ADD_ACTIVITY_FORM_SCREEN
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.DarkBlue
@@ -85,7 +85,7 @@ fun ActivityJournalScreen(navigation: NavController) {
                     )
                     Row {
                         IconButton(
-                            onClick = { /*TODO*/ },
+                            onClick = { navigation.navigate(ADD_ACTIVITY_FORM_SCREEN) },
                             modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
                         ) {
                             Icon(
@@ -226,8 +226,7 @@ fun BottomSheet(onDismiss: () -> Unit) {
                 updateSelection = {newSelection -> selectedFilter = newSelection }
             )
             Spacer(modifier = Modifier.size(10.dp))
-//          TODO: Apply button, which uses a callback to return the updated values to the main screen
-            Button(onClick = { /*TODO*/ }) {
+            Button(onClick = {/* TODO - use callback to return updated values to main screen */}) {
                 Text(text = "Apply", fontSize = 16.sp)
             }
         }

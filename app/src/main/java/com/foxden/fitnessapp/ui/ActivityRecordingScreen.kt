@@ -1,6 +1,5 @@
 package com.foxden.fitnessapp.ui
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
@@ -227,7 +226,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                     contentAlignment = Alignment.Center
                 ) {
                     IconButton(
-                        onClick = { /*TODO*/ },
+                        onClick = { /* TODO - open correct activity recording screen for whichever type is selected */ },
                         modifier = Modifier
                             .background(MidBlue, CircleShape)
                             .size(65.dp)
@@ -271,8 +270,6 @@ fun RevokedPermsMap(selectedActivity: ActivityType?) {
             .padding(15.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // TODO: probably specify the activity type currently selected, and change behaviour based
-        // on if that activity actually *needs* gps
         if (selectedActivity != null) {
             Text("Location permissions are required to track ${selectedActivity.name}")
         } else {
