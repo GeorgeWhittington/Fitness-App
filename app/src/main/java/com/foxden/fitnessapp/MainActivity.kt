@@ -1,8 +1,11 @@
 package com.foxden.fitnessapp
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.navigation.compose.NavHost
@@ -12,6 +15,7 @@ import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.ActivityJournalScreen
 import com.foxden.fitnessapp.ui.ActivityRecordingScreen
+import com.foxden.fitnessapp.ui.AddManualActivityScreen
 import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.HomeScreen
 import com.foxden.fitnessapp.ui.SettingsScreen
@@ -19,6 +23,8 @@ import com.foxden.fitnessapp.ui.NutritionTrackingScreen
 import com.foxden.fitnessapp.ui.ProfileSettings
 import com.foxden.fitnessapp.ui.DisplaySettings
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
+import com.foxden.fitnessapp.utils.LocationViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
@@ -27,16 +33,21 @@ object Routes {
     const val ACTIVITY_RECORDING_SCREEN = "ActivityRecordingScreen"
     const val NUTRITION_TRACKING_SCREEN = "NutritionTrackingScreen"
 
+    const val ADD_ACTIVITY_FORM_SCREEN = "AddActivityFormScreen"
+
     const val PROFILE_SETTINGS_SCREEN = "ProfileSettingsScreen"
     const val DISPLAY_SETTINGS_SCREEN = "DisplaySettingsScreen"
 
     const val DBTEST_SCREEN = "DBTestScreen"
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Get Database
+
+        val locationViewModel: LocationViewModel by viewModels()
         val db = DBHelper(this)
 
         setContent {
@@ -58,12 +69,21 @@ class MainActivity : ComponentActivity() {
                     ) {
                         ActivityJournalScreen(navController)
                     }
+
+                    composable(
+                        Routes.ADD_ACTIVITY_FORM_SCREEN,
+                        enterTransition = {EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
+                        AddManualActivityScreen(navController)
+                    }
+
                     composable(
                         Routes.ACTIVITY_RECORDING_SCREEN,
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None }
                     ) {
-                        ActivityRecordingScreen(navController)
+                        ActivityRecordingScreen(navController, locationViewModel)
                     }
                     composable(
                         Routes.NUTRITION_TRACKING_SCREEN,

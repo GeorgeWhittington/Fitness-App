@@ -30,6 +30,7 @@ fun HomeScreen(navigation: NavController, application: Application) {
     Scaffold (
         bottomBar = { NavBar(navigation = navigation) }
     ) {
+
         Column(
             Modifier.fillMaxWidth().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally

@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.foxden.fitnessapp.R
+import com.foxden.fitnessapp.ui.theme.MidBlue
 
 class SlideshowImage(val image: Painter, val imageDescription: String?)
 
@@ -48,31 +49,10 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
             painter = images[imageIndex].image,
             contentDescription = images[imageIndex].imageDescription
         )
-        // Only render steppers if there are multiple images
-        if (numImages != 0) {
-            Row(modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 5.dp)
-            ) {
-                images.forEachIndexed { index, _ ->
-                    if (index == imageIndex) {
-                        Icon(
-                            painterResource(R.drawable.filled_circle), contentDescription = null,
-                            modifier = Modifier.size(7.dp)
-                        )
-                    } else {
-                        Icon(
-                            painterResource(R.drawable.stroked_circle), contentDescription = null,
-                            modifier = Modifier.size(7.dp)
-                        )
-                    }
-                    // Don't add a spacer if this is the last stepper!
-                    if (index != numImages) {
-                        Spacer(modifier = Modifier.size(2.dp))
-                    }
-                }
-            }
-        }
+        ImageSteppers(
+            numImages = numImages + 1, selectedImage = imageIndex,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 5.dp)
+        )
     }
 }
 
@@ -90,7 +70,7 @@ fun ActivityWidget() {
             .fillMaxWidth()
             .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(Color(255, 255, 255))
+            .background(Color.White)
     ) {
         ActivitySlideshow(modifier = Modifier.width(112.dp), images)
         Column (
@@ -111,14 +91,14 @@ fun ActivityWidget() {
                     Column {
                         Text(text = "Distance", fontSize = 12.sp)
                         Text(text = "8.01km", fontSize = 12.sp,
-                            color = Color(64, 117, 156),
+                            color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
                         Text(text = "Time", fontSize = 12.sp)
                         Text(text = "1h 55m", fontSize = 12.sp,
-                            color = Color(64, 117, 156),
+                            color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
@@ -126,7 +106,7 @@ fun ActivityWidget() {
                         Text(text = "Calories", fontSize = 12.sp)
                         Text(
                             text = "1200", fontSize = 12.sp,
-                            color = Color(64, 117, 156),
+                            color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                 }
