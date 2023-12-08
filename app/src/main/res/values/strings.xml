@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Fitness App</string>
     <string name="fox_alt_text">A cartoon fox</string>
 </resources>
