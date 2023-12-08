@@ -21,6 +21,7 @@ import com.foxden.fitnessapp.ui.SettingsScreen
 import com.foxden.fitnessapp.ui.NutritionTrackingScreen
 import com.foxden.fitnessapp.ui.ProfileSettings
 import com.foxden.fitnessapp.ui.DisplaySettings
+import com.foxden.fitnessapp.ui.GoalsSettings
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 import com.foxden.fitnessapp.utils.LocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,6 +37,7 @@ object Routes {
 
     const val PROFILE_SETTINGS_SCREEN = "ProfileSettingsScreen"
     const val DISPLAY_SETTINGS_SCREEN = "DisplaySettingsScreen"
+    const val GOALS_SETTINGS_SCREEN = "GoalsSettingsScreen"
 
     const val DBTEST_SCREEN = "DBTestScreen"
 }
@@ -104,6 +106,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.DISPLAY_SETTINGS_SCREEN) {
                         DisplaySettings(navigation = navController)
+                    }
+                    composable(Routes.GOALS_SETTINGS_SCREEN) {
+                        GoalsSettings(navigation = navController)
                     }
 
                     composable(Routes.DBTEST_SCREEN) {

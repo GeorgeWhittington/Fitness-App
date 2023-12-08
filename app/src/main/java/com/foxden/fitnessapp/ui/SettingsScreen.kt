@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -45,7 +46,9 @@ fun SettingsScreen(navigation: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             RowOption("Profile") { navigation.navigate(Routes.PROFILE_SETTINGS_SCREEN) }
-
+            RowDivider()
+            Spacer(modifier = Modifier.height(20.dp))
+            RowOption("Goals") { navigation.navigate(Routes.GOALS_SETTINGS_SCREEN) }
             RowDivider()
             Spacer(modifier = Modifier.height(20.dp))
             RowOption("Display") { navigation.navigate(Routes.DISPLAY_SETTINGS_SCREEN) }
@@ -56,6 +59,22 @@ fun SettingsScreen(navigation: NavController) {
             Spacer(modifier = Modifier.height(50.dp))
             DeleteButton()
         }
+    }
+}
+
+@Composable
+fun PageName(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        //Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = text, color = Color.Black, fontSize = 20.sp,
+            //modifier = Modifier.weight(1f).align(Alignment.CenterVertically)
+        )
+        //Spacer(modifier = Modifier.weight(1f))
     }
 }
 

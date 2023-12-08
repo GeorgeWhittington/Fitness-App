@@ -42,6 +42,9 @@ import com.foxden.fitnessapp.ui.theme.DarkBlue
 @Composable
 fun DisplaySettings(navigation: NavController) {
 
+    val HeightUnitOptions = listOf("Feet","Cm")
+    var selectedHeightUnit by remember { mutableStateOf(HeightUnitOptions[0]) }
+
     val CalorieUnitOptions = listOf("kcal","kJ.")
     var selectedCalorieUnit by remember { mutableStateOf(CalorieUnitOptions[0]) }
 
@@ -106,24 +109,17 @@ fun DisplaySettings(navigation: NavController) {
                 selectedOptionText = selectedCalorieUnit,
                 updateSelection = {newSelection -> selectedCalorieUnit = newSelection }
             )
+            Spacer(modifier = Modifier.height(10.dp))
+            DropdownOption(
+                options = HeightUnitOptions, label = "Height unit",
+                selectedOptionText = selectedHeightUnit,
+                updateSelection = {newSelection -> selectedHeightUnit = newSelection }
+            )
         }
     }
 }
 
-@Composable
-fun PageName(text: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = text, color = Color.Black, fontSize = 20.sp,
-            modifier = Modifier.weight(1f).align(Alignment.CenterVertically)
-        )
-        Spacer(modifier = Modifier.weight(1f))
-    }
-}
+
 
 
 @Composable
@@ -168,7 +164,8 @@ fun CalorieOption() {
         //.padding( vertical = 5.dp)
     ) {
         Text(
-            text = "Calorie/Nutrition Tracking", color = Color.Black, fontSize = 16.sp,
+            text = "Calorie/Nutrition Tracking",
+            color = Color.Black, fontSize = 16.sp,
             modifier = Modifier.weight(1f))
         Switch(
             checked = checkedState,
