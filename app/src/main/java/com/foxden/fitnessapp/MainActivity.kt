@@ -11,7 +11,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.foxden.fitnessapp.database.DBHelper
+import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.ActivityJournalScreen
 import com.foxden.fitnessapp.ui.ActivityRecordingScreen
 import com.foxden.fitnessapp.ui.AddManualActivityScreen
