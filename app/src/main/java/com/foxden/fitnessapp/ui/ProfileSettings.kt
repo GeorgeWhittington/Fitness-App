@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,13 +34,17 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextButton
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Height
 import androidx.compose.ui.graphics.Color
 import com.foxden.fitnessapp.ui.components.NavBar
+import com.foxden.fitnessapp.ui.theme.MainColourScheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,34 +54,42 @@ fun ProfileSettings(navigation: NavController) {
     var isModified by remember { mutableStateOf(false) }
 
     Scaffold (
-        bottomBar = { NavBar(navigation = navigation)}
-    ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .height(40.dp)
-
-            ) {
-                BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}
-
-                PageName(text= "Profile")
-                SaveOption(isModified = isModified) {
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}},
+                actions = {
+                    
+                    SaveOption(isModified = isModified) {
                     // Perform save action here
 
                     isModified = false
-                }
-
+                }},
+                backgroundColor = Color.White,
+                modifier = Modifier.height(56.dp)
+            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text("Profile", color = Color.Black, fontSize = 20.sp)
             }
-            RowDivider()
-            Spacer(modifier = Modifier.height(30.dp))
+
+        },
+        bottomBar = { NavBar(navigation = navigation)}
+    ) { innerPadding->
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+                .padding(10.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+
+
             Image(
                 painter = image,
                 contentDescription = stringResource(id = R.string.fox_alt_text),
@@ -104,25 +117,7 @@ fun ProfileSettings(navigation: NavController) {
         }
     }
 }
-@Composable
-    fun SaveOption(isModified: Boolean, onClick: () -> Unit) {
 
-    Row(
-        modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
-    ) {
-        if (isModified) {
-            //Spacer(modifier = androidx.compose.ui.Modifier.weight(1f))
-            TextButton(
-                onClick = { onClick() }
-            ) {
-                Text(text = "Save")
-            }
-        }
-    }
-
-
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

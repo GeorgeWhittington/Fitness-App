@@ -1,15 +1,23 @@
 package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
+import com.foxden.fitnessapp.ui.theme.MainColourScheme
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material.IconButton
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,13 +43,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.ui.components.NavBar
-import com.foxden.fitnessapp.ui.theme.DarkBlue
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DisplaySettings(navigation: NavController) {
-
+    var isModified by remember { mutableStateOf(false) }
     val HeightUnitOptions = listOf("Feet","Cm")
     var selectedHeightUnit by remember { mutableStateOf(HeightUnitOptions[0]) }
 
@@ -58,21 +65,41 @@ fun DisplaySettings(navigation: NavController) {
     var selectedCharacter by remember { mutableStateOf(CharacterOptions[0]) }
 
     Scaffold (
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}},
+                actions = {
+
+                    SaveOption(isModified = isModified) {
+                        // Perform save action here
+
+                        isModified = false
+                    }},
+                backgroundColor = Color.White,
+                modifier = Modifier.height(56.dp)
+            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text("Display", color = Color.Black, fontSize = 20.sp)
+            }
+
+        },
         bottomBar = { NavBar(navigation = navigation) }
-    ) {
+    ) {innerPadding->
         Column(
-            Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+                .padding(10.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(40.dp)
-            ) {
-                BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}
-                PageName(text= "Display")
-            }
-            RowDivider()
-            Spacer(modifier = Modifier.height(20.dp))
+
             AnimationsOption()
             CalorieOption()
             DarkModeOption()
@@ -122,21 +149,7 @@ fun DisplaySettings(navigation: NavController) {
 
 
 
-@Composable
-fun BackIcon(onClick: () -> Unit) {
-    IconButton(
-        onClick = { onClick() }, // Replace "home" with your destination route
-        modifier = Modifier
-            //.padding(start = 16.dp)
-            //.clickable { navController.navigate("home") } // Clickable modifier for the IconButton
-    ) {
-        Icon(
-            Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
-            //modifier = Modifier.padding(start = 16.dp),
-            tint = DarkBlue
-        )
-    }
-}
+
 
 @Composable
 fun AnimationsOption() {
