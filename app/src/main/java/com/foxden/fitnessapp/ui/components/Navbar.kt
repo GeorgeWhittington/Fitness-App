@@ -32,15 +32,8 @@ import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.ui.theme.LightBlue
 import com.foxden.fitnessapp.ui.theme.MidBlue
 
-fun navButtonSelected(currentDestination: NavDestination?, route: String) : Color {
-    val selectedColor = LightBlue
-    val contentColor = Color.White
-
-    return if (currentDestination?.hierarchy?.any { it.route == route } == true) {
-        selectedColor
-    } else {
-        contentColor
-    }
+fun navButtonSelected(currentDestination: NavDestination?, route: String) : Boolean {
+    return currentDestination?.hierarchy?.any {it.route == route} == true
 }
 
 sealed class Screen(val route: String, val icon: ImageVector, val contentDesc: String) {
@@ -67,6 +60,9 @@ fun NavIconButton(navigation: NavController, currentDestination: NavDestination?
 
     IconButton(
         onClick = {
+            if (navButtonSelected(currentDestination, screen.route)) {
+                return@IconButton
+            }
             navigation.navigate(screen.route) {
                 // Pop up to the start destination of the graph to avoid building
                 // up a large stack of destinations on the back stack
@@ -83,7 +79,8 @@ fun NavIconButton(navigation: NavController, currentDestination: NavDestination?
     ) {
         Icon(
             screen.icon, contentDescription = screen.contentDesc,
-            modifier = iconModifier, tint = navButtonSelected(currentDestination, screen.route)
+            modifier = iconModifier,
+            tint = if (navButtonSelected(currentDestination, screen.route)) LightBlue else Color.White
         )
     }
 }
