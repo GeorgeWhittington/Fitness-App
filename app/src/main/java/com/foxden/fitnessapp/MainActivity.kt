@@ -101,17 +101,33 @@ class MainActivity : ComponentActivity() {
                         SettingsScreen(navController)
                     }
 
-                    composable(Routes.PROFILE_SETTINGS_SCREEN) {
+                    composable(
+                        Routes.PROFILE_SETTINGS_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         ProfileSettings(navigation = navController)
                     }
-                    composable(Routes.DISPLAY_SETTINGS_SCREEN) {
+                    composable(
+                        Routes.DISPLAY_SETTINGS_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         DisplaySettings(navigation = navController)
                     }
-                    composable(Routes.GOALS_SETTINGS_SCREEN) {
+                    composable(
+                        Routes.GOALS_SETTINGS_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         GoalsSettings(navigation = navController)
                     }
 
-                    composable(Routes.DBTEST_SCREEN) {
+                    composable(
+                        Routes.DBTEST_SCREEN,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None }
+                    ) {
                         DBTestScreen(navController, db)
                     }
                 }
