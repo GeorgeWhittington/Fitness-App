@@ -1,7 +1,6 @@
 package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
-import com.foxden.fitnessapp.ui.theme.MainColourScheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

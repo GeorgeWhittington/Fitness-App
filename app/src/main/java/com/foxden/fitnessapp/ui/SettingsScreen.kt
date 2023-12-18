@@ -37,7 +37,8 @@ import androidx.navigation.NavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
-import com.foxden.fitnessapp.ui.theme.MainColourScheme
+import com.foxden.fitnessapp.ui.theme.DarkBlue
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,7 +87,7 @@ fun SaveOption(isModified: Boolean, onClick: () -> Unit) {
             onClick = { onClick() }
         ) {
             Text(text = "Save",
-                color = MainColourScheme.Lochmara)
+                color = DarkBlue)
         }
     }
 
@@ -103,7 +104,7 @@ fun BackIcon(onClick: () -> Unit) {
         Icon(
             Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
             //modifier = Modifier.padding(start = 16.dp),
-            tint = MainColourScheme.Lochmara
+            tint = DarkBlue
         )
     }
 }

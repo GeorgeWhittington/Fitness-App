@@ -44,7 +44,7 @@ import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Height
 import androidx.compose.ui.graphics.Color
 import com.foxden.fitnessapp.ui.components.NavBar
-import com.foxden.fitnessapp.ui.theme.MainColourScheme
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
