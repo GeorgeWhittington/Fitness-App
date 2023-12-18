@@ -20,11 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -32,6 +36,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextAlign
+import com.foxden.fitnessapp.ui.theme.DarkBlue
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +52,9 @@ fun SettingsScreen(navigation: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             RowOption("Profile") { navigation.navigate(Routes.PROFILE_SETTINGS_SCREEN) }
-
+            RowDivider()
+            Spacer(modifier = Modifier.height(20.dp))
+            RowOption("Goals") { navigation.navigate(Routes.GOALS_SETTINGS_SCREEN) }
             RowDivider()
             Spacer(modifier = Modifier.height(20.dp))
             RowOption("Display") { navigation.navigate(Routes.DISPLAY_SETTINGS_SCREEN) }
@@ -56,6 +65,47 @@ fun SettingsScreen(navigation: NavController) {
             Spacer(modifier = Modifier.height(50.dp))
             DeleteButton()
         }
+    }
+}
+
+@Composable
+fun PageName(text: String) {
+    Text(
+        text = text,
+        color = Color.Black,
+        fontSize = 20.sp,
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun SaveOption(isModified: Boolean, onClick: () -> Unit) {
+
+    if (isModified) {
+        //Spacer(modifier = androidx.compose.ui.Modifier.weight(1f))
+        TextButton(
+            onClick = { onClick() }
+        ) {
+            Text(text = "Save",
+                color = DarkBlue)
+        }
+    }
+
+}
+
+@Composable
+fun BackIcon(onClick: () -> Unit) {
+    IconButton(
+        onClick = { onClick() }, // Replace "home" with your destination route
+        modifier = Modifier
+        //.padding(start = 16.dp)
+        //.clickable { navController.navigate("home") } // Clickable modifier for the IconButton
+    ) {
+        Icon(
+            Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
+            //modifier = Modifier.padding(start = 16.dp),
+            tint = DarkBlue
+        )
     }
 }
 
