@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
 import com.foxden.fitnessapp.ui.theme.DarkBlue
@@ -48,7 +49,9 @@ fun SettingsScreen(navigation: NavController) {
         bottomBar = { NavBar(navigation = navigation) }
     ) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             RowOption("Profile") { navigation.navigate(Routes.PROFILE_SETTINGS_SCREEN) }
@@ -149,7 +152,7 @@ fun PushNotifOption() {
 
 @Composable
 fun GPSOption() {
-    var checkedState by remember { mutableStateOf(false) }
+    var checkedState by rememberSaveable { mutableStateOf(false) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
 
@@ -169,7 +172,9 @@ fun GPSOption() {
 fun RowOption(text: String, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { onClick() }.padding(vertical = 16.dp)
+        modifier = Modifier
+            .clickable { onClick() }
+            .padding(vertical = 16.dp)
     ) {
         Text(
             text = text, color = Color.Black,
