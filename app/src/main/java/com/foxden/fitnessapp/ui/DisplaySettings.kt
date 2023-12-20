@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -54,6 +53,13 @@ fun DisplaySettings(navigation: NavController) {
         val dataStoreManager = SettingsDataStoreManager(context)
         //used for saving the data to datastore
         val triggerSave = remember { mutableStateOf(false) }
+        val saveSwitch = remember { mutableStateOf(false) }
+
+
+    //Switch options:
+        var animationsSwitch by rememberSaveable { mutableStateOf(false) }
+        var CalorieSwitch by rememberSaveable { mutableStateOf(false) }
+        var DarkmodeSwitch by rememberSaveable { mutableStateOf(false) }
 
     //Dropdown options:
 
@@ -75,6 +81,13 @@ fun DisplaySettings(navigation: NavController) {
     //ensures data is only retrieved once per creation
     LaunchedEffect(Unit) {
         GetData(dataStoreManager,
+            onAnimationOptionLoaded = { loadedAnimations ->
+                animationsSwitch = loadedAnimations},
+            onCalorieOptionLoaded = { loadedCalorie ->
+                CalorieSwitch = loadedCalorie},
+            onDarkmodeOptionLoaded = { loadedDarkmode ->
+                DarkmodeSwitch = loadedDarkmode},
+
             onCharacterLoaded = { loadedCharacter ->
                 currentCharacter = loadedCharacter
             },
@@ -92,7 +105,15 @@ fun DisplaySettings(navigation: NavController) {
             }
         )
     }
+    LaunchedEffect(saveSwitch.value) {
+        if (saveSwitch.value) {
+            dataStoreManager.saveSwitchSetting("AnimationsKey", animationsSwitch)
+            dataStoreManager.saveSwitchSetting("CalorieKey", CalorieSwitch)
+            dataStoreManager.saveSwitchSetting("DarkmodeKey", DarkmodeSwitch)
 
+            saveSwitch.value = false
+        }
+    }
 
     Scaffold (
         topBar = {
@@ -143,9 +164,30 @@ fun DisplaySettings(navigation: NavController) {
         ) {
 
             //Switches:
-                AnimationsOption()
-                CalorieOption()
-                DarkModeOption()
+            SettingSwitch(
+                label = "Animations",
+                isChecked = animationsSwitch,
+                onCheckedChange = { newValue ->
+                    animationsSwitch = newValue
+                    saveSwitch.value = true
+                }
+            )
+            SettingSwitch(
+                label = "Calorie/Nutrition Tracking",
+                isChecked = CalorieSwitch,
+                onCheckedChange = { newValue ->
+                    CalorieSwitch = newValue
+                    saveSwitch.value = true
+                }
+            )
+            SettingSwitch(
+                label = "Dark mode",
+                isChecked = DarkmodeSwitch,
+                onCheckedChange = { newValue ->
+                    DarkmodeSwitch = newValue
+                    saveSwitch.value = true
+                }
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -197,12 +239,22 @@ fun DisplaySettings(navigation: NavController) {
 //Used to retrieve stored data
 suspend fun GetData (
     dataStoreManager: SettingsDataStoreManager,
+    onAnimationOptionLoaded: (Boolean) -> Unit,
+    onCalorieOptionLoaded: (Boolean) -> Unit,
+    onDarkmodeOptionLoaded: (Boolean) -> Unit,
     onCharacterLoaded: (String) -> Unit,
     onDistanceUnitLoaded: (String) -> Unit,
     onWeightUnitLoaded: (String) -> Unit,
     onCalorieUnitLoaded: (String) -> Unit,
     onHeightUnitLoaded: (String) -> Unit
 ){
+    val animationsSwitch = dataStoreManager.getSwitchSetting("AnimationsKey", true).first()
+    onAnimationOptionLoaded(animationsSwitch)
+    val calorieSwitch = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
+    onCalorieOptionLoaded(calorieSwitch)
+    val darkmodeSwitch = dataStoreManager.getSwitchSetting("DarkmodeKey", false).first()
+    onDarkmodeOptionLoaded(darkmodeSwitch)
+
     val character = dataStoreManager.getStringSetting("CharacterKey", "Fox").first()
     onCharacterLoaded(character)
     val distanceUnit = dataStoreManager.getStringSetting("DistanceUnitKey", "Miles").first()
@@ -216,58 +268,20 @@ suspend fun GetData (
 
 }
 
-
 @Composable
-fun AnimationsOption() {
-    var checkedState by remember { mutableStateOf(true) }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            //.padding( vertical = 5.dp)
-    ) {
-        Text(
-            text = "Animations", color = Color.Black, fontSize = 16.sp,
-            modifier = Modifier.weight(1f))
-        Switch(checked = checkedState, onCheckedChange = { checkedState = it })
-    }
-}
-@Preview
-@Composable
-fun CalorieOption() {
-    var checkedState by remember { mutableStateOf(true) }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-        //.padding( vertical = 5.dp)
-    ) {
-        Text(
-            text = "Calorie/Nutrition Tracking",
-            color = Color.Black, fontSize = 16.sp,
-            modifier = Modifier.weight(1f))
-        Switch(
-            checked = checkedState,
-            onCheckedChange = { checkedState = it }
-        )
+fun SettingSwitch(
+    label: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, modifier = Modifier.weight(1f))
+        Switch(checked = isChecked, onCheckedChange = onCheckedChange)
     }
 }
 
-@Composable
-fun DarkModeOption() {
-    var checkedState by remember { mutableStateOf(false) }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-        //.padding( vertical = 5.dp)
-    ) {
-        Text(
-            text = "Dark mode", color = Color.Black, fontSize = 16.sp,
-            modifier = Modifier.weight(1f))
-        Switch(checked = checkedState, onCheckedChange = { checkedState = it })
-    }
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
