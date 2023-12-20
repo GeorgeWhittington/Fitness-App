@@ -14,15 +14,12 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import com.foxden.fitnessapp.data.SettingsDataStoreManager
 
 private val DarkColorScheme = darkColorScheme(
     primary = DarkBlue,
     secondary = MidBlue,
     tertiary = Orange,
-    background = LightBlue,
+    background = DarkBlue,
     onTertiary = Yellow
 )
 
@@ -34,9 +31,7 @@ private val LightColorScheme = lightColorScheme(
 
 )
 
-class ThemeViewModel(private val dataStoreManager: SettingsDataStoreManager) : ViewModel() {
-    val checkDarkmode: LiveData<Boolean> = dataStoreManager.checkDarkmode
-}
+
 
 @Composable
 fun FitnessAppTheme(

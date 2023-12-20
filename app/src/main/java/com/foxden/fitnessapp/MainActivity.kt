@@ -8,20 +8,22 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.lifecycle.Observer
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.ActivityJournalScreen
 import com.foxden.fitnessapp.ui.ActivityRecordingScreen
 import com.foxden.fitnessapp.ui.AddManualActivityScreen
 import com.foxden.fitnessapp.ui.DBTestScreen
-import com.foxden.fitnessapp.ui.HomeScreen
-import com.foxden.fitnessapp.ui.SettingsScreen
-import com.foxden.fitnessapp.ui.NutritionTrackingScreen
-import com.foxden.fitnessapp.ui.ProfileSettings
 import com.foxden.fitnessapp.ui.DisplaySettings
 import com.foxden.fitnessapp.ui.GoalsSettings
+import com.foxden.fitnessapp.ui.HomeScreen
+import com.foxden.fitnessapp.ui.NutritionTrackingScreen
+import com.foxden.fitnessapp.ui.ProfileSettings
+import com.foxden.fitnessapp.ui.SettingsScreen
 import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 import com.foxden.fitnessapp.utils.LocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,87 +53,92 @@ class MainActivity : ComponentActivity() {
         val locationViewModel: LocationViewModel by viewModels()
         val db = DBHelper(this)
 
-        setContent {
-            val navController = rememberNavController()
+        //theme
+            val settingsDataStoreManager = SettingsDataStoreManager(context = this)
+            val darkModeLiveData = settingsDataStoreManager.checkDarkmode
+        darkModeLiveData.observe(this, Observer { isDarkMode ->
+            setContent {
+                val navController = rememberNavController()
 
-            FitnessAppTheme {
-                NavHost(navController = navController, startDestination = Routes.HOME_SCREEN) {
-                    composable(
-                        Routes.HOME_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        HomeScreen(navController, application)
-                    }
-                    composable(
-                        Routes.ACTIVITY_JOURNAL_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        ActivityJournalScreen(navController)
-                    }
+                FitnessAppTheme(darkTheme = isDarkMode) {
+                    NavHost(navController = navController, startDestination = Routes.HOME_SCREEN) {
+                        composable(
+                            Routes.HOME_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            HomeScreen(navController, application)
+                        }
+                        composable(
+                            Routes.ACTIVITY_JOURNAL_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            ActivityJournalScreen(navController)
+                        }
 
-                    composable(
-                        Routes.ADD_ACTIVITY_FORM_SCREEN,
-                        enterTransition = {EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        AddManualActivityScreen(navController)
-                    }
+                        composable(
+                            Routes.ADD_ACTIVITY_FORM_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            AddManualActivityScreen(navController)
+                        }
 
-                    composable(
-                        Routes.ACTIVITY_RECORDING_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        ActivityRecordingScreen(navController, locationViewModel)
-                    }
-                    composable(
-                        Routes.NUTRITION_TRACKING_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        NutritionTrackingScreen(navController)
-                    }
-                    composable(
-                        Routes.SETTINGS_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        SettingsScreen(navController)
-                    }
+                        composable(
+                            Routes.ACTIVITY_RECORDING_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            ActivityRecordingScreen(navController, locationViewModel)
+                        }
+                        composable(
+                            Routes.NUTRITION_TRACKING_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            NutritionTrackingScreen(navController)
+                        }
+                        composable(
+                            Routes.SETTINGS_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            SettingsScreen(navController)
+                        }
 
-                    composable(
-                        Routes.PROFILE_SETTINGS_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        ProfileSettings(navigation = navController)
-                    }
-                    composable(
-                        Routes.DISPLAY_SETTINGS_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        DisplaySettings(navigation = navController)
-                    }
-                    composable(
-                        Routes.GOALS_SETTINGS_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        GoalsSettings(navigation = navController)
-                    }
+                        composable(
+                            Routes.PROFILE_SETTINGS_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            ProfileSettings(navigation = navController)
+                        }
+                        composable(
+                            Routes.DISPLAY_SETTINGS_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            DisplaySettings(navigation = navController)
+                        }
+                        composable(
+                            Routes.GOALS_SETTINGS_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            GoalsSettings(navigation = navController)
+                        }
 
-                    composable(
-                        Routes.DBTEST_SCREEN,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None }
-                    ) {
-                        DBTestScreen(navController, db)
+                        composable(
+                            Routes.DBTEST_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            DBTestScreen(navController, db)
+                        }
                     }
                 }
             }
-        }
+        })
     }
 }
