@@ -53,8 +53,9 @@ class MainActivity : ComponentActivity() {
         val locationViewModel: LocationViewModel by viewModels()
         val db = DBHelper(this)
 
-        //theme
+        //datastore
             val settingsDataStoreManager = SettingsDataStoreManager(context = this)
+        //theme
             val darkModeLiveData = settingsDataStoreManager.checkDarkmode
         darkModeLiveData.observe(this, Observer { isDarkMode ->
             setContent {

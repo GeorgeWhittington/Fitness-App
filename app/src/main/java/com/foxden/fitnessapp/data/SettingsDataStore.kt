@@ -55,6 +55,14 @@ class SettingsDataStoreManager(private val context: Context) {
             }
     }
 
+    val checkCalorieOption: LiveData<Boolean> = liveData {
+        emitSource(context.dataStore.data
+            .map { preferences ->
+                preferences[booleanPreferencesKey("CalorieKey")] ?: true
+            }
+            .asLiveData())
+    }
+
     val checkDarkmode: LiveData<Boolean> = liveData {
         emitSource(context.dataStore.data
             .map { preferences ->

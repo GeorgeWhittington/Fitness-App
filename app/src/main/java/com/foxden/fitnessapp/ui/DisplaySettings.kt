@@ -38,6 +38,7 @@ import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.NavBar
+import com.foxden.fitnessapp.ui.theme.MidBlue
 import kotlinx.coroutines.flow.first
 
 
@@ -139,7 +140,7 @@ fun DisplaySettings(navigation: NavController) {
                             triggerSave.value = false
                         }
                     }},
-                backgroundColor = Color.White,
+                backgroundColor = MidBlue,
                 modifier = Modifier.height(56.dp)
             )
             Box(

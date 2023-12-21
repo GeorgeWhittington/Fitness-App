@@ -1,43 +1,42 @@
 package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
-import com.foxden.fitnessapp.ui.components.NavBar
-import com.foxden.fitnessapp.Routes
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.outlined.ArrowForwardIos
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Switch
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ChevronLeft
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.DarkBlue
 
 
@@ -75,7 +74,6 @@ fun SettingsScreen(navigation: NavController) {
 fun PageName(text: String) {
     Text(
         text = text,
-        color = Color.Black,
         fontSize = 20.sp,
         textAlign = TextAlign.Center
     )
@@ -130,10 +128,10 @@ fun DeleteButton(){
 @Composable
 fun RowDivider(
     height: Int = 1,
-    color: Color = Color.Gray,
+
     modifier: Modifier = Modifier
 ) {
-    Divider(modifier = modifier.fillMaxWidth(), color = color)
+    Divider(modifier = modifier.fillMaxWidth())
 }
 
 
@@ -144,7 +142,7 @@ fun PushNotifOption() {
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
-            text = "Push notifications", color = Color.Black,
+            text = "Push notifications",
             fontSize = 16.sp, modifier = Modifier.weight(1f))
         Switch(checked = checkedState, onCheckedChange = { checkedState = it })
     }
@@ -158,7 +156,7 @@ fun GPSOption() {
 
         ) {
         Text(
-            text = "GPS tracking", color = Color.Black,
+            text = "GPS tracking",
             fontSize = 16.sp, modifier = Modifier.weight(1f)
         )
         Switch(
@@ -177,7 +175,7 @@ fun RowOption(text: String, onClick: () -> Unit) {
             .padding(vertical = 16.dp)
     ) {
         Text(
-            text = text, color = Color.Black,
+            text = text,
             fontSize = 16.sp, modifier = Modifier.weight(1f)
         )
 
