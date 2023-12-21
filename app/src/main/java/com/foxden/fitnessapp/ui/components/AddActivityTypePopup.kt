@@ -82,73 +82,23 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-// TODO: Should be in a constants file somewhere
-val iconOptions: Map<String, ImageVector> = mapOf<String, ImageVector>(
-    Pair("DirectionsBoat", Icons.Outlined.DirectionsBoat),
-    Pair("FitnessCenter", Icons.Outlined.FitnessCenter),
-    Pair("DirectionsRun", Icons.Outlined.DirectionsRun),
-    Pair("DirectionsWalk", Icons.Outlined.DirectionsWalk),
-    Pair("DirectionsBike", Icons.Outlined.DirectionsBike),
-    Pair("Hiking", Icons.Outlined.Hiking),
-    Pair("Pool", Icons.Outlined.Pool),
-    Pair("Pets", Icons.Outlined.Pets),
-    Pair("Flight", Icons.Outlined.Flight),
-    Pair("AccessibleForward", Icons.Outlined.AccessibleForward),
-    Pair("Anchor", Icons.Outlined.Anchor),
-    Pair("Rowing", Icons.Outlined.Rowing),
-    Pair("SelfImprovement", Icons.Outlined.SelfImprovement),
-    Pair("SportsSoccer", Icons.Outlined.SportsSoccer),
-    Pair("EmojiNature", Icons.Outlined.EmojiNature),
-    Pair("SportsBasketball", Icons.Outlined.SportsBasketball),
-    Pair("SportsKabaddi", Icons.Outlined.SportsKabaddi),
-    Pair("Sports", Icons.Outlined.Sports),
-    Pair("SportsTennis", Icons.Outlined.SportsTennis),
-    Pair("Surfing", Icons.Outlined.Surfing),
-    Pair("SportsMotorsports", Icons.Outlined.SportsMotorsports),
-    Pair("SportsHandball", Icons.Outlined.SportsHandball),
-    Pair("SportsBaseball", Icons.Outlined.SportsBaseball),
-    Pair("SportsVolleyball", Icons.Outlined.SportsVolleyball),
-    Pair("SportsFootball", Icons.Outlined.SportsFootball),
-    Pair("DownhillSkiing", Icons.Outlined.DownhillSkiing),
-    Pair("Kayaking", Icons.Outlined.Kayaking),
-    Pair("Skateboarding", Icons.Outlined.Skateboarding),
-    Pair("SportsCricket", Icons.Outlined.SportsCricket),
-    Pair("SportsMartialArts", Icons.Outlined.SportsMartialArts),
-    Pair("NordicWalking", Icons.Outlined.NordicWalking),
-    Pair("SportsGolf", Icons.Outlined.SportsGolf),
-    Pair("Paragliding", Icons.Outlined.Paragliding),
-    Pair("Snowboarding", Icons.Outlined.Snowboarding),
-    Pair("SportsGymnastics", Icons.Outlined.SportsGymnastics),
-    Pair("Kitesurfing", Icons.Outlined.Kitesurfing),
-    Pair("Snowshoeing", Icons.Outlined.Snowshoeing),
-    Pair("SportsHockey", Icons.Outlined.SportsHockey),
-    Pair("IceSkating", Icons.Outlined.IceSkating),
-    Pair("SportsRugby", Icons.Outlined.SportsRugby),
-    Pair("Sledding", Icons.Outlined.Sledding),
-    Pair("ScubaDiving", Icons.Outlined.ScubaDiving),
-    Pair("RollerSkating", Icons.Outlined.RollerSkating),
-    Pair("Park", Icons.Outlined.Park),
-    Pair("Sailing", Icons.Outlined.Sailing),
-    Pair("ElectricBike", Icons.Outlined.ElectricBike),
-    Pair("SportsScore", Icons.Outlined.SportsScore),
-    Pair("Water", Icons.Outlined.Water),
-    Pair("Spa", Icons.Outlined.Spa),
-    Pair("BeachAccess", Icons.Outlined.BeachAccess),
-    Pair("GolfCourse", Icons.Outlined.GolfCourse)
-)
+import com.foxden.fitnessapp.data.ActivityLog
+import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.ActivityTypeDAO
+import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.data.DBHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit) {
+fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit, dbHelper: DBHelper) {
     var activityName by remember { mutableStateOf("") }
-    var selectedIcon: String? by remember { mutableStateOf(null) }
+    var selectedIcon: Int? by remember { mutableStateOf(0) }
     var gpsTracking by remember { mutableStateOf(true) }
     var setTracking by remember { mutableStateOf(false) }
 
     var gpsTrackingSwitchEnabled by remember { mutableStateOf(true) }
     var setTrackingSwitchEnabled by remember { mutableStateOf(false) }
-    val selectedIconVector = iconOptions[selectedIcon]
+    val selectedIconVector = Constants.ActivityIcons.values()[selectedIcon!!]
     var iconDropdownExpanded by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -167,7 +117,7 @@ fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit) {
                 ) {
                     var leadingIcon: (@Composable () -> Unit)? = null
                     if (selectedIcon != null)
-                        leadingIcon = @Composable { Icon(selectedIconVector!!, selectedIcon) }
+                        leadingIcon = @Composable { Icon(selectedIconVector.image, selectedIconVector.name) }
 
                     var placeholder: (@Composable () -> Unit)? = @Composable { Text("Select an icon") }
                     if (selectedIcon != null)
@@ -182,18 +132,18 @@ fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit) {
                         expanded = iconDropdownExpanded,
                         onDismissRequest = { iconDropdownExpanded = false }
                     ) {
-                        iconOptions.forEach {iconOption ->
+                        Constants.ActivityIcons.values().forEach {iconOption ->
                             DropdownMenuItem(
                                 text = {
                                     Box (
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Icon(iconOption.value, iconOption.key)
+                                        Icon(iconOption.image, iconOption.name)
                                     }
                                },
                                 onClick = {
-                                    selectedIcon = iconOption.key
+                                    selectedIcon = iconOption.ordinal
                                     iconDropdownExpanded = false
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -261,14 +211,14 @@ fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit) {
                 // verify input
                 if (activityName.isEmpty()) {
                     onError("Your new activity must have a name")
-                } else if (selectedIcon == null || !iconOptions.containsKey(selectedIcon)) {
+                } else if (selectedIcon == null) {
                     onError("You must select an icon for your new activity")
                 } else if (gpsTracking && setTracking) {
                     // This should never happen
                     Log.e("FIT", "GPS Tracking and Set tracking settings selected at the same time")
                     onError("ERROR: GPS tracking and set tracking are incompatible")
                 } else {
-                    addActivity(activityName, selectedIcon!!, gpsTracking, setTracking)
+                    addActivity(activityName, selectedIcon!!, gpsTracking, setTracking, dbHelper)
                     onDismiss()
                 }
             }) {
@@ -292,22 +242,34 @@ fun AddActivityTypeErrorDialog(errorMessage: String, onDismiss: () -> Unit) {
     )
 }
 
-fun addActivity(name: String, icon: String, gpsTracking: Boolean, setTracking: Boolean) {
-    Log.d("FIT", "new activity type: name=${name}, icon=${icon}, gpsTracking=${gpsTracking}, setTracking=${setTracking}")
-    // TODO: add to db
+fun addActivity(name: String, icon: Int, gpsTracking: Boolean, setTracking: Boolean, dbHelper: DBHelper) {
+    val at = ActivityType()
+
+    at.name = name;
+    at.gpsEnabled = gpsTracking
+    at.iconId = icon
+    at.setsEnabled = setTracking
+
+    if (!ActivityTypeDAO.insert(db = dbHelper.writableDatabase, at)) {
+        Log.d("FIT", "Failed to insert into database.")
+    } else {
+        Log.d("FIT", "Inserted Successfully!")
+    }
 }
 
 @Composable
 @Preview
-fun PreviewAddActivityTypePopup() {
+fun PreviewAddActivityTypePopup(dbHelper: DBHelper) {
     var showDialog by remember { mutableStateOf(true) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
+    /*
     if (showDialog)
         AddActivityTypeDialog(
             onDismiss = {showDialog = false},
-            onError = {showDialog = false; errorMessage = it; showErrorDialog = true})
+            onError = {showDialog = false; errorMessage = it; showErrorDialog = true}, null)
+    */
 
     if (showErrorDialog)
         AddActivityTypeErrorDialog(errorMessage = errorMessage, onDismiss = { showErrorDialog = false })

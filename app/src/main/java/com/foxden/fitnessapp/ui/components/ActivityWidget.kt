@@ -1,5 +1,7 @@
 package com.foxden.fitnessapp.ui.components
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,8 +22,9 @@ import androidx.compose.material.icons.outlined.DirectionsWalk
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,7 +38,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.foxden.fitnessapp.R
+import com.foxden.fitnessapp.data.ActivityLog
+import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.ui.theme.MidBlue
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
 
 class SlideshowImage(val image: Painter, val imageDescription: String?)
 
@@ -51,13 +63,21 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
         )
         ImageSteppers(
             numImages = numImages + 1, selectedImage = imageIndex,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 5.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 5.dp)
         )
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ActivityWidget() {
+fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
+
+    var startDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())) }
+    var endDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())) }
+    var duration: Duration? by remember { mutableStateOf(Duration.between(startDT, endDT)) }
+
     val images = listOf(
         SlideshowImage(painterResource(R.drawable.hiking_route), "map showing route taken"),
         SlideshowImage(painterResource(R.drawable.hiking_picture), null),
@@ -82,22 +102,23 @@ fun ActivityWidget() {
             Column {
                 Row {
                     Icon(
-                        Icons.Outlined.DirectionsWalk, contentDescription = "Person Walking",
+                        Constants.ActivityIcons.values()[activityType.iconId].image, contentDescription = activityType.name,
                         modifier = Modifier.size(20.dp))
-                    Text(text = "Afternoon Hike", fontSize = 16.sp)
+                    Text(text = activityType.name, fontSize = 16.sp)
                 }
                 Spacer(modifier = Modifier.size(5.dp))
                 Row {
                     Column {
                         Text(text = "Distance", fontSize = 12.sp)
-                        Text(text = "8.01km", fontSize = 12.sp,
+                        Text(text = "${log.distance} km", fontSize = 12.sp,
                             color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
                         Text(text = "Time", fontSize = 12.sp)
-                        Text(text = "1h 55m", fontSize = 12.sp,
+                        // TODO: split into hours an minutes
+                        Text(text = "${duration?.toMinutes()} min", fontSize = 12.sp,
                             color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
@@ -105,13 +126,14 @@ fun ActivityWidget() {
                     Column {
                         Text(text = "Calories", fontSize = 12.sp)
                         Text(
-                            text = "1200", fontSize = 12.sp,
+                            text = "${log.calories}", fontSize = 12.sp,
                             color = MidBlue,
                             fontWeight = FontWeight(700))
                     }
                 }
             }
-            Text(text = "Today at 11:45 AM", fontSize = 10.sp)
+
+            Text(text = "${startDT?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))}", fontSize = 10.sp)
         }
     }
 }
@@ -120,7 +142,7 @@ fun ActivityWidget() {
 @Composable
 fun PreviewActivityWidget() {
     Column (modifier = Modifier.width(310.dp)) {
-        ActivityWidget()
+        ActivityWidget(ActivityLog(), ActivityType())
     }
 
 }
