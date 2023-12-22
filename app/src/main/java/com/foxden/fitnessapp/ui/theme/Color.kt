@@ -15,9 +15,8 @@ val MidBlue = Color(0xFF40759C)
 val LightBlue = Color(0xFF86BBD8)
 val Yellow = Color(0xFFF6AE2D)
 val Orange = Color(0xFFF26419)
-//val White = Color(0xFFFFFFFF)
+val White = Color(0xFFFFFFFF)
 //val Black = Color(0xFF000000)
-
 
 
 

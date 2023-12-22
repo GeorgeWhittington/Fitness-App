@@ -16,10 +16,12 @@ import androidx.compose.material.icons.outlined.RadioButtonChecked
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -29,6 +31,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.theme.LightBlue
 import com.foxden.fitnessapp.ui.theme.MidBlue
 
@@ -45,13 +48,7 @@ sealed class Screen(val route: String, val icon: ImageVector, val contentDesc: S
 }
 
 // TODO: Exclude nutrition tracking from this list based on settings!
-val navItems = listOf(
-    Screen.Home,
-    Screen.ActivityJournal,
-    Screen.ActivityRecording,
-    Screen.NutritionTracking,
-    Screen.Settings
-)
+
 
 @Composable
 fun NavIconButton(navigation: NavController, currentDestination: NavDestination?, screen: Screen) {
@@ -90,6 +87,29 @@ fun NavBar(navigation: NavController) {
     val navBackStackEntry by navigation.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
+    val showCalorieOption = dataStoreManager.getSwitchSetting("CalorieKey", true)
+        .collectAsState(initial = true)
+
+
+
+    val navItems = if (showCalorieOption.value) {
+        listOf(
+            Screen.Home,
+            Screen.ActivityJournal,
+            Screen.ActivityRecording,
+            Screen.NutritionTracking,
+            Screen.Settings
+        )
+    } else {
+        listOf(
+            Screen.Home,
+            Screen.ActivityJournal,
+            Screen.ActivityRecording,
+            Screen.Settings
+        )
+    }
     BottomAppBar (
         backgroundColor = MidBlue,
         modifier = Modifier.height(50.dp)
