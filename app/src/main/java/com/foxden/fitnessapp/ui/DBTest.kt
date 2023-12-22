@@ -22,12 +22,10 @@ fun DBTestScreen(navigation: NavController, dbHelper: DBHelper) {
     var activityList = remember { mutableStateListOf<ActivityLog>() }
     loadData(activityList, dbHelper)
 
-
-
     Column {
         Button(onClick = {
             val a = ActivityLog()
-            a.name = "Test Name"
+            a.title = "Test Name"
             ActivityLogDAO.insert(dbHelper.writableDatabase, a)
             loadData(activityList, dbHelper)
         }) {
@@ -42,7 +40,7 @@ fun DBTestScreen(navigation: NavController, dbHelper: DBHelper) {
 
         Column {
             for (a in activityList) {
-                Text("Activity - id: ${a.id} title: ${a.name}")
+                Text("Activity - id: ${a.id} title: ${a.title}")
             }
         }
 

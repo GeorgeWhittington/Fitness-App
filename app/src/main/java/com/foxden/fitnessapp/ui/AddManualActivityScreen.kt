@@ -3,6 +3,7 @@ package com.foxden.fitnessapp.ui
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -62,6 +63,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +78,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.ui.components.ImageSteppers
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Orange
@@ -84,12 +88,16 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import com.foxden.fitnessapp.data.ActivityLog
+import com.foxden.fitnessapp.data.ActivityLogDAO
+import com.foxden.fitnessapp.data.ActivityTypeDAO
+import com.foxden.fitnessapp.data.DBHelper
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddManualActivityScreen(navigation: NavController) {
+fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     // form data
     var title by remember { mutableStateOf("") }
     var activityType: ActivityType? by remember { mutableStateOf(null) }
@@ -98,6 +106,9 @@ fun AddManualActivityScreen(navigation: NavController) {
     var duration: Pair<Int?, Int?>? by remember { mutableStateOf(null) }
     var distance: String by remember { mutableStateOf("") }
     val imageURIs: MutableList<Uri> = remember { mutableStateListOf() }
+    var activityTypeList = remember {
+        ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
 
     // other state
     var activityTypeExpanded by remember { mutableStateOf(false) }
@@ -215,7 +226,7 @@ fun AddManualActivityScreen(navigation: NavController) {
             ) {
                 var leadingIcon: (@Composable () -> Unit)? = null
                 if (activityType != null)
-                    leadingIcon = @Composable { Icon(activityType!!.icon, activityType!!.name) }
+                    leadingIcon = @Composable { Icon(Constants.ActivityIcons.values()[activityType!!.iconId].image, activityType!!.name) }
 
                 OutlinedTextField(
                     modifier = Modifier
@@ -230,12 +241,13 @@ fun AddManualActivityScreen(navigation: NavController) {
                     expanded = activityTypeExpanded,
                     onDismissRequest = { activityTypeExpanded = false }
                 ) {
-                    activities.forEach {
+
+                    activityTypeList.forEach {
                         DropdownMenuItem(
                             text = {
                                 Row {
-                                    if (it.icon != null) {
-                                        Icon(it.icon, it.name)
+                                    if (it.id != null) {
+                                        Icon(Constants.ActivityIcons.values()[it.iconId].image, it.name)
                                         Spacer(modifier = Modifier.width(5.dp))
                                     }
                                     Text(it.name)
@@ -245,6 +257,7 @@ fun AddManualActivityScreen(navigation: NavController) {
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                         )
                     }
+
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -450,7 +463,32 @@ fun AddManualActivityScreen(navigation: NavController) {
             }
 
             // Add Activity
-            Button(onClick = { /* TODO - verify activity and add to db */ }) {
+            Button(onClick = {
+
+                // TODO: validation
+
+                var d1 = duration!!.second?.times(60)
+                    ?.let { duration!!.first?.times(3600)?.plus(it)  }
+
+
+                // Add to database
+                var log = ActivityLog(
+                    title=title,
+                    activityTypeId = activityType!!.id,
+                    notes = notes,
+                    startTime = datetime!!.toEpochSecond(),
+                    duration = d1 as Int,
+                    distance = distance.toFloat()
+                )
+
+                if (!ActivityLogDAO.insert(dbHelper.writableDatabase, log)) {
+                    Log.d("FIT", "Failed to insert activity log into the database")
+                } else {
+                    Log.d("FIT", "Inserted activity into the database!")
+                }
+
+
+            }) {
                 Text("Add Activity")
             }
         }}
@@ -564,5 +602,5 @@ fun FullscreenImageDialog(onDismiss: () -> Unit, imageURI: Uri, contentDescripti
 @Preview
 fun PreviewAddManualActivityScreen() {
     val navController = rememberNavController()
-    AddManualActivityScreen(navController)
+    //AddManualActivityScreen(navController)
 }

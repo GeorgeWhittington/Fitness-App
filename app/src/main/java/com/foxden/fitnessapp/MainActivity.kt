@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None }
                     ) {
-                        ActivityJournalScreen(navController)
+                        ActivityJournalScreen(navController, db)
                     }
 
                     composable(
@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                         enterTransition = {EnterTransition.None },
                         exitTransition = { ExitTransition.None }
                     ) {
-                        AddManualActivityScreen(navController)
+                        AddManualActivityScreen(navController, db)
                     }
 
                     composable(
@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None }
                     ) {
-                        ActivityRecordingScreen(navController, locationViewModel)
+                        ActivityRecordingScreen(navController, locationViewModel, db)
                     }
                     composable(
                         Routes.NUTRITION_TRACKING_SCREEN,

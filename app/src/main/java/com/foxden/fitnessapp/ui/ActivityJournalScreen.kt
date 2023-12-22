@@ -34,9 +34,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -47,6 +49,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.Routes.ADD_ACTIVITY_FORM_SCREEN
+import com.foxden.fitnessapp.data.ActivityLog
+import com.foxden.fitnessapp.data.ActivityLogDAO
+import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.ActivityTypeDAO
+import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.DarkBlue
@@ -55,8 +62,18 @@ import com.foxden.fitnessapp.ui.theme.LightBlue
 class DropdownOption(val text: String, val icon: ImageVector? = null)
 
 @Composable
-fun ActivityJournalScreen(navigation: NavController) {
+fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
     var showSheet by remember { mutableStateOf(false) }
+
+    var activityLogs = remember { mutableStateListOf<ActivityLog>() }
+    activityLogs.clear()
+    for (a in ActivityLogDAO.fetchAll(dbHelper.readableDatabase)) {
+        activityLogs.add(a)
+    }
+
+    var activityTypeList = remember {
+        ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
 
     if (showSheet) {
         BottomSheet() {
@@ -106,26 +123,12 @@ fun ActivityJournalScreen(navigation: NavController) {
                     }
                 }
 
-                // TODO: Make this a LazyColumn when data is read in from db!
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
-                    ActivityWidget()
-                    Spacer(modifier = Modifier.size(10.dp))
+
+                    for (log in activityLogs) {
+                        ActivityWidget(log, activityTypeList.filter{ it.id ==  log.activityTypeId}.first())
+                        Spacer(modifier = Modifier.size(10.dp))
+                    }
                 }
             }
         }
@@ -236,6 +239,6 @@ fun BottomSheet(onDismiss: () -> Unit) {
 @Preview
 @Composable
 fun PreviewActivityJournal() {
-    val navController = rememberNavController()
-    ActivityJournalScreen(navigation = navController)
+    //val navController = rememberNavController()
+    //ActivityJournalScreen(navigation = navController)
 }
