@@ -42,17 +42,23 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.foxden.fitnessapp.ui.ActivityType
-import com.foxden.fitnessapp.ui.activities
+import com.foxden.fitnessapp.data.ActivityLog
+import com.foxden.fitnessapp.data.ActivityLogDAO
+import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.ActivityTypeDAO
+import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.theme.LightBlue
 import com.foxden.fitnessapp.utils.DrawScrollableView
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (ActivityType?) -> Unit) {
+fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (ActivityType?) -> Unit, activityList: List<ActivityType>) {
     var searching by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+
+
 
     var containerModifier = Modifier
         .fillMaxWidth()
@@ -86,7 +92,7 @@ fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (Acti
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = {
-                setSelectedActivity(activities.firstOrNull { it.name == searchQuery } ?: selectedActivity)
+                setSelectedActivity(activityList.firstOrNull { it.name == searchQuery } ?: selectedActivity)
                 searchQuery = ""
                 focusManager.moveFocus(FocusDirection.Exit)
             })
@@ -98,7 +104,7 @@ fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (Acti
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     Column {
-                        activities.filter { it.name.startsWith(searchQuery) }.forEach {
+                        activityList.filter { it.name.startsWith(searchQuery) }.forEach {
                             Spacer(modifier = Modifier.height(10.dp))
                             Row(
                                 modifier = Modifier
@@ -117,7 +123,7 @@ fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (Acti
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Row {
-                                    Icon(it.icon, null)
+                                    Icon(Constants.ActivityIcons.values()[it.iconId].image, null)
                                     Spacer(modifier = Modifier.width(15.dp))
                                     Text(it.name)
                                 }
@@ -134,7 +140,7 @@ fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (Acti
 
         if (!searching) {
             val activitiesSelectedFirst = remember {
-                mutableStateListOf<ActivityType>(activities[0], activities[1], activities[2])
+                mutableStateListOf<ActivityType>(activityList[0], activityList[1], activityList[2])
             }
 
             LaunchedEffect(selectedActivity) {
@@ -142,8 +148,8 @@ fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (Acti
                     return@LaunchedEffect
 
                 activitiesSelectedFirst.clear()
-                activitiesSelectedFirst.add(selectedActivity ?: activities.first())
-                for (activity in activities) {
+                activitiesSelectedFirst.add(selectedActivity ?: activityList.first())
+                for (activity in activityList) {
                     if (activitiesSelectedFirst.contains(activity))
                         continue
 
@@ -172,7 +178,7 @@ fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (Acti
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row {
-                            Icon(it.icon, null)
+                            Icon(Constants.ActivityIcons.values()[it.iconId].image, null)
                             Spacer(modifier = Modifier.width(15.dp))
                             Text(it.name)
                         }
@@ -194,6 +200,9 @@ fun PreviewActivitySelector() {
         .height(400.dp)
         .background(LightBlue)
     ) {
-        ActivitySelector(selectedActivity, setSelectedActivity = { selectedActivity = it })
+        val previewActivities = listOf<ActivityType>(
+            ActivityType(0, "Test1")
+        )
+        ActivitySelector(selectedActivity, setSelectedActivity = { selectedActivity = it }, previewActivities)
     }
 }

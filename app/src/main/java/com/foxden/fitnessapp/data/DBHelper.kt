@@ -3,6 +3,7 @@ package com.foxden.fitnessapp.data
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 
 class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -12,15 +13,22 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
+        Log.e("FITDB", "Creating Database Tables.")
+
         ActivityTypeDAO.onCreate(db)
         ActivityLogDAO.onCreate(db)
         NutritionPresetDAO.onCreate(db)
+
+        ActivityTypeDAO.insert(db, ActivityType(name="Jogging", iconId = Constants.ActivityIcons.DIRECTIONS_RUN.ordinal))
+        ActivityTypeDAO.insert(db, ActivityType(name="Hiking", iconId = Constants.ActivityIcons.HIKING.ordinal))
+        ActivityTypeDAO.insert(db, ActivityType(name="Cycling", iconId = Constants.ActivityIcons.DIRECTIONS_BIKE.ordinal))
+
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        // Drop
-        // onCreate
+
     }
+
 }
 
 class ColumnDesc(colName : String, colType : String, colExtra : String = ""){
@@ -55,6 +63,7 @@ abstract class DAO(tblName: String, tblColumns: List<ColumnDesc>, var tblForeign
         query += ")"
 
         db?.execSQL(query)
+
     }
 }
 

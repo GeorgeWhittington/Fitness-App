@@ -1,15 +1,17 @@
 package com.foxden.fitnessapp.data
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 
-class ActivityType {
-    var id : Int = 0
-    var name : String = "Untitled Activity Type"
-    var iconId : Int = 0
-    var gpsEnabled : Boolean = true
-    var setsEnabled : Boolean = false
-}
+data class ActivityType(
+    var id : Int = 0,
+    var name : String = "Untitled Activity Type",
+    var iconId : Int = 0,
+    var gpsEnabled : Boolean = true,
+    var setsEnabled : Boolean = false,
+)
 
 object ActivityTypeDAO : DAO("activity_type", listOf(
     ColumnDesc("id", "INTEGER", "PRIMARY KEY AUTOINCREMENT"),
@@ -19,13 +21,15 @@ object ActivityTypeDAO : DAO("activity_type", listOf(
     ColumnDesc("sets_enabled", "BOOLEAN")
 )) {
 
+
+    @SuppressLint("Range")
     private fun cursorToObject(cursor: android.database.Cursor) : ActivityType {
         val ret = ActivityType()
-        ret.id = cursor.getInt(0)
-        ret.name = cursor.getString(1)
-        ret.iconId = cursor.getInt(2)
-        ret.gpsEnabled = cursor.getInt(3) == 1
-        ret.setsEnabled = cursor.getInt(4) == 1
+        ret.id = cursor.getInt(cursor.getColumnIndex("id"))
+        ret.name = cursor.getString(cursor.getColumnIndex("name"))
+        ret.iconId = cursor.getInt(cursor.getColumnIndex("icon_id"))
+        ret.gpsEnabled = cursor.getInt(cursor.getColumnIndex("gps_enabled")) == 1
+        ret.setsEnabled = cursor.getInt(cursor.getColumnIndex("sets_enabled")) == 1
         return ret
     }
 
@@ -51,6 +55,7 @@ object ActivityTypeDAO : DAO("activity_type", listOf(
         queryCursor.close()
         return ret
     }
+
     fun insert(db: SQLiteDatabase?, activityType: ActivityType) : Boolean {
         val contentValues = ContentValues()
         contentValues.put(tableColumns[1].name, activityType.name)
@@ -58,7 +63,6 @@ object ActivityTypeDAO : DAO("activity_type", listOf(
         contentValues.put(tableColumns[3].name, activityType.gpsEnabled)
         contentValues.put(tableColumns[4].name, activityType.setsEnabled)
         val result = db?.insert(tableName, null, contentValues)
-        db?.close()
         return (result != (0).toLong())
     }
 }

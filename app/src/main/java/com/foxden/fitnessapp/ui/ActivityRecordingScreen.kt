@@ -41,6 +41,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,6 +59,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.ActivityTypeDAO
+import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.components.ActivitySelector
 import com.foxden.fitnessapp.ui.components.AddActivityTypeDialog
 import com.foxden.fitnessapp.ui.components.NavBar
@@ -80,12 +85,8 @@ import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.rememberCameraPositionState
 
 // Temporary class for dummy data
-class ActivityType(
-    val name: String,
-    val icon: ImageVector,
-    val gpsTracked: Boolean
-)
 
+/*
 val activities = arrayOf(
     ActivityType("Jogging", Icons.Outlined.DirectionsRun, true),
     ActivityType("Hiking", Icons.Outlined.Hiking, true),
@@ -94,11 +95,12 @@ val activities = arrayOf(
     ActivityType("Weightlifting", Icons.Outlined.FitnessCenter, false),
     ActivityType("Swimming", Icons.Outlined.Pool, true)
 )
+*/
 
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Composable
-fun ActivityRecordingScreen(navigation: NavController, locationViewModel: LocationViewModel) {
+fun ActivityRecordingScreen(navigation: NavController, locationViewModel: LocationViewModel, dbHelper: DBHelper) {
     val permissionState = rememberMultiplePermissionsState(permissions = listOf(
         android.Manifest.permission.ACCESS_FINE_LOCATION,
         android.Manifest.permission.ACCESS_COARSE_LOCATION))
@@ -106,14 +108,20 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
     var selectedActivity: ActivityType? by remember { mutableStateOf(null) }
     val focusManager = LocalFocusManager.current
 
+    var activityList = remember { mutableStateListOf<ActivityType>() }
+    activityList.clear()
+    for (a in ActivityTypeDAO.fetchAll(dbHelper.readableDatabase)) {
+        activityList.add(a)
+    }
+
     // TODO: Initial value should be the most commonly used activity type, read from db
     LaunchedEffect(null) {
-        selectedActivity = activities[0]
+        selectedActivity = activityList[0]
     }
 
     // --- location permission logic ---
-    LaunchedEffect(!LocalContext.current.hasLocationPermission() && selectedActivity?.gpsTracked ?: true) {
-        if (selectedActivity?.gpsTracked != false)
+    LaunchedEffect(!LocalContext.current.hasLocationPermission() && selectedActivity?.gpsEnabled ?: true) {
+        if (selectedActivity?.gpsEnabled != false)
             permissionState.launchMultiplePermissionRequest()
     }
 
@@ -138,7 +146,8 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                 showActivityDialog = false
                 activityDialogErrorMessage = it
                 showActivityDialogError = true
-            })
+            },
+            dbHelper)
     }
 
     if (showActivityDialogError) {
@@ -168,7 +177,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
 
                 Spacer(modifier = Modifier.size(15.dp))
 
-                ActivitySelector(selectedActivity, setSelectedActivity = { selectedActivity = it })
+                ActivitySelector(selectedActivity, setSelectedActivity = { selectedActivity = it }, activityList)
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -185,7 +194,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (selectedActivity?.gpsTracked != false) {
+                if (selectedActivity?.gpsEnabled != false) {
                     with(viewState) {
                         when (this) {
                             // TODO: the loading state is only selected if the user has provided
