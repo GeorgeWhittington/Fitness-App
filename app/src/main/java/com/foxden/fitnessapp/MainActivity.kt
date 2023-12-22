@@ -54,9 +54,9 @@ class MainActivity : ComponentActivity() {
         val db = DBHelper(this)
 
         //datastore
-            val settingsDataStoreManager = SettingsDataStoreManager(context = this)
+        val settingsDataStoreManager = SettingsDataStoreManager(context = this)
         //theme
-            val darkModeLiveData = settingsDataStoreManager.checkDarkmode
+        val darkModeLiveData = settingsDataStoreManager.checkDarkmode
         darkModeLiveData.observe(this, Observer { isDarkMode ->
             setContent {
                 val navController = rememberNavController()
@@ -107,8 +107,38 @@ class MainActivity : ComponentActivity() {
                         ) {
                             SettingsScreen(navController)
                         }
-                    }
 
+                        composable(
+                            Routes.PROFILE_SETTINGS_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            ProfileSettings(navigation = navController)
+                        }
+                        composable(
+                            Routes.DISPLAY_SETTINGS_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            DisplaySettings(navigation = navController)
+                        }
+                        composable(
+                            Routes.GOALS_SETTINGS_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            GoalsSettings(navigation = navController, db)
+                        }
+
+                        composable(
+                            Routes.DBTEST_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            DBTestScreen(navController, db)
+                        }
+                    }
+                }
             }
         })
     }

@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +50,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.ActivityTypeDAO
+import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
 
@@ -56,10 +61,9 @@ import com.foxden.fitnessapp.ui.theme.MidBlue
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GoalsSettings(navigation: NavController) {
+fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     var isModified by remember { mutableStateOf(false) }
     val isDialogOpen = remember { mutableStateOf(false) }
-
 
     Scaffold (
         topBar = {
@@ -105,24 +109,22 @@ fun GoalsSettings(navigation: NavController) {
             }
 
             if(isDialogOpen.value){
-                CreateGoalPopup(isDialogOpen)
+                CreateGoalPopup(isDialogOpen, dbHelper)
             }
-
-
-
-
-
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>) {
+fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
 
     var activityType: ActivityType? by remember { mutableStateOf(null) }
     var activityTypeExpanded by remember { mutableStateOf(false) }
 
+    var activityTypeList = remember {
+        ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
     var isFrequencyEnabled by remember { mutableStateOf(false) }
     var steps by remember { mutableStateOf("1000") }
 
@@ -143,7 +145,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>) {
                     ) {
                         var leadingIcon: (@Composable () -> Unit)? = null
                         if (activityType != null)
-                            leadingIcon = @Composable { Icon(activityType!!.icon, activityType!!.name) }
+                            leadingIcon = @Composable { Icon(Constants.ActivityIcons.values()[activityType!!.iconId].image, activityType!!.name) }
 
                         TextField(
                             modifier = Modifier
@@ -158,14 +160,12 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>) {
                             expanded = activityTypeExpanded,
                             onDismissRequest = { activityTypeExpanded = false }
                         ) {
-                            activities.forEach {
+                            activityTypeList.forEach {
                                 DropdownMenuItem(
                                     text = {
                                         Row {
-                                            if (it.icon != null) {
-                                                Icon(it.icon, it.name)
-                                                Spacer(modifier = Modifier.width(5.dp))
-                                            }
+                                            Icon(Constants.ActivityIcons.values()[it.iconId].image, it.name)
+                                            Spacer(modifier = Modifier.width(5.dp))
                                             androidx.compose.material3.Text(it.name)
                                         }
                                     },
