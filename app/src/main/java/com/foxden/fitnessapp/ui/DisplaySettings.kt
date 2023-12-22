@@ -64,13 +64,13 @@ fun DisplaySettings(navigation: NavController) {
 
     //Dropdown options:
 
-        val HeightUnitOptions = listOf("Feet","Cm")
+        val HeightUnitOptions = listOf("Ft","Cm")
         var currentHeightUnit by rememberSaveable { mutableStateOf("") }
 
         val CalorieUnitOptions = listOf("kcal","kJ.")
         var currentCalorieUnit by rememberSaveable { mutableStateOf("") }
 
-        val WeightUnitOptions = listOf("Kg","lb.")
+        val WeightUnitOptions = listOf("Kg","lbs")
         var currentWeightUnit by rememberSaveable { mutableStateOf("") }
 
         val DistanceUnitOptions = listOf("Miles","Km")
@@ -264,7 +264,7 @@ suspend fun GetData (
     onWeightUnitLoaded(weightUnit)
     val calorieUnit = dataStoreManager.getStringSetting("CalorieUnitKey", "kcal").first()
     onCalorieUnitLoaded(calorieUnit)
-    val heightUnit = dataStoreManager.getStringSetting("HeightUnitKey", "Feet").first()
+    val heightUnit = dataStoreManager.getStringSetting("HeightUnitKey", "Ft").first()
     onHeightUnitLoaded(heightUnit)
 
 }

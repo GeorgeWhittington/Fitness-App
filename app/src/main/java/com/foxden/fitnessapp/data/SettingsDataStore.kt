@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LiveData
@@ -37,6 +38,26 @@ class SettingsDataStoreManager(private val context: Context) {
                 preferences[dataStoreKey] ?: defaultValue
             }
     }
+
+    // Function to save a float value
+    suspend fun saveFloatSetting(key: String, value: Float) {
+        val dataStoreKey = floatPreferencesKey(key)
+        context.dataStore.edit { preferences ->
+            preferences[dataStoreKey] = value
+        }
+    }
+
+    // Function to get a float value
+    fun getFloatSetting(key: String, defaultValue: Float = 0f): Flow<Float> {
+        val dataStoreKey = floatPreferencesKey(key)
+        return context.dataStore.data
+            .map { preferences ->
+                preferences[dataStoreKey] ?: defaultValue
+            }
+    }
+
+
+
 
     // Function to save a switch value
     suspend fun saveSwitchSetting(key: String, value: Boolean) {
