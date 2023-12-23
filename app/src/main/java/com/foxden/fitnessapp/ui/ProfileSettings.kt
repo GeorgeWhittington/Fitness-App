@@ -19,6 +19,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Height
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,7 +58,7 @@ import kotlinx.coroutines.flow.first
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSettings(navigation: NavController) {
-    val image = painterResource(R.drawable.fox)
+
     //Saving and retrieving data:
         //used for save option
         var isModified by remember { mutableStateOf(false) }
@@ -71,6 +72,17 @@ fun ProfileSettings(navigation: NavController) {
         var currentHeight by rememberSaveable { mutableFloatStateOf(0f) }
         var weightUnit by rememberSaveable { mutableStateOf("") }
         var heightUnit by rememberSaveable { mutableStateOf("") }
+        //used to check which character
+        var character by remember { mutableStateOf("") }
+        var isLoading by remember { mutableStateOf(true) }
+
+    var image = if(character == "Fox"){
+        R.drawable.fox
+    } else if(character == "Racoon"){
+        R.drawable.racoon
+    } else{ R.drawable.cat
+    }
+
 
     LaunchedEffect(Unit) {
         GetProfileData(dataStoreManager,
@@ -90,12 +102,18 @@ fun ProfileSettings(navigation: NavController) {
 
 
             onHeightLoaded = { loadedHeight ->
-                currentHeight = loadedHeight}
+                currentHeight = loadedHeight},
 
+            onCharacterLoaded = { loadedCharacter ->
+                character = loadedCharacter
+                isLoading = false
 
+            }
 
         )
+
     }
+
     Scaffold (
         topBar = {
             TopAppBar(
@@ -134,6 +152,7 @@ fun ProfileSettings(navigation: NavController) {
                 Text("Profile", color = Color.Black, fontSize = 20.sp)
             }
 
+
         },
         bottomBar = { NavBar(navigation = navigation)}
     ) { innerPadding->
@@ -146,12 +165,18 @@ fun ProfileSettings(navigation: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ){
 
+            if (!isLoading) {
+                Image(
+                    painter = painterResource(image),
+                    contentDescription = stringResource(id = R.string.cat_alt_text),
+                    modifier = Modifier.size(width = 100.dp, height = 100.dp)
+                )
+            } else {
+                Icon(Icons.Outlined.Image, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+            }
 
-            Image(
-                painter = image,
-                contentDescription = stringResource(id = R.string.fox_alt_text),
-                modifier = Modifier.size(width = 100.dp, height = 100.dp) // Adjust width and height as needed
-            )
+
+
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -217,7 +242,8 @@ suspend fun GetProfileData (
     onWeightLoaded: (Float) -> Unit,
     onHeightLoaded: (Float) -> Unit,
     onWeightUnitLoaded: (String) -> Unit,
-    onHeightUnitLoaded: (String) -> Unit
+    onHeightUnitLoaded: (String) -> Unit,
+    onCharacterLoaded: (String) -> Unit
 ){
 
     val name = dataStoreManager.getStringSetting("UserNameKey", "Name").first()
@@ -230,6 +256,8 @@ suspend fun GetProfileData (
     onWeightUnitLoaded(weightUnit)
     val heightUnit = dataStoreManager.getStringSetting("HeightUnitKey", "Ft").first()
     onHeightUnitLoaded(heightUnit)
+    val character = dataStoreManager.getStringSetting("CharacterKey", "Racoon").first()
+    onCharacterLoaded(character)
 }
 fun convertLbsToKg(lbs: Float): Float = lbs / 2.20462f
 fun convertCmToFeet(cm: Float): Float = cm /30.48f
