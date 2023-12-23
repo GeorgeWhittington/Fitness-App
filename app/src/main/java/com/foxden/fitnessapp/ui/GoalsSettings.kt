@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -33,8 +35,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,7 +47,9 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,24 +60,52 @@ import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
+import kotlinx.coroutines.flow.first
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
-    var isModified by remember { mutableStateOf(false) }
     val isDialogOpen = remember { mutableStateOf(false) }
 
-    Scaffold (
+    //link to datastore
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
+
+    //used for save option
+    var isModified by remember { mutableStateOf(false) }
+
+    //used for saving the data to datastore
+    val triggerSave = remember { mutableStateOf(false) }
+    var currentCalorieGoal by rememberSaveable { mutableFloatStateOf(0f) }
+
+    Scaffold(
         topBar = {
             TopAppBar(
-                title = { },
-                navigationIcon = {BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}},
+                title = {},
+                navigationIcon = { BackIcon { navigation.navigate(Routes.SETTINGS_SCREEN) } },
                 backgroundColor = MidBlue,
-                modifier = Modifier.height(56.dp)
+                modifier = Modifier.height(56.dp),
+                actions = {
+
+                    SaveOption(isModified = isModified) {
+                        triggerSave.value = true
+                        isModified = false
+                    }
+                    LaunchedEffect(triggerSave.value) {
+
+
+                        if (triggerSave.value) {
+
+                            dataStoreManager.saveFloatSetting("CalorieGoalKey", currentCalorieGoal)
+
+                            triggerSave.value = false
+                        }
+                    }}
             )
             Box(
                 contentAlignment = Alignment.Center,
@@ -79,41 +113,107 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                PageName(text= "Goals")
+                PageName(text = "Goals")
             }
 
         },
-        bottomBar = { NavBar(navigation = navigation) }
-    ) {innerPadding->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-                .padding(10.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            IconButton(
-                modifier = Modifier
-                    .background(MidBlue, CircleShape)
-                    .size(56.dp),
-                onClick = {
-                    isDialogOpen.value = true
 
+
+        bottomBar = { NavBar(navigation = navigation) }
+    ) { innerPadding ->
+        //get data from datastore
+        LaunchedEffect(Unit) {
+            GetGoalsData(dataStoreManager,
+                onCalorieGoalLoaded = { loadedCalorieGoal ->
+                    currentCalorieGoal = loadedCalorieGoal
+                },
+
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "Daily calorie goal", fontSize = 20.sp)
+                    Spacer(modifier = Modifier.weight(1f))
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+
+
+                FloatInputField(
+                    icon = Icons.Outlined.Restaurant,
+                    placeholder = "Daily calorie goal",
+                    value = currentCalorieGoal,
+                    onValueChange = { newValue -> currentCalorieGoal = newValue },
+                    unit = "kcal",
+                    min =  500f,
+                    max = 4000f,
+                    onChange = { isModified = true },
+                    keyboardType = KeyboardType.Number
+                )
+
+                if (isDialogOpen.value) {
+                    CreateGoalPopup(isDialogOpen,dbHelper)
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "Activities", fontSize = 20.sp)
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
+                //goals
+                //for (log in activityLogs) {
+                //    ActivityWidget(log, activityTypeList.filter{ it.id ==  log.activityTypeId}.first())
+                //    Spacer(modifier = Modifier.size(10.dp))
+                //}
+
+
+            }
+
+
+
+            // Floating Action Button
+            IconButton(
+                onClick = { isDialogOpen.value = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .background(MidBlue, CircleShape)
+                    .size(56.dp)
             ) {
                 Icon(
-                    Icons.Outlined.Add, "Add photo(s) to activity",
+                    Icons.Outlined.Add, "Add a goal",
                     tint = Color.White, modifier = Modifier.size(24.dp)
                 )
             }
-
-            if(isDialogOpen.value){
-                CreateGoalPopup(isDialogOpen, dbHelper)
-            }
         }
     }
+
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,6 +234,8 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
     val GoalOptions = listOf("Steps","Distance","Sets")
     var goal by rememberSaveable { mutableStateOf("") }
 
+
+    //popup
     if (isDialogOpen.value) {
         Dialog(onDismissRequest = { isDialogOpen.value = false }) {
             Surface {
@@ -178,9 +280,6 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Frequency Dropdown
-
-                    // TODO: Implement DropdownMenu for frequency selection
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -236,6 +335,15 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
     }
 }
 
+suspend fun GetGoalsData (
+    dataStoreManager: SettingsDataStoreManager,
+    onCalorieGoalLoaded: (Float) -> Unit
+){
+
+    val calorieGoal = dataStoreManager.getFloatSetting("CalorieGoalKey", 0f).first()
+    onCalorieGoalLoaded(calorieGoal)
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -266,7 +374,8 @@ fun GoalsDropdown(
                         )
                     },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    colors = ExposedDropdownMenuDefaults.textFieldColors()
+                    colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                    readOnly = true
                 )
                 ExposedDropdownMenu(expanded = expanded,
                     onDismissRequest = { expanded = false },

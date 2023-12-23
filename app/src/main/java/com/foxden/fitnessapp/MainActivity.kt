@@ -44,6 +44,7 @@ object Routes {
     const val DBTEST_SCREEN = "DBTestScreen"
 }
 
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
