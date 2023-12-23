@@ -102,6 +102,6 @@ suspend fun GetHomeData (
 ){
 
 
-    val character = dataStoreManager.getStringSetting("CharacterKey", "Racoon").first()
+    val character = dataStoreManager.getStringSetting("CharacterKey", "Fox").first()
     onCharacterLoaded(character)
 }

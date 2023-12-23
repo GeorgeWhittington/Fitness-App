@@ -1,5 +1,4 @@
 package com.foxden.fitnessapp.ui
-
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
@@ -57,7 +56,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
-import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
@@ -88,6 +86,11 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     //used for saving the data to datastore
     val triggerSave = remember { mutableStateOf(false) }
     var currentCalorieGoal by rememberSaveable { mutableFloatStateOf(0f) }
+
+    //get goals from database
+    var GoalList = remember {
+        GoalDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
 
     Scaffold(
         topBar = {
@@ -191,10 +194,11 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 }
 
                 //goals
-                //for (log in activityLogs) {
-                //    ActivityWidget(log, activityTypeList.filter{ it.id ==  log.activityTypeId}.first())
-                //    Spacer(modifier = Modifier.size(10.dp))
-                //}
+                for (log in GoalList) {
+                    Log.d("TAG", "TEST1")
+                    //GoalsWidget(log, GoalList.filter{ it.id ==  log.id}.first())
+                    Spacer(modifier = Modifier.size(10.dp))
+                }
 
 
             }
@@ -232,10 +236,10 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
     var isFrequencyEnabled by remember { mutableStateOf(false) }
-    var steps by remember { mutableStateOf(1000) }
+    var goalValue by remember { mutableStateOf(1000) }
 
     var frequency by rememberSaveable { mutableStateOf(GoalFrequency.DAILY) }
-    var goal by rememberSaveable { mutableStateOf(GoalType.STEPS) }
+    var goalType by rememberSaveable { mutableStateOf(GoalType.STEPS) }
 
     //popup
     if (isDialogOpen.value) {
@@ -307,16 +311,16 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                     ) {
                         GoalsDropdown(options = listOf(GoalType.STEPS.displayName, GoalType.DISTANCE.displayName, GoalType.SETS.displayName),
                             label = "Goal",
-                            selectedOptionText = goal.displayName,
-                            updateSelection = {newSelection -> goal =
+                            selectedOptionText = goalType.displayName,
+                            updateSelection = {newSelection -> goalType =
                                 GoalType.byName(newSelection)!!
                             },
                             dropdownWidth = 150.dp
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         TextField(
-                            value = steps.toString(),
-                            onValueChange = { steps = it.toIntOrNull()?:0 },
+                            value = goalValue.toString(),
+                            onValueChange = { goalValue = it.toIntOrNull()?:0 },
                             singleLine = true
 
                         )
@@ -337,13 +341,14 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
 
                             g.activityTypeId = activityType?.id!!
                             g.frequency = frequency
-                            g.type = goal
-                            g.value = steps
+                            g.type = goalType
+                            g.value = goalValue
 
                             if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
                                 Log.d("FIT", "Failed to insert goal into the database")
                             } else {
                                 Log.d("FIT", "Inserted goal into the database!")
+                                isDialogOpen.value = false
                             }
 
                         }) {

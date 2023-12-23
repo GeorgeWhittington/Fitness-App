@@ -256,7 +256,7 @@ suspend fun GetProfileData (
     onWeightUnitLoaded(weightUnit)
     val heightUnit = dataStoreManager.getStringSetting("HeightUnitKey", "Ft").first()
     onHeightUnitLoaded(heightUnit)
-    val character = dataStoreManager.getStringSetting("CharacterKey", "Racoon").first()
+    val character = dataStoreManager.getStringSetting("CharacterKey", "Fox").first()
     onCharacterLoaded(character)
 }
 fun convertLbsToKg(lbs: Float): Float = lbs / 2.20462f
