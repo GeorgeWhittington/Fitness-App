@@ -14,58 +14,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccessibleForward
-import androidx.compose.material.icons.outlined.Anchor
-import androidx.compose.material.icons.outlined.BeachAccess
-import androidx.compose.material.icons.outlined.DirectionsBike
-import androidx.compose.material.icons.outlined.DirectionsBoat
-import androidx.compose.material.icons.outlined.DirectionsRun
-import androidx.compose.material.icons.outlined.DirectionsWalk
-import androidx.compose.material.icons.outlined.DownhillSkiing
-import androidx.compose.material.icons.outlined.ElectricBike
-import androidx.compose.material.icons.outlined.EmojiNature
-import androidx.compose.material.icons.outlined.FitnessCenter
-import androidx.compose.material.icons.outlined.Flight
-import androidx.compose.material.icons.outlined.GolfCourse
-import androidx.compose.material.icons.outlined.Hiking
-import androidx.compose.material.icons.outlined.IceSkating
-import androidx.compose.material.icons.outlined.Kayaking
-import androidx.compose.material.icons.outlined.Kitesurfing
-import androidx.compose.material.icons.outlined.NordicWalking
-import androidx.compose.material.icons.outlined.Paragliding
-import androidx.compose.material.icons.outlined.Park
-import androidx.compose.material.icons.outlined.Pets
-import androidx.compose.material.icons.outlined.Pool
-import androidx.compose.material.icons.outlined.RollerSkating
-import androidx.compose.material.icons.outlined.Rowing
-import androidx.compose.material.icons.outlined.Sailing
-import androidx.compose.material.icons.outlined.ScubaDiving
-import androidx.compose.material.icons.outlined.SelfImprovement
-import androidx.compose.material.icons.outlined.Skateboarding
-import androidx.compose.material.icons.outlined.Sledding
-import androidx.compose.material.icons.outlined.Snowboarding
-import androidx.compose.material.icons.outlined.Snowshoeing
-import androidx.compose.material.icons.outlined.Spa
-import androidx.compose.material.icons.outlined.Sports
-import androidx.compose.material.icons.outlined.SportsBaseball
-import androidx.compose.material.icons.outlined.SportsBasketball
-import androidx.compose.material.icons.outlined.SportsCricket
-import androidx.compose.material.icons.outlined.SportsFootball
-import androidx.compose.material.icons.outlined.SportsGolf
-import androidx.compose.material.icons.outlined.SportsGymnastics
-import androidx.compose.material.icons.outlined.SportsHandball
-import androidx.compose.material.icons.outlined.SportsHockey
-import androidx.compose.material.icons.outlined.SportsKabaddi
-import androidx.compose.material.icons.outlined.SportsMartialArts
-import androidx.compose.material.icons.outlined.SportsMotorsports
-import androidx.compose.material.icons.outlined.SportsRugby
-import androidx.compose.material.icons.outlined.SportsScore
-import androidx.compose.material.icons.outlined.SportsSoccer
-import androidx.compose.material.icons.outlined.SportsTennis
-import androidx.compose.material.icons.outlined.SportsVolleyball
-import androidx.compose.material.icons.outlined.Surfing
-import androidx.compose.material.icons.outlined.Water
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -117,7 +65,7 @@ fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit, dbHe
                 ) {
                     var leadingIcon: (@Composable () -> Unit)? = null
                     if (selectedIcon != null)
-                        leadingIcon = @Composable { Icon(selectedIconVector.image, selectedIconVector.name) }
+                        leadingIcon = @Composable { Icon(selectedIconVector.image, selectedIconVector.displayText) }
 
                     var placeholder: (@Composable () -> Unit)? = @Composable { Text("Select an icon") }
                     if (selectedIcon != null)
@@ -139,7 +87,7 @@ fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit, dbHe
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Icon(iconOption.image, iconOption.name)
+                                        Icon(iconOption.image, iconOption.displayText)
                                     }
                                },
                                 onClick = {
