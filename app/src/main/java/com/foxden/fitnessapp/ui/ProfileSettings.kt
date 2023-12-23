@@ -59,7 +59,7 @@ import kotlinx.coroutines.flow.first
 fun ProfileSettings(navigation: NavController) {
     val image = painterResource(R.drawable.fox)
     //Saving and retrieving data:
-        //used to save option
+        //used for save option
         var isModified by remember { mutableStateOf(false) }
         //link to datastore
         val context = LocalContext.current
@@ -174,7 +174,7 @@ fun ProfileSettings(navigation: NavController) {
             Spacer(modifier = Modifier.height(20.dp))
 
 
-            HeightWeightInputField(
+            FloatInputField(
                 icon = Icons.Outlined.MonitorWeight,
                 placeholder = "Weight",
                 value = currentWeight,
@@ -187,7 +187,7 @@ fun ProfileSettings(navigation: NavController) {
             )
             Spacer(modifier = Modifier.height(20.dp))
 
-            HeightWeightInputField(
+            FloatInputField(
                 icon = Icons.Outlined.Height,
                 placeholder = "Height",
                 value = currentHeight,
@@ -271,7 +271,7 @@ fun ProfileInputField(
     }
 }
 @Composable
-fun HeightWeightInputField(
+fun FloatInputField(
     icon: ImageVector,
     placeholder: String,
     value: Float,
