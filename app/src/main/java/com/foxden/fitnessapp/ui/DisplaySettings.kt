@@ -132,6 +132,7 @@ fun DisplaySettings(navigation: NavController) {
                     //saves the data to datastore
                     LaunchedEffect(triggerSave.value) {
                         if (triggerSave.value) {
+
                             dataStoreManager.saveStringSetting("CharacterKey", currentCharacter)
                             dataStoreManager.saveStringSetting("DistanceUnitKey", currentDistanceUnit)
                             dataStoreManager.saveStringSetting("WeightUnitKey", currentWeightUnit)
