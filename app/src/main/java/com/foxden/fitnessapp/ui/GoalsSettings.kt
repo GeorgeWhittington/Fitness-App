@@ -65,6 +65,7 @@ import com.foxden.fitnessapp.data.GoalDAO
 import com.foxden.fitnessapp.data.GoalFrequency
 import com.foxden.fitnessapp.data.GoalType
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
+import com.foxden.fitnessapp.ui.components.GoalsWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import kotlinx.coroutines.flow.first
@@ -90,6 +91,9 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     //get goals from database
     var GoalList = remember {
         GoalDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
+    var activityTypeList = remember {
+        ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
 
     Scaffold(
@@ -189,14 +193,14 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 
                 ) {
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Activities", fontSize = 20.sp)
+                    Text(text = "Goals for activities", fontSize = 20.sp)
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
                 //goals
                 for (log in GoalList) {
                     Log.d("TAG", "TEST1")
-                    //GoalsWidget(log, GoalList.filter{ it.id ==  log.id}.first())
+                    GoalsWidget(log, activityTypeList.filter{ it.id ==  log.activityTypeId}.first())
                     Spacer(modifier = Modifier.size(10.dp))
                 }
 
