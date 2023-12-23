@@ -18,6 +18,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         ActivityTypeDAO.onCreate(db)
         ActivityLogDAO.onCreate(db)
         NutritionPresetDAO.onCreate(db)
+        GoalDAO.onCreate(db)
 
         ActivityTypeDAO.insert(db, ActivityType(name="Jogging", iconId = Constants.ActivityIcons.DIRECTIONS_RUN.ordinal))
         ActivityTypeDAO.insert(db, ActivityType(name="Hiking", iconId = Constants.ActivityIcons.HIKING.ordinal))
