@@ -1,6 +1,7 @@
 package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,10 +57,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.Goal
+import com.foxden.fitnessapp.data.GoalDAO
+import com.foxden.fitnessapp.data.GoalFrequency
+import com.foxden.fitnessapp.data.GoalType
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
@@ -226,14 +232,10 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
     var isFrequencyEnabled by remember { mutableStateOf(false) }
-    var steps by remember { mutableStateOf("1000") }
+    var steps by remember { mutableStateOf(1000) }
 
-    val FrequencyOptions = listOf("Daily","Weekly","Monthly")
-    var frequency by rememberSaveable { mutableStateOf("") }
-
-    val GoalOptions = listOf("Steps","Distance","Sets")
-    var goal by rememberSaveable { mutableStateOf("") }
-
+    var frequency by rememberSaveable { mutableStateOf(GoalFrequency.DAILY) }
+    var goal by rememberSaveable { mutableStateOf(GoalType.STEPS) }
 
     //popup
     if (isDialogOpen.value) {
@@ -283,10 +285,12 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        GoalsDropdown(options = FrequencyOptions,
+                        GoalsDropdown(options = listOf(GoalFrequency.DAILY.displayName, GoalFrequency.WEEKLY.displayName, GoalFrequency.MONTHLY.displayName),
                             label = "Frequency",
-                            selectedOptionText = frequency,
-                            updateSelection = {newSelection -> frequency = newSelection },
+                            selectedOptionText = frequency.displayName,
+                            updateSelection = {newSelection -> frequency =
+                                GoalFrequency.byName(newSelection)!!
+                            },
                             dropdownWidth = 200.dp
                         )
                         Spacer(modifier = Modifier.weight(1f))
@@ -301,16 +305,18 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        GoalsDropdown(options = GoalOptions,
+                        GoalsDropdown(options = listOf(GoalType.STEPS.displayName, GoalType.DISTANCE.displayName, GoalType.SETS.displayName),
                             label = "Goal",
-                            selectedOptionText = goal,
-                            updateSelection = {newSelection -> goal = newSelection },
+                            selectedOptionText = goal.displayName,
+                            updateSelection = {newSelection -> goal =
+                                GoalType.byName(newSelection)!!
+                            },
                             dropdownWidth = 150.dp
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         TextField(
-                            value = steps,
-                            onValueChange = { steps = it },
+                            value = steps.toString(),
+                            onValueChange = { steps = it.toIntOrNull()?:0 },
                             singleLine = true
 
                         )
@@ -325,7 +331,22 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                             Text("CLOSE")
                         }
                         Spacer(modifier = Modifier.width(10.dp))
-                        Button(onClick = { /* Handle add action */ }) {
+                        Button(onClick = {
+
+                            val g = Goal()
+
+                            g.activityTypeId = activityType?.id!!
+                            g.frequency = frequency
+                            g.type = goal
+                            g.value = steps
+
+                            if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
+                                Log.d("FIT", "Failed to insert goal into the database")
+                            } else {
+                                Log.d("FIT", "Inserted goal into the database!")
+                            }
+
+                        }) {
                             Text("ADD")
                         }
                     }

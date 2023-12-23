@@ -4,25 +4,38 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 
-enum class GoalFrequency
+enum class GoalFrequency(val displayName: String)
 {
-    DAILY,
-    WEEKLY,
-    MONTHLY,
+    DAILY("Daily"),
+    WEEKLY("Weekly"),
+    MONTHLY("Monthly");
+
+    companion object {
+        fun byName(input: String): GoalFrequency? {
+            return values().firstOrNull { it.name.equals(input, true) }
+        }
+    }
 }
 
-enum class GoalType
+enum class GoalType(val displayName: String)
 {
-    STEPS,
-    DISTANCE,
-    SETS,
+    STEPS("Steps"),
+    DISTANCE("Distance"),
+    SETS("Sets");
+
+    companion object {
+        fun byName(input: String): GoalType? {
+            return GoalType.values().firstOrNull { it.name.equals(input, true) }
+        }
+    }
 }
 
 data class Goal (
     var id : Int = 0,
     var activityTypeId: Int = 0,
-    var frequency: GoalFrequency,
-    var type: GoalType,
+    var frequency: GoalFrequency = GoalFrequency.DAILY,
+    var type: GoalType = GoalType.STEPS,
+    var value: Int = 1
 )
 
 object GoalDAO : DAO(
@@ -32,6 +45,7 @@ object GoalDAO : DAO(
         ColumnDesc("activity_type_id", "INTEGER", "NOT NULL"),
         ColumnDesc("frequency", "INTEGER"),
         ColumnDesc("type", "INTEGER"),
+        ColumnDesc("value", "INTEGER"),
     )
 ) {
 
@@ -42,6 +56,7 @@ object GoalDAO : DAO(
             cursor.getInt(cursor.getColumnIndex("activity_type_id")),
             GoalFrequency.values()[cursor.getInt(cursor.getColumnIndex("frequency"))],
             GoalType.values()[cursor.getInt(cursor.getColumnIndex("type"))],
+            cursor.getInt(cursor.getColumnIndex("value")),
         )
         return ret
     }
@@ -63,6 +78,7 @@ object GoalDAO : DAO(
         contentValues.put(tableColumns[1].name, goal.activityTypeId)
         contentValues.put(tableColumns[2].name, goal.frequency.ordinal)
         contentValues.put(tableColumns[3].name, goal.type.ordinal)
+        contentValues.put(tableColumns[4].name, goal.value)
         val result = db?.insert(tableName, null, contentValues)
         db?.close()
         return (result != (0).toLong())
