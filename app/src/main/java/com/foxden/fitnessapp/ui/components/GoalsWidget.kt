@@ -1,7 +1,6 @@
 package com.foxden.fitnessapp.ui.components
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,12 +25,12 @@ import androidx.compose.ui.unit.sp
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.Goal
-import com.foxden.fitnessapp.ui.theme.MidBlue
+import com.foxden.fitnessapp.data.GoalType
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GoalsWidget(log: Goal, activityType: ActivityType) {
-    Log.d("TAG", "TEST")
+
 
 
     Row (
@@ -59,41 +58,48 @@ fun GoalsWidget(log: Goal, activityType: ActivityType) {
 
                 }
 
-                Spacer(modifier = Modifier.size(5.dp))
+                Spacer(modifier = Modifier.size(50.dp))
                 Row {
+
+
+
+
+
+                    if(log.hours >0){
+                        Column {
+
+                            Text(
+                                text = "${log.hours}", fontSize = 50.sp,
+                                fontWeight = FontWeight(700)
+                            )
+                            Text(text = "hours", fontSize = 16.sp)
+                        }
+                    }
+                    else{}
+
+                    Spacer(modifier = Modifier.size(50.dp))
                     Column {
-                        Text(text = "Calories", fontSize = 12.sp)
                         Text(
-                            text = "${log.activityTypeId}", fontSize = 12.sp,
-                            color = MidBlue,
-                            fontWeight = FontWeight(700))
+                            text = "${log.value}", fontSize = 50.sp,
+
+                            fontWeight = FontWeight(700)
+                        )
+                        if(log.type ==GoalType.DISTANCE){
+                            Text(text = "Km", fontSize = 16.sp)
+                        }
+                        else{
+                            Text(text = "Min", fontSize = 16.sp)
+                        }
+
                     }
                     Column {
-                        Text(text = "Distance", fontSize = 12.sp)
-                        Text(text = "${log.frequency} km", fontSize = 12.sp,
-                            color = MidBlue,
+
+                        Text(text = "${log.frequency} ", fontSize = 12.sp,
+
                             fontWeight = FontWeight(700)
                         )
                     }
 
-                    Spacer(modifier = Modifier.size(10.dp))
-                    Column {
-                        Text(text = "Calories", fontSize = 12.sp)
-                        Text(
-                            text = "${log.type}", fontSize = 12.sp,
-                            color = MidBlue,
-                            fontWeight = FontWeight(700)
-                        )
-                    }
-                    Spacer(modifier = Modifier.size(10.dp))
-                    Column {
-                        Text(text = "Calories", fontSize = 12.sp)
-                        Text(
-                            text = "${log.value}", fontSize = 12.sp,
-                            color = MidBlue,
-                            fontWeight = FontWeight(700)
-                        )
-                    }
                 }
             }
 
