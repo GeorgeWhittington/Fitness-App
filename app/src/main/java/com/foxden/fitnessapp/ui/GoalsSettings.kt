@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -70,6 +69,7 @@ import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.GoalsWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
+import com.foxden.fitnessapp.ui.theme.Yellow
 import kotlinx.coroutines.flow.first
 
 
@@ -89,6 +89,9 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     //used for saving the data to datastore
     val triggerSave = remember { mutableStateOf(false) }
     var currentCalorieGoal by rememberSaveable { mutableFloatStateOf(0f) }
+    var calorieChoice by rememberSaveable { mutableStateOf(false) }
+    var distanceUnit by rememberSaveable { mutableStateOf("") }
+    var goalAdded by rememberSaveable { mutableStateOf(false) }
 
     //get goals from database
     var GoalList = remember {
@@ -97,6 +100,8 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
+
+
 
     Scaffold(
         topBar = {
@@ -138,11 +143,17 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     ) { innerPadding ->
         //get data from datastore
         LaunchedEffect(Unit) {
-            GetGoalsData(dataStoreManager,
+            GetGoalsData(
+                dataStoreManager,
                 onCalorieGoalLoaded = { loadedCalorieGoal ->
                     currentCalorieGoal = loadedCalorieGoal
                 },
-
+                onCalorieChoiceLoaded = { loadedCalorieChoice ->
+                    calorieChoice = loadedCalorieChoice
+                },
+                onDistanceUnitLoaded = { loadedDistanceUnit ->
+                    distanceUnit = loadedDistanceUnit
+                },
             )
         }
 
@@ -159,56 +170,83 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                if(calorieChoice){
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = "Daily calorie goal", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
 
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    FloatInputField(
+                        icon = Icons.Outlined.Restaurant,
+                        placeholder = "Daily calorie goal",
+                        value = currentCalorieGoal,
+                        onValueChange = { newValue -> currentCalorieGoal = newValue },
+                        unit = "kcal",
+                        min =  500f,
+                        max = 4000f,
+                        onChange = { isModified = true },
+                        keyboardType = KeyboardType.Number
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
 
-                ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Daily calorie goal", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.weight(1f))
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = "The recommended daily kcal for adults is 1500-2500 kcal daily",
+                            fontSize = 13.sp,
+                            color = Yellow
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
-                Spacer(modifier = Modifier.height(20.dp))
 
 
-                FloatInputField(
-                    icon = Icons.Outlined.Restaurant,
-                    placeholder = "Daily calorie goal",
-                    value = currentCalorieGoal,
-                    onValueChange = { newValue -> currentCalorieGoal = newValue },
-                    unit = "kcal",
-                    min =  500f,
-                    max = 4000f,
-                    onChange = { isModified = true },
-                    keyboardType = KeyboardType.Number
-                )
 
                 if (isDialogOpen.value) {
-                    CreateGoalPopup(isDialogOpen,dbHelper)
+                    CreateGoalPopup(isDialogOpen,
+                        dbHelper,
+                        onChange = { goalAdded = true },
+                        distanceUnit = distanceUnit)
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
 
                 ) {
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Goals for activities", fontSize = 20.sp)
+                    Text(text = "Activity Goals", fontSize = 20.sp)
                     Spacer(modifier = Modifier.weight(1f))
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+                LaunchedEffect(goalAdded) {
 
+                    if (goalAdded) {
+                        GoalList = GoalDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+                        goalAdded = false // Reset the flag
+                    }
+                }
                 //goals
                 for (log in GoalList) {
 
-                    GoalsWidget(log, activityTypeList.filter{ it.id ==  log.activityTypeId}.first())
+                    GoalsWidget(log,
+                        activityTypeList.filter{ it.id ==  log.activityTypeId}.first(),
+                        distanceUnit = distanceUnit)
                     Spacer(modifier = Modifier.size(10.dp))
                 }
 
 
-            }
 
+            }
 
 
             // Floating Action Button
@@ -228,12 +266,13 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
         }
     }
 
+
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
+fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper,onChange: () -> Unit,distanceUnit: String){
     var isError by remember { mutableStateOf(false) }
 
 
@@ -364,7 +403,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                                     Text(
                                         when (goalType) {
                                             GoalType.STEPS -> "steps"
-                                            GoalType.DISTANCE -> "km"
+                                            GoalType.DISTANCE -> distanceUnit
                                             GoalType.SETS -> "sets"
                                             else -> ""
 
@@ -387,12 +426,18 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Button(onClick = {
-
+                            val g = Goal()
+                            val daily = 23
+                            val weekly = 167
+                            val monthly = 743
                             goalHourValue = hourInput.toIntOrNull() ?: 0
                             goalMainValue = mainInput.toIntOrNull() ?: 0
-                            if (goalMainValue > 0 || goalHourValue > 0) {
+
+
+
+                            if (goalType == GoalType.DURATION && goalMainValue in 1..60|| goalHourValue in 1..743) {
                                 // Create the Goal object and insert into database
-                                val g = Goal()
+
 
                                 g.activityTypeId = activityType?.id!!
                                 g.frequency = frequency
@@ -407,7 +452,25 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                                     isDialogOpen.value = false
 
                                 }
-                            } else {
+                                onChange()
+                            }
+                            else if(goalType !== GoalType.DURATION && goalMainValue in 1..999999) {
+                                g.activityTypeId = activityType?.id!!
+                                g.frequency = frequency
+                                g.type = goalType
+                                g.value = goalMainValue
+                                g.hours = goalHourValue
+
+                                if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
+                                    Log.d("FIT", "Failed to insert goal into the database")
+                                } else {
+                                    Log.d("FIT", "Inserted goal into the database!")
+                                    isDialogOpen.value = false
+
+                                }
+                                onChange()
+                            }
+                            else {
                                 isError = true
 
                             }
@@ -432,11 +495,17 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
 
 suspend fun GetGoalsData (
     dataStoreManager: SettingsDataStoreManager,
-    onCalorieGoalLoaded: (Float) -> Unit
+    onCalorieGoalLoaded: (Float) -> Unit,
+    onCalorieChoiceLoaded: (Boolean) -> Unit,
+    onDistanceUnitLoaded: (String) -> Unit,
 ){
 
     val calorieGoal = dataStoreManager.getFloatSetting("CalorieGoalKey", 0f).first()
     onCalorieGoalLoaded(calorieGoal)
+    val calorieChoice = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
+    onCalorieChoiceLoaded(calorieChoice)
+    val distanceUnit = dataStoreManager.getStringSetting("DistanceUnitKey", "Miles").first()
+    onDistanceUnitLoaded(distanceUnit)
 }
 
 

@@ -1,7 +1,6 @@
 package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -131,8 +130,7 @@ fun ProfileSettings(navigation: NavController) {
                         if (triggerSave.value) {
                             val weightToSave = if (weightUnit == "lbs") convertLbsToKg(currentWeight) else currentWeight
                             val heightToSave = if (heightUnit == "Cm") convertCmToFeet(currentHeight) else currentHeight
-                            Log.d("TAG", "ProfileSettings: $weightToSave")
-                            Log.d("TAG", "ProfileSettings: $heightToSave")
+
                             dataStoreManager.saveStringSetting("UserNameKey", currentName)
                             dataStoreManager.saveFloatSetting("UserWeightKey", weightToSave)
                             dataStoreManager.saveFloatSetting("UserHeightKey", heightToSave)
