@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 
+
+
 enum class GoalFrequency(val displayName: String)
 {
     DAILY("Daily"),
@@ -21,6 +23,7 @@ enum class GoalType(val displayName: String)
 {
     STEPS("Steps"),
     DISTANCE("Distance"),
+    DURATION("Duration"),
     SETS("Sets");
 
     companion object {
@@ -34,8 +37,9 @@ data class Goal (
     var id : Int = 0,
     var activityTypeId: Int = 0,
     var frequency: GoalFrequency = GoalFrequency.DAILY,
-    var type: GoalType = GoalType.STEPS,
-    var value: Int = 1
+    var type: GoalType = GoalType.DURATION,
+    var value: Int = 1,
+    var hours: Int = 0
 )
 
 object GoalDAO : DAO(
@@ -46,6 +50,7 @@ object GoalDAO : DAO(
         ColumnDesc("frequency", "INTEGER"),
         ColumnDesc("type", "INTEGER"),
         ColumnDesc("value", "INTEGER"),
+        ColumnDesc("hours", "INTEGER")
     )
 ) {
 
@@ -57,6 +62,7 @@ object GoalDAO : DAO(
             GoalFrequency.values()[cursor.getInt(cursor.getColumnIndex("frequency"))],
             GoalType.values()[cursor.getInt(cursor.getColumnIndex("type"))],
             cursor.getInt(cursor.getColumnIndex("value")),
+            cursor.getInt(cursor.getColumnIndex("hours"))
         )
         return ret
     }
@@ -79,6 +85,7 @@ object GoalDAO : DAO(
         contentValues.put(tableColumns[2].name, goal.frequency.ordinal)
         contentValues.put(tableColumns[3].name, goal.type.ordinal)
         contentValues.put(tableColumns[4].name, goal.value)
+        contentValues.put(tableColumns[5].name, goal.hours)
         val result = db?.insert(tableName, null, contentValues)
         db?.close()
         return (result != (0).toLong())

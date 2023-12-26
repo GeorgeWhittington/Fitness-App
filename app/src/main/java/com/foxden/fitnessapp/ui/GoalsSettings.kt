@@ -1,5 +1,4 @@
 package com.foxden.fitnessapp.ui
-
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
@@ -18,9 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
-import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
@@ -67,8 +66,10 @@ import com.foxden.fitnessapp.data.GoalDAO
 import com.foxden.fitnessapp.data.GoalFrequency
 import com.foxden.fitnessapp.data.GoalType
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
+import com.foxden.fitnessapp.ui.components.GoalsWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
+import com.foxden.fitnessapp.ui.theme.Yellow
 import kotlinx.coroutines.flow.first
 
 
@@ -88,6 +89,19 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     //used for saving the data to datastore
     val triggerSave = remember { mutableStateOf(false) }
     var currentCalorieGoal by rememberSaveable { mutableFloatStateOf(0f) }
+    var calorieChoice by rememberSaveable { mutableStateOf(false) }
+    var distanceUnit by rememberSaveable { mutableStateOf("") }
+    var goalAdded by rememberSaveable { mutableStateOf(false) }
+
+    //get goals from database
+    var GoalList = remember {
+        GoalDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
+    var activityTypeList = remember {
+        ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
+
+
 
     Scaffold(
         topBar = {
@@ -129,11 +143,17 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     ) { innerPadding ->
         //get data from datastore
         LaunchedEffect(Unit) {
-            GetGoalsData(dataStoreManager,
+            GetGoalsData(
+                dataStoreManager,
                 onCalorieGoalLoaded = { loadedCalorieGoal ->
                     currentCalorieGoal = loadedCalorieGoal
                 },
-
+                onCalorieChoiceLoaded = { loadedCalorieChoice ->
+                    calorieChoice = loadedCalorieChoice
+                },
+                onDistanceUnitLoaded = { loadedDistanceUnit ->
+                    distanceUnit = loadedDistanceUnit
+                },
             )
         }
 
@@ -150,55 +170,83 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                if(calorieChoice){
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = "Daily calorie goal", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
 
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    FloatInputField(
+                        icon = Icons.Outlined.Restaurant,
+                        placeholder = "Daily calorie goal",
+                        value = currentCalorieGoal,
+                        onValueChange = { newValue -> currentCalorieGoal = newValue },
+                        unit = "kcal",
+                        min =  500f,
+                        max = 4000f,
+                        onChange = { isModified = true },
+                        keyboardType = KeyboardType.Number
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
 
-                ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Daily calorie goal", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.weight(1f))
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = "The recommended daily kcal for adults is 1500-2500 kcal daily",
+                            fontSize = 13.sp,
+                            color = Yellow
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
-                Spacer(modifier = Modifier.height(20.dp))
 
 
-                FloatInputField(
-                    icon = Icons.Outlined.Restaurant,
-                    placeholder = "Daily calorie goal",
-                    value = currentCalorieGoal,
-                    onValueChange = { newValue -> currentCalorieGoal = newValue },
-                    unit = "kcal",
-                    min =  500f,
-                    max = 4000f,
-                    onChange = { isModified = true },
-                    keyboardType = KeyboardType.Number
-                )
 
                 if (isDialogOpen.value) {
-                    CreateGoalPopup(isDialogOpen,dbHelper)
+                    CreateGoalPopup(isDialogOpen,
+                        dbHelper,
+                        onChange = { goalAdded = true },
+                        distanceUnit = distanceUnit)
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
 
                 ) {
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Activities", fontSize = 20.sp)
+                    Text(text = "Activity Goals", fontSize = 20.sp)
                     Spacer(modifier = Modifier.weight(1f))
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+                LaunchedEffect(goalAdded) {
 
+                    if (goalAdded) {
+                        GoalList = GoalDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+                        goalAdded = false // Reset the flag
+                    }
+                }
                 //goals
-                //for (log in activityLogs) {
-                //    ActivityWidget(log, activityTypeList.filter{ it.id ==  log.activityTypeId}.first())
-                //    Spacer(modifier = Modifier.size(10.dp))
-                //}
+                for (log in GoalList) {
+
+                    GoalsWidget(log,
+                        activityTypeList.filter{ it.id ==  log.activityTypeId}.first(),
+                        distanceUnit = distanceUnit)
+                    Spacer(modifier = Modifier.size(10.dp))
+                }
+
 
 
             }
-
 
 
             // Floating Action Button
@@ -218,29 +266,37 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
         }
     }
 
+
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
+fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper,onChange: () -> Unit,distanceUnit: String){
+    var isError by remember { mutableStateOf(false) }
 
-    var activityType: ActivityType? by remember { mutableStateOf(null) }
-    var activityTypeExpanded by remember { mutableStateOf(false) }
 
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
+    var activityType: ActivityType? by remember { mutableStateOf(activityTypeList[0]) }
+    var activityTypeExpanded by remember { mutableStateOf(false) }
+
     var isFrequencyEnabled by remember { mutableStateOf(false) }
-    var steps by remember { mutableStateOf(1000) }
+
+    //database
+    var goalMainValue by remember { mutableStateOf(0) }
+    var goalHourValue by remember { mutableStateOf(0) }
+    var hourInput by remember { mutableStateOf("") }
+    var mainInput by remember { mutableStateOf("") }
 
     var frequency by rememberSaveable { mutableStateOf(GoalFrequency.DAILY) }
-    var goal by rememberSaveable { mutableStateOf(GoalType.STEPS) }
+    var goalType by rememberSaveable { mutableStateOf(GoalType.DURATION) }
 
     //popup
     if (isDialogOpen.value) {
         Dialog(onDismissRequest = { isDialogOpen.value = false }) {
-            Surface {
+            Surface{
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Activity Dropdown
                     ExposedDropdownMenuBox(
@@ -278,49 +334,87 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                                 )
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        GoalsDropdown(options = listOf(GoalFrequency.DAILY.displayName, GoalFrequency.WEEKLY.displayName, GoalFrequency.MONTHLY.displayName),
-                            label = "Frequency",
-                            selectedOptionText = frequency.displayName,
-                            updateSelection = {newSelection -> frequency =
-                                GoalFrequency.byName(newSelection)!!
-                            },
-                            dropdownWidth = 200.dp
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Checkbox(
-                            checked = isFrequencyEnabled,
-                            onCheckedChange = { isFrequencyEnabled = it }
-                        )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
+
+                    GoalsDropdown(options = listOf(GoalFrequency.DAILY.displayName, GoalFrequency.WEEKLY.displayName, GoalFrequency.MONTHLY.displayName),
+                        label = "Frequency",
+                        selectedOptionText = frequency.displayName,
+                        updateSelection = {newSelection -> frequency =GoalFrequency.byName(newSelection)!!},
+                        modifier = Modifier.fillMaxWidth(),
+                        dropdownWidth = 405.dp
+                    )
+
+
+
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    GoalsDropdown(options = listOf(GoalType.STEPS.displayName, GoalType.DISTANCE.displayName, GoalType.SETS.displayName,GoalType.DURATION.displayName),
+                        label = "Goal",
+                        selectedOptionText = goalType.displayName,
+                        updateSelection = {newSelection -> goalType =
+                            GoalType.byName(newSelection)!!
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
                     // Goal TextField
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        GoalsDropdown(options = listOf(GoalType.STEPS.displayName, GoalType.DISTANCE.displayName, GoalType.SETS.displayName),
-                            label = "Goal",
-                            selectedOptionText = goal.displayName,
-                            updateSelection = {newSelection -> goal =
-                                GoalType.byName(newSelection)!!
-                            },
-                            dropdownWidth = 150.dp
-                        )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        TextField(
-                            value = steps.toString(),
-                            onValueChange = { steps = it.toIntOrNull()?:0 },
-                            singleLine = true
 
-                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+
+                        if (goalType == GoalType.DURATION) {
+                            TextField(
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                placeholder = { Text(text = goalHourValue.toString()) },
+                                value = hourInput,
+                                onValueChange = { hourInput = it},
+                                singleLine = true,
+                                trailingIcon = { Text(text = "hr") },
+
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            Spacer(modifier = Modifier.width(5.dp))
+                            TextField(
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                placeholder = { Text(text = goalMainValue.toString()) },
+                                value = mainInput,
+                                onValueChange = { mainInput = it},
+                                singleLine = true,
+                                trailingIcon = { Text(text = "min") },
+
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        else{
+                            TextField(
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                placeholder = { Text(text = goalMainValue.toString()) },
+                                value = mainInput,
+                                onValueChange = { mainInput = it},
+                                singleLine = true,
+                                trailingIcon = {
+                                    Text(
+                                        when (goalType) {
+                                            GoalType.STEPS -> "steps"
+                                            GoalType.DISTANCE -> distanceUnit
+                                            GoalType.SETS -> "sets"
+                                            else -> ""
+
+                                        }
+                                    )
+                                }
+
+                            )
+                        }
                     }
+
 
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -332,23 +426,66 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Button(onClick = {
-
                             val g = Goal()
+                            val daily = 23
+                            val weekly = 167
+                            val monthly = 743
+                            goalHourValue = hourInput.toIntOrNull() ?: 0
+                            goalMainValue = mainInput.toIntOrNull() ?: 0
 
-                            g.activityTypeId = activityType?.id!!
-                            g.frequency = frequency
-                            g.type = goal
-                            g.value = steps
 
-                            if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
-                                Log.d("FIT", "Failed to insert goal into the database")
-                            } else {
-                                Log.d("FIT", "Inserted goal into the database!")
+
+                            if (goalType == GoalType.DURATION && goalMainValue in 1..60|| goalHourValue in 1..743) {
+                                // Create the Goal object and insert into database
+
+
+                                g.activityTypeId = activityType?.id!!
+                                g.frequency = frequency
+                                g.type = goalType
+                                g.value = goalMainValue
+                                g.hours = goalHourValue
+
+                                if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
+                                    Log.d("FIT", "Failed to insert goal into the database")
+                                } else {
+                                    Log.d("FIT", "Inserted goal into the database!")
+                                    isDialogOpen.value = false
+
+                                }
+                                onChange()
+                            }
+                            else if(goalType !== GoalType.DURATION && goalMainValue in 1..999999) {
+                                g.activityTypeId = activityType?.id!!
+                                g.frequency = frequency
+                                g.type = goalType
+                                g.value = goalMainValue
+                                g.hours = goalHourValue
+
+                                if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
+                                    Log.d("FIT", "Failed to insert goal into the database")
+                                } else {
+                                    Log.d("FIT", "Inserted goal into the database!")
+                                    isDialogOpen.value = false
+
+                                }
+                                onChange()
+                            }
+                            else {
+                                isError = true
+
                             }
 
                         }) {
                             Text("ADD")
+
                         }
+
+                    }
+                    if (isError) {
+                        Text(
+                            "Enter a valid Number",
+                            color = MaterialTheme.colors.error
+                        )
                     }
                 }
             }
@@ -358,11 +495,17 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper) {
 
 suspend fun GetGoalsData (
     dataStoreManager: SettingsDataStoreManager,
-    onCalorieGoalLoaded: (Float) -> Unit
+    onCalorieGoalLoaded: (Float) -> Unit,
+    onCalorieChoiceLoaded: (Boolean) -> Unit,
+    onDistanceUnitLoaded: (String) -> Unit,
 ){
 
     val calorieGoal = dataStoreManager.getFloatSetting("CalorieGoalKey", 0f).first()
     onCalorieGoalLoaded(calorieGoal)
+    val calorieChoice = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
+    onCalorieChoiceLoaded(calorieChoice)
+    val distanceUnit = dataStoreManager.getStringSetting("DistanceUnitKey", "Miles").first()
+    onDistanceUnitLoaded(distanceUnit)
 }
 
 
@@ -374,7 +517,7 @@ fun GoalsDropdown(
     selectedOptionText: String,
     updateSelection: (newSelection: String) -> Unit,
     modifier: Modifier = Modifier,
-    dropdownWidth: Dp = 200.dp,)
+    dropdownWidth: Dp = 500.dp,)
 
     {
     var expanded by remember { mutableStateOf(false) }
@@ -386,7 +529,7 @@ fun GoalsDropdown(
         ) {
             ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
                 TextField(
-                    modifier = Modifier
+                    modifier = modifier
                         .menuAnchor()
                         .clickable(onClick = { expanded = false }),
                     value = selectedOptionText, onValueChange = {}, label = {
@@ -400,13 +543,12 @@ fun GoalsDropdown(
                 )
                 ExposedDropdownMenu(expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .width(dropdownWidth)) {
+                   ) {
                     options.forEach { selectionOption ->
                         DropdownMenuItem(
 
                             text = {
-                                androidx.compose.material3.Text(
+                                Text(
                                     selectionOption,
                                     fontFamily = FontFamily.SansSerif,
                                     fontSize = 16.sp
@@ -417,7 +559,7 @@ fun GoalsDropdown(
                                 expanded = false
 
                             },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+
                         )
                     }
                 }
