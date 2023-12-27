@@ -90,4 +90,12 @@ object GoalDAO : DAO(
         db?.close()
         return (result != (0).toLong())
     }
+
+    fun delete(db: SQLiteDatabase?, goal: Goal) : Boolean {
+        val affected = db?.delete(tableName, "id = ${goal.id}", arrayOf(goal.id.toString()))
+        if (affected != null) {
+            return affected > 0
+        }
+        return false
+    }
 }
