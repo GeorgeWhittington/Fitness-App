@@ -21,6 +21,7 @@ import com.foxden.fitnessapp.ui.DBTestScreen
 import com.foxden.fitnessapp.ui.DisplaySettings
 import com.foxden.fitnessapp.ui.GoalsSettings
 import com.foxden.fitnessapp.ui.HomeScreen
+import com.foxden.fitnessapp.ui.NutritionLogMealScreen
 import com.foxden.fitnessapp.ui.NutritionTrackingScreen
 import com.foxden.fitnessapp.ui.ProfileSettings
 import com.foxden.fitnessapp.ui.SettingsScreen
@@ -40,6 +41,7 @@ object Routes {
     const val PROFILE_SETTINGS_SCREEN = "ProfileSettingsScreen"
     const val DISPLAY_SETTINGS_SCREEN = "DisplaySettingsScreen"
     const val GOALS_SETTINGS_SCREEN = "GoalsSettingsScreen"
+    const val NUTRITION_LOG_MEAL_SCREEN = "NutritionLogMealScreen"
 
     const val DBTEST_SCREEN = "DBTestScreen"
 }
@@ -99,8 +101,17 @@ class MainActivity : ComponentActivity() {
                             enterTransition = { EnterTransition.None },
                             exitTransition = { ExitTransition.None }
                         ) {
-                            NutritionTrackingScreen(navController)
+                            NutritionTrackingScreen(navController, db)
                         }
+
+                        composable(
+                            Routes.NUTRITION_LOG_MEAL_SCREEN,
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {
+                            NutritionLogMealScreen(navController, db)
+                        }
+
                         composable(
                             Routes.SETTINGS_SCREEN,
                             enterTransition = { EnterTransition.None },

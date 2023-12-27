@@ -25,12 +25,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.DirectionsBike
-import androidx.compose.material.icons.outlined.DirectionsRun
-import androidx.compose.material.icons.outlined.FitnessCenter
-import androidx.compose.material.icons.outlined.Hiking
-import androidx.compose.material.icons.outlined.Pool
-import androidx.compose.material.icons.outlined.SelfImprovement
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
@@ -61,7 +54,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
-import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.components.ActivitySelector
 import com.foxden.fitnessapp.ui.components.AddActivityTypeDialog
@@ -83,19 +75,6 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.rememberCameraPositionState
-
-// Temporary class for dummy data
-
-/*
-val activities = arrayOf(
-    ActivityType("Jogging", Icons.Outlined.DirectionsRun, true),
-    ActivityType("Hiking", Icons.Outlined.Hiking, true),
-    ActivityType("Cycling", Icons.Outlined.DirectionsBike, true),
-    ActivityType("Yoga", Icons.Outlined.SelfImprovement, false),
-    ActivityType("Weightlifting", Icons.Outlined.FitnessCenter, false),
-    ActivityType("Swimming", Icons.Outlined.Pool, true)
-)
-*/
 
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
