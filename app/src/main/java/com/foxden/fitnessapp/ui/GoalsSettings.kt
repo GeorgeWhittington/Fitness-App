@@ -74,7 +74,7 @@ import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Yellow
 import kotlinx.coroutines.flow.first
-
+import kotlin.math.roundToInt
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -185,7 +185,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 
                     ) {
                         Spacer(modifier = Modifier.weight(1f))
-                        Text(text = "Daily calorie goal", fontSize = 20.sp)
+                        Text(text = "Daily calorie goal", fontSize = 20.sp, color = MidBlue)
                         Spacer(modifier = Modifier.weight(1f))
                     }
                     Spacer(modifier = Modifier.height(20.dp))
@@ -232,7 +232,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 
                 ) {
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Activity Goals", fontSize = 20.sp)
+                    Text(text = "Activity Goals", fontSize = 20.sp, color = MidBlue)
                     Spacer(modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
@@ -299,7 +299,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
-                    .background(MidBlue, CircleShape)
+                    .background(Yellow, CircleShape)
                     .size(56.dp)
             ) {
                 Icon(
@@ -316,7 +316,10 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper,onChange: () -> Unit,distanceUnit: String){
+fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
+                    dbHelper: DBHelper,
+                    onChange: () -> Unit,
+                    distanceUnit: String){
     var isError by remember { mutableStateOf(false) }
 
 

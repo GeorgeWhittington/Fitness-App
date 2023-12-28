@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -57,6 +58,9 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
 
+    //distance unit
+    var distanceUnit by rememberSaveable { mutableStateOf("") }
+
     //used to load chosen character
     var character by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
@@ -87,6 +91,10 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 isLoading = false
 
             }
+            ,
+            onDistanceUnitLoaded = { loadedDistanceUnit ->
+                distanceUnit = loadedDistanceUnit
+            },
 
         )
 
@@ -131,7 +139,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
-                ActivityWidget(lastActivity, activityTypeList.filter{ it.id ==  lastActivity.activityTypeId}.first())
+                ActivityWidget(lastActivity, activityTypeList.filter{ it.id ==  lastActivity.activityTypeId}.first(),distanceUnit=distanceUnit)
             }
 
 
@@ -146,10 +154,13 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
 suspend fun GetHomeData (
     dataStoreManager: SettingsDataStoreManager,
 
-    onCharacterLoaded: (String) -> Unit
+    onCharacterLoaded: (String) -> Unit,
+    onDistanceUnitLoaded: (String) -> Unit,
 ){
 
 
     val character = dataStoreManager.getStringSetting("CharacterKey", "Fox").first()
     onCharacterLoaded(character)
+    val distanceUnit = dataStoreManager.getStringSetting("DistanceUnitKey", "Miles").first()
+    onDistanceUnitLoaded(distanceUnit)
 }
