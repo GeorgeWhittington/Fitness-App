@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                             enterTransition = { EnterTransition.None },
                             exitTransition = { ExitTransition.None }
                         ) {
-                            HomeScreen(navController, application)
+                            HomeScreen(navController, application,db)
                         }
                         composable(
                             Routes.ACTIVITY_JOURNAL_SCREEN,

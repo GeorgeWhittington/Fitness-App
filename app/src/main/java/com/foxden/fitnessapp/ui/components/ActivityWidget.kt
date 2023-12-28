@@ -41,7 +41,9 @@ import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.ui.theme.LightBlue
 import com.foxden.fitnessapp.ui.theme.MidBlue
+import com.foxden.fitnessapp.ui.theme.Yellow
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -90,7 +92,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
             .fillMaxWidth()
             .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(Color.White)
+            .background(MidBlue)
     ) {
         ActivitySlideshow(modifier = Modifier.width(112.dp), images)
         Column (
@@ -111,7 +113,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
                     Column {
                         Text(text = "Distance", fontSize = 12.sp)
                         Text(text = "${log.distance} km", fontSize = 12.sp,
-                            color = MidBlue,
+                            color = Yellow,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
@@ -119,7 +121,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
                         Text(text = "Time", fontSize = 12.sp)
                         // TODO: split into hours an minutes
                         Text(text = "${duration?.toMinutes()} min", fontSize = 12.sp,
-                            color = MidBlue,
+                            color = Yellow,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
@@ -127,7 +129,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
                         Text(text = "Calories", fontSize = 12.sp)
                         Text(
                             text = "${log.calories}", fontSize = 12.sp,
-                            color = MidBlue,
+                            color = Yellow,
                             fontWeight = FontWeight(700))
                     }
                 }
