@@ -73,11 +73,8 @@ import com.foxden.fitnessapp.ui.components.GoalsWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Yellow
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

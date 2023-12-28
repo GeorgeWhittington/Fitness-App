@@ -41,7 +41,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,10 +56,13 @@ import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.DarkBlue
 import com.foxden.fitnessapp.ui.theme.LightBlue
+import com.foxden.fitnessapp.ui.theme.MidBlue
+import com.foxden.fitnessapp.ui.theme.Yellow
 
 class DropdownOption(val text: String, val icon: ImageVector? = null)
 
@@ -81,8 +86,12 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
         }
     }
 
+    //get preferred distance unit
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
+
     Scaffold (
-        containerColor = LightBlue,
+
         bottomBar = { NavBar(navigation = navigation) }
     ) {
         Column(modifier = Modifier.padding(it)) {
@@ -107,7 +116,7 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                         ) {
                             Icon(
                                 Icons.Outlined.Add, contentDescription = "Add Activity Manually",
-                                tint = DarkBlue, modifier = Modifier.size(30.dp)
+                                tint = MidBlue, modifier = Modifier.size(30.dp)
                             )
                         }
 
@@ -117,7 +126,7 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                         ) {
                             Icon(
                                 Icons.Outlined.Tune, contentDescription = "Sort and Filter",
-                                tint = DarkBlue, modifier = Modifier.size(30.dp)
+                                tint = MidBlue, modifier = Modifier.size(30.dp)
                             )
                         }
                     }

@@ -58,10 +58,12 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -70,6 +72,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,8 +81,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.foxden.fitnessapp.data.ActivityLog
+import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
+import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ImageSteppers
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Orange
@@ -88,10 +96,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import com.foxden.fitnessapp.data.ActivityLog
-import com.foxden.fitnessapp.data.ActivityLogDAO
-import com.foxden.fitnessapp.data.ActivityTypeDAO
-import com.foxden.fitnessapp.data.DBHelper
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,6 +113,11 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
+
+    //get unit preference
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
+    var distanceUnit by rememberSaveable { mutableStateOf("") }
 
     // other state
     var activityTypeExpanded by remember { mutableStateOf(false) }
@@ -206,6 +215,21 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             }
         }
     ) {scaffoldingPaddingValues ->
+        LaunchedEffect(Unit) {
+            GetGoalsData(
+                dataStoreManager,
+                onCalorieGoalLoaded = { loadedCalorieGoal ->
+                    var currentCalorieGoal = loadedCalorieGoal
+                },
+                onCalorieChoiceLoaded = { loadedCalorieChoice ->
+                    var calorieChoice = loadedCalorieChoice
+                },
+                onDistanceUnitLoaded = { loadedDistanceUnit ->
+                    distanceUnit = loadedDistanceUnit
+                },
+            )
+        }
+
         Column (modifier = Modifier.padding(scaffoldingPaddingValues)) {
         Column (modifier = Modifier
             .padding(start = 15.dp, end = 15.dp)
@@ -328,8 +352,9 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // Activity Distance
+            var distanceFloat by rememberSaveable { mutableFloatStateOf(0f) }
             OutlinedTextField(
-                value = distance, suffix = { Text("km") }, label = { Text("Distance" )},
+                value = distance, suffix = { Text("$distanceUnit") }, label = { Text("Distance" )},
                 trailingIcon = { Icon(Icons.Outlined.UnfoldMore, null) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -361,9 +386,11 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                     if (input.count { it == '.' } > 1)
                         return@OutlinedTextField
 
-                    distance = input
+
+                    distanceFloat = distance.toFloat()
                 }
             )
+
             Spacer(modifier = Modifier.height(10.dp))
 
             // Activity Attachments
@@ -470,7 +497,10 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                 var d1 = duration!!.second?.times(60)
                     ?.let { duration!!.first?.times(3600)?.plus(it)  }
 
+                if(distanceUnit=="Km"){
+                    distanceFloat /= 1.609f
 
+                }
                 // Add to database
                 var log = ActivityLog(
                     title=title,
@@ -478,13 +508,14 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                     notes = notes,
                     startTime = datetime!!.toEpochSecond(),
                     duration = d1 as Int,
-                    distance = distance.toFloat()
+                    distance = distanceFloat
                 )
 
                 if (!ActivityLogDAO.insert(dbHelper.writableDatabase, log)) {
                     Log.d("FIT", "Failed to insert activity log into the database")
                 } else {
                     Log.d("FIT", "Inserted activity into the database!")
+                    navigation.popBackStack()
                 }
 
 
@@ -501,7 +532,7 @@ fun DurationPicker(
     onDismiss: () -> Unit, onConfirm: (Pair<Int, Int>) -> Unit
 ) {
     var durationHours by remember { mutableStateOf(if (initialHours != null && initialHours != 0) { initialHours.toString() } else {""}) }
-    var durationMinutes by remember { mutableStateOf(if (initialMinutes != null && initialMinutes != 0) { initialMinutes.toString() } else {""}) }
+    var durationMinutes by remember { mutableStateOf(if ((initialMinutes != null) && (initialMinutes != 0)) { initialMinutes.toString() } else {""}) }
 
     AlertDialog(
         modifier = Modifier.fillMaxWidth(),
