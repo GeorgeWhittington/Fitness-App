@@ -5,7 +5,6 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 
 
-
 enum class GoalFrequency(val displayName: String)
 {
     DAILY("Daily"),
@@ -91,8 +90,8 @@ object GoalDAO : DAO(
         return (result != (0).toLong())
     }
 
-    fun delete(db: SQLiteDatabase?, goal: Goal) : Boolean {
-        val affected = db?.delete(tableName, "id = ${goal.id}", arrayOf(goal.id.toString()))
+    fun delete(db: SQLiteDatabase?, goal: Goal): Boolean {
+        val affected = db?.delete(tableName, "id = ?", arrayOf(goal.id.toString()))
         if (affected != null) {
             return affected > 0
         }

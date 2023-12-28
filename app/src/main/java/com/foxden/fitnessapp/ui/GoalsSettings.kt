@@ -3,6 +3,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -48,6 +50,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -70,7 +73,11 @@ import com.foxden.fitnessapp.ui.components.GoalsWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Yellow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -100,6 +107,10 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
+
+    //remove goals
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedGoal by remember { mutableStateOf<Goal?>(null) }
 
 
 
@@ -228,6 +239,8 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
+
+
                 LaunchedEffect(goalAdded) {
 
                     if (goalAdded) {
@@ -236,14 +249,48 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                     }
                 }
                 //goals
-                for (log in GoalList) {
 
+                for (log in GoalList) {
+                    // Wrap your GoalsWidget with a Modifier for long press
                     GoalsWidget(log,
-                        activityTypeList.filter{ it.id ==  log.activityTypeId}.first(),
-                        distanceUnit = distanceUnit)
+                        activityType = activityTypeList.filter { it.id == log.activityTypeId }.first(),
+                        distanceUnit = distanceUnit,
+                        modifier = Modifier.pointerInput(log) {
+                            detectTapGestures(
+                                onLongPress = {
+                                    selectedGoal = log
+                                    showDialog = true
+                                }
+                            )
+                        }
+                    )
                     Spacer(modifier = Modifier.size(10.dp))
                 }
-
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Delete Goal") },
+                        text = { Text("Are you sure you want to delete this goal?") },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    showDialog = false
+                                    selectedGoal?.let { goal ->
+                                        GoalList.remove(goal)
+                                        GoalDAO.delete(dbHelper.writableDatabase, goal)
+                                    }
+                                }
+                            ) {
+                                Text("Confirm")
+                            }
+                        },
+                        dismissButton = {
+                            Button(onClick = { showDialog = false }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
+                }
 
 
             }
@@ -492,6 +539,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>, dbHelper: DBHelper,onCh
         }
     }
 }
+
 
 suspend fun GetGoalsData (
     dataStoreManager: SettingsDataStoreManager,
