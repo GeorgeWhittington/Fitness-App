@@ -122,10 +122,11 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
             }
             Text(text = "activities: 0 | distance: 0km | time: 0h 0m")
 
-
+            /*
             Button(onClick = { navigation.navigate(Routes.DBTEST_SCREEN) }) {
                 Text(text = "DBTest")
             }
+             */
 
             if (ActivityLogList.isNotEmpty()) {
                 val lastActivity = ActivityLogList.last()

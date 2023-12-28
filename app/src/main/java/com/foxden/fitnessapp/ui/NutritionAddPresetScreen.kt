@@ -145,8 +145,9 @@ fun NutritionAddPresetScreen(navigation: NavController, dbHelper: DBHelper) {
 
                 // Log meal
                 Button(onClick = {
-                    addPresetMeal(dbHelper, name, calories)
-                    navigation.navigate(Routes.NUTRITION_TRACKING_SCREEN)
+                    if (AddPresetMeal(dbHelper, name, calories)) {
+                        navigation.navigate(Routes.NUTRITION_TRACKING_SCREEN)
+                    }
                 }) {
                     androidx.compose.material3.Text("Add Preset Meal")
                 }
@@ -156,15 +157,20 @@ fun NutritionAddPresetScreen(navigation: NavController, dbHelper: DBHelper) {
     }
 }
 
-fun addPresetMeal(dbHelper: DBHelper, name: String, calories: Int)
+private fun AddPresetMeal(dbHelper: DBHelper, name: String, calories: Int) : Boolean
 {
+    if (calories <= 0)
+        return false
+
     var preset = NutritionMealPreset()
     preset.name = name
     preset.calories = calories
 
     if (!NutritionMealPresetDAO.insert(dbHelper.writableDatabase, preset)) {
         Log.d("FIT", "Failed to insert activity log into the database")
-    } else {
-        Log.d("FIT", "Inserted activity into the database!")
+        return false
     }
+
+    Log.d("FIT", "Inserted activity into the database!")
+    return true
 }

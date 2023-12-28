@@ -166,7 +166,7 @@ fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit, dbHe
                     Log.e("FIT", "GPS Tracking and Set tracking settings selected at the same time")
                     onError("ERROR: GPS tracking and set tracking are incompatible")
                 } else {
-                    addActivity(activityName, selectedIcon!!, gpsTracking, setTracking, dbHelper)
+                    AddActivity(dbHelper, activityName, selectedIcon!!, gpsTracking, setTracking)
                     onDismiss()
                 }
             }) {
@@ -190,9 +190,11 @@ fun AddActivityTypeErrorDialog(errorMessage: String, onDismiss: () -> Unit) {
     )
 }
 
-fun addActivity(name: String, icon: Int, gpsTracking: Boolean, setTracking: Boolean, dbHelper: DBHelper) {
-    val at = ActivityType()
+private fun AddActivity(dbHelper: DBHelper, name: String, icon: Int, gpsTracking: Boolean, setTracking: Boolean) : Boolean {
+    if (name.isNullOrEmpty())
+        return false
 
+    val at = ActivityType()
     at.name = name;
     at.gpsEnabled = gpsTracking
     at.iconId = icon
@@ -200,9 +202,10 @@ fun addActivity(name: String, icon: Int, gpsTracking: Boolean, setTracking: Bool
 
     if (!ActivityTypeDAO.insert(db = dbHelper.writableDatabase, at)) {
         Log.d("FIT", "Failed to insert into database.")
-    } else {
-        Log.d("FIT", "Inserted Successfully!")
     }
+
+    Log.d("FIT", "Inserted Successfully!")
+    return true
 }
 
 @Composable

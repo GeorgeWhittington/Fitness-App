@@ -162,6 +162,10 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
 
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
+                    if (activityLogs.size == 0) {
+                        Text(text = "Nothing logged yet")
+                    }
+
                     for (log in activityLogs) {
                         ActivityWidget(log,
                             activityTypeList.filter{ it.id ==  log.activityTypeId}.first(),

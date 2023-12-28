@@ -277,18 +277,9 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
                 // Log meal
                 Button(onClick = {
 
-                    var l = NutritionLog()
-                    l.type = selectedMealType
-                    l.date = datetime!!.toLocalDate()
-                    l.calories = calories
-
-                    if (!NutritionLogDAO.insert(db = dbHelper.writableDatabase, l)) {
-                        Log.d("FIT", "Failed to insert into database.")
-                    } else {
-                        Log.d("FIT", "Inserted Successfully!")
+                    if (AddNutritionLog(dbHelper, selectedMealType, datetime, calories)) {
                         navigation.navigate(Routes.NUTRITION_TRACKING_SCREEN)
                     }
-
 
                 }) {
                     androidx.compose.material3.Text("Log Meal")
@@ -297,4 +288,23 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
             }
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun AddNutritionLog(dbHelper: DBHelper, type: NutritionType?, date: ZonedDateTime?, calories: Int?) : Boolean
+{
+    if (type == null || date == null || calories == null || calories <= 0)
+        return false
+
+    var l = NutritionLog()
+    l.type = type
+    l.date = date.toLocalDate()
+    l.calories = calories
+
+    if (!NutritionLogDAO.insert(db = dbHelper.writableDatabase, l)) {
+        return false
+    }
+
+    Log.d("FIT", "Inserted Successfully!")
+    return true
 }

@@ -91,6 +91,7 @@ import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ImageSteppers
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Orange
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -492,32 +493,17 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             // Add Activity
             Button(onClick = {
                 distanceFloat = distance.toFloat()
-                // TODO: validation
 
                 var d1 = duration!!.second?.times(60)
                     ?.let { duration!!.first?.times(3600)?.plus(it)  }
 
                 if(distanceUnit=="Km"){
                     distanceFloat /= 1.609f
-
                 }
-                // Add to database
-                var log = ActivityLog(
-                    title=title,
-                    activityTypeId = activityType!!.id,
-                    notes = notes,
-                    startTime = datetime!!.toEpochSecond(),
-                    duration = d1 as Int,
-                    distance = distanceFloat
-                )
 
-                if (!ActivityLogDAO.insert(dbHelper.writableDatabase, log)) {
-                    Log.d("FIT", "Failed to insert activity log into the database")
-                } else {
-                    Log.d("FIT", "Inserted activity into the database!")
+                if (AddManualActivity(dbHelper, title, activityType, notes, datetime, d1, distanceFloat)) {
                     navigation.popBackStack()
                 }
-
 
             }) {
                 Text("Add Activity")
@@ -634,4 +620,47 @@ fun FullscreenImageDialog(onDismiss: () -> Unit, imageURI: Uri, contentDescripti
 fun PreviewAddManualActivityScreen() {
     val navController = rememberNavController()
     //AddManualActivityScreen(navController)
+}
+
+private fun ValidateForm(title: String?, activityType: ActivityType?, startTime: ZonedDateTime?, duration: Int?, distance: Float?) : Boolean {
+    if (title.isNullOrEmpty())
+        return false
+
+    if (activityType == null)
+        return false
+
+    if (startTime == null)
+        return false
+
+    if (duration == null || duration <= 0)
+        return false
+
+    if (distance == null || distance <= 0)
+        return false
+
+    return true
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: ActivityType?, notes: String?, startTime: ZonedDateTime?, duration: Int?, distance: Float?) : Boolean {
+
+    if (!ValidateForm(title, activityType, startTime, duration, distance))
+        return false
+
+    var log = ActivityLog(
+        title=title!!,
+        activityTypeId = activityType!!.id,
+        notes = notes!!,
+        startTime = startTime!!.toEpochSecond(),
+        duration = duration!!,
+        distance = distance!!
+    )
+
+    if (!ActivityLogDAO.insert(dbHelper.writableDatabase, log)) {
+        Log.d("FIT", "Failed to insert activity log into the database")
+        return false
+    }
+
+    Log.d("FIT", "Inserted activity into the database!")
+    return true
 }
