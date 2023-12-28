@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,6 +27,7 @@ import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.Goal
 import com.foxden.fitnessapp.data.GoalType
+import com.foxden.fitnessapp.ui.theme.MidBlue
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -43,7 +43,7 @@ fun GoalsWidget(log: Goal,
             .fillMaxWidth()
             .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(Color.Gray)
+            .background(MidBlue)
     ) {
 
         Column (
@@ -143,6 +143,7 @@ fun GoalsWidget(log: Goal,
 
                 }else if(log.type == GoalType.DISTANCE){
 
+
                     Column {
                         Row(
                             verticalAlignment = Alignment.Bottom
@@ -153,7 +154,7 @@ fun GoalsWidget(log: Goal,
                                 fontSize = 50.sp,
                                 modifier = Modifier.alignByBaseline()
                             )
-                            //TODO: add the pref distance unit here
+
                             Text(
                                 text = distanceUnit,
                                 fontSize = 16.sp,

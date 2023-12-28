@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DirectionsWalk
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,18 +28,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
-import com.foxden.fitnessapp.ui.theme.LightBlue
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Yellow
 import java.time.Duration
@@ -74,11 +69,18 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
+fun ActivityWidget(log: ActivityLog, activityType: ActivityType,distanceUnit: String,modifier: Modifier = Modifier) {
 
     var startDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())) }
     var endDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())) }
     var duration: Duration? by remember { mutableStateOf(Duration.between(startDT, endDT)) }
+    var activityDistance: Float
+
+    if (distanceUnit=="Km"){
+        activityDistance = String.format("%.2f", log.distance*1.609).toFloat()
+    }else{
+        activityDistance = log.distance
+    }
 
     val images = listOf(
         SlideshowImage(painterResource(R.drawable.hiking_route), "map showing route taken"),
@@ -88,7 +90,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
     )
 
     Row (
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
@@ -111,8 +113,10 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
                 Spacer(modifier = Modifier.size(5.dp))
                 Row {
                     Column {
+
                         Text(text = "Distance", fontSize = 12.sp)
-                        Text(text = "${log.distance} km", fontSize = 12.sp,
+
+                        Text(text = "$activityDistance "+"$distanceUnit", fontSize = 12.sp,
                             color = Yellow,
                             fontWeight = FontWeight(700))
                     }
@@ -140,11 +144,3 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType) {
     }
 }
 
-@Preview
-@Composable
-fun PreviewActivityWidget() {
-    Column (modifier = Modifier.width(310.dp)) {
-        ActivityWidget(ActivityLog(), ActivityType())
-    }
-
-}

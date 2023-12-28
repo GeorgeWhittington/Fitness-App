@@ -386,8 +386,8 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                     if (input.count { it == '.' } > 1)
                         return@OutlinedTextField
 
+                    distance = input
 
-                    distanceFloat = distance.toFloat()
                 }
             )
 
@@ -491,7 +491,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
 
             // Add Activity
             Button(onClick = {
-
+                distanceFloat = distance.toFloat()
                 // TODO: validation
 
                 var d1 = duration!!.second?.times(60)

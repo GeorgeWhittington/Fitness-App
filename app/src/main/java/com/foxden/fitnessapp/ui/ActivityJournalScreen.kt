@@ -1,5 +1,6 @@
 package com.foxden.fitnessapp.ui
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -33,16 +35,19 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +61,8 @@ import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.Goal
+import com.foxden.fitnessapp.data.GoalDAO
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
@@ -89,6 +96,12 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
     //get preferred distance unit
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
+    var distanceUnit by rememberSaveable { mutableStateOf("") }
+
+    //remove activities
+    var selectedActivity by remember { mutableStateOf<ActivityLog?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
+
 
     Scaffold (
 
@@ -100,6 +113,21 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                     .fillMaxWidth()
                     .padding(start = 25.dp, end = 25.dp, top = 25.dp)
             ) {
+
+                LaunchedEffect(Unit) {
+                    GetGoalsData(
+                        dataStoreManager,
+                        onCalorieGoalLoaded = { loadedCalorieGoal ->
+                            var currentCalorieGoal = loadedCalorieGoal
+                        },
+                        onCalorieChoiceLoaded = { loadedCalorieChoice ->
+                            var calorieChoice = loadedCalorieChoice
+                        },
+                        onDistanceUnitLoaded = { loadedDistanceUnit ->
+                            distanceUnit = loadedDistanceUnit
+                        },
+                    )
+                }
                 Row(
                     verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -107,7 +135,7 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                 ) {
                     Text(
                         text = "Activity Journal", fontSize = 20.sp,
-                        color = DarkBlue
+                        color = MidBlue
                     )
                     Row {
                         IconButton(
@@ -135,8 +163,44 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
                     for (log in activityLogs) {
-                        ActivityWidget(log, activityTypeList.filter{ it.id ==  log.activityTypeId}.first())
+                        ActivityWidget(log,
+                            activityTypeList.filter{ it.id ==  log.activityTypeId}.first(),
+                            distanceUnit = distanceUnit,
+                            modifier = Modifier.pointerInput(log) {
+                                detectTapGestures(
+                                    onLongPress = {
+                                        selectedActivity = log
+                                        showDialog = true
+                                    }
+                                )
+                            }
+                            )
                         Spacer(modifier = Modifier.size(10.dp))
+                        if (showDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showDialog = false },
+                                title = { Text("Delete Goal") },
+                                text = { Text("Are you sure you want to delete this goal?") },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            showDialog = false
+                                            selectedActivity?.let { activity ->
+                                                activityLogs.remove(activity)
+                                                ActivityLogDAO.delete(dbHelper.writableDatabase, activity)
+                                            }
+                                        }
+                                    ) {
+                                        Text("Confirm")
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(onClick = { showDialog = false }) {
+                                        Text("Cancel")
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }

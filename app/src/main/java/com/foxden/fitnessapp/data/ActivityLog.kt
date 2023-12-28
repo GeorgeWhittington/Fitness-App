@@ -3,7 +3,6 @@ package com.foxden.fitnessapp.data
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import android.util.Log
 
 data class ActivityLog(
     var id : Int = 0,
@@ -66,5 +65,13 @@ object ActivityLogDAO : DAO(
         val result = db?.insert(tableName, null, contentValues)
         db?.close()
         return (result != (0).toLong())
+    }
+
+    fun delete(db: SQLiteDatabase?, activityLog: ActivityLog): Boolean {
+        val affected = db?.delete(tableName, "id = ?", arrayOf(activityLog.id.toString()))
+        if (affected != null) {
+            return affected > 0
+        }
+        return false
     }
 }
