@@ -17,13 +17,18 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
         ActivityTypeDAO.onCreate(db)
         ActivityLogDAO.onCreate(db)
-        NutritionPresetDAO.onCreate(db)
+        NutritionMealPresetDAO.onCreate(db)
         NutritionLogDAO.onCreate(db)
         GoalDAO.onCreate(db)
 
+        // Add default activity types
         ActivityTypeDAO.insert(db, ActivityType(name="Jogging", iconId = Constants.ActivityIcons.DIRECTIONS_RUN.ordinal))
         ActivityTypeDAO.insert(db, ActivityType(name="Hiking", iconId = Constants.ActivityIcons.HIKING.ordinal))
         ActivityTypeDAO.insert(db, ActivityType(name="Cycling", iconId = Constants.ActivityIcons.DIRECTIONS_BIKE.ordinal))
+
+        // Add default meal presets
+        NutritionMealPresetDAO.insert(db, NutritionMealPreset(name="Banana", calories = 100))
+        NutritionMealPresetDAO.insert(db, NutritionMealPreset(name="Apple", calories = 95))
 
     }
 

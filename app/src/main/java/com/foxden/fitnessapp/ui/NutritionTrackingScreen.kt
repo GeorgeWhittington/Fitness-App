@@ -8,20 +8,26 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -45,6 +51,7 @@ import com.foxden.fitnessapp.data.NutritionLogDAO
 import com.foxden.fitnessapp.data.NutritionType
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.components.NutritionDisplay
+import com.foxden.fitnessapp.ui.components.NutritionProgress
 import com.foxden.fitnessapp.ui.theme.DarkBlue
 import com.foxden.fitnessapp.ui.theme.LightBlue
 import com.foxden.fitnessapp.ui.theme.MidBlue
@@ -60,7 +67,7 @@ fun NutritionTrackingScreen(navigation: NavController, dbHelper: DBHelper) {
 
     // Get last 7 days
     val start = LocalDate.now().minusDays(7)
-    val end = LocalDate.now().plusDays(1)
+    val end = LocalDate.now()
     var nutritionLogList = remember {
         NutritionLogDAO.fetchRange(dbHelper.writableDatabase, start, end).toMutableStateList()
     }
@@ -80,36 +87,66 @@ fun NutritionTrackingScreen(navigation: NavController, dbHelper: DBHelper) {
                 Modifier
                     .fillMaxWidth()
                     .padding(start = 25.dp, end = 25.dp, top = 25.dp)
+
             ) {
-                Text(text = "Nutrition Tracking (${nutritionLogList.size})", fontSize = 20.sp, color = DarkBlue)
 
-
-                Spacer(modifier = Modifier.size(15.dp))
-
-                // Nutrition widgets for last 7 days
-                for (i in 0..7) {
-                    NutritionDisplay(LocalDate.now().minusDays(i.toLong()), nutritionLogList)
-                }
-
-                // Log meal button
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    IconButton(
-                        onClick = {
-                            navigation.navigate(Routes.NUTRITION_LOG_MEAL_SCREEN)
-                        },
-                        modifier = Modifier
-                            .background(MidBlue, CircleShape)
-                            .size(65.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.Add, contentDescription = null,
-                            tint = Color.White, modifier = Modifier.size(65.dp)
-                        )
+                    Text(
+                        text = "Nutrition Tracking", fontSize = 20.sp,
+                        color = DarkBlue
+                    )
+                    Row {
+                        IconButton(
+                            onClick = { navigation.navigate(Routes.NUTRITION_LOG_MEAL_SCREEN) },
+                            modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
+                        ) {
+                            androidx.compose.material.Icon(
+                                Icons.Outlined.Add, contentDescription = "Log Meal",
+                                tint = MidBlue, modifier = Modifier.size(30.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { navigation.navigate(Routes.NUTRITION_ADD_PRESET_SCREEN) },
+                            modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
+                        ) {
+                            androidx.compose.material.Icon(
+                                Icons.Outlined.Edit, contentDescription = "Add Preset",
+                                tint = MidBlue, modifier = Modifier.size(30.dp)
+                            )
+                        }
                     }
                 }
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        Spacer(modifier = Modifier.size(15.dp))
+
+                        // Todays values
+                        NutritionProgress(nutritionLogList.filter { it.date == LocalDate.now() }.sumOf { it.calories })
+                        Spacer(modifier = Modifier.size(4.dp))
+                        NutritionDisplay(LocalDate.now(), nutritionLogList, true)
+                        Spacer(modifier = Modifier.size(4.dp))
+
+                        // Yesterdays values
+                        NutritionDisplay(LocalDate.now().minusDays(1), nutritionLogList, true)
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text("Previous")
+                        Spacer(modifier = Modifier.size(4.dp))
+
+                        // Values for the past
+                        for (i in 2..6) {
+                            NutritionDisplay(LocalDate.now().minusDays(i.toLong()), nutritionLogList)
+                            Spacer(modifier = Modifier.size(4.dp))
+                        }
+                    }
+                }
+
+
+
 
             }
         }

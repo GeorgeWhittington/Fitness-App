@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.foxden.fitnessapp.data.NutritionLog
@@ -30,7 +32,7 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun NutritionDisplay(date: LocalDate, logs :List<NutritionLog>) {
+fun NutritionDisplay(date: LocalDate, logs :List<NutritionLog>, advancedView: Boolean = false) {
 
     val containerModifier = Modifier
         .fillMaxWidth()
@@ -42,6 +44,7 @@ fun NutritionDisplay(date: LocalDate, logs :List<NutritionLog>) {
         logs.filter { it.date!! == date }
     }
 
+    val totalSum = remember { nutritionLogFiltered.sumOf { it.calories } }
     val breakfastSum = remember { nutritionLogFiltered.filter { it.type == NutritionType.BREAKFAST }.sumOf { it.calories } }
     val lunchSum = remember { nutritionLogFiltered.filter { it.type == NutritionType.LUNCH }.sumOf { it.calories } }
     val dinnerSum = remember { nutritionLogFiltered.filter { it.type == NutritionType.DINNER }.sumOf { it.calories } }
@@ -71,18 +74,29 @@ fun NutritionDisplay(date: LocalDate, logs :List<NutritionLog>) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Row(modifier = Modifier) {
-                    Text(text = "$titleStr (${nutritionLogFiltered.size})", fontSize = 14.sp, color = DarkBlue)
-                }
 
-                if (nutritionLogFiltered.isEmpty()) {
-                    Row {
-                        Text(text = "Nothing Logged", fontSize = 12.sp, color = MidBlue, fontWeight = FontWeight(700))
+                Row(modifier = Modifier.fillMaxWidth()){
+                    Column (modifier = Modifier.fillMaxWidth(0.5f)){
+                        Row (){
+                            Text(text = titleStr, fontSize = 14.sp, color = DarkBlue)
+                        }
                     }
-                } else {
-                    NutritionDetailed(breakfastSum, lunchSum, dinnerSum, snacksSum)
+                    Column (modifier = Modifier.fillMaxWidth(0.5f)){
+                        Row (modifier = Modifier.align(Alignment.End)) {
+                            Text(modifier = Modifier.fillMaxWidth(), text = "$totalSum kcal", fontSize = 14.sp, color = DarkBlue, textAlign = TextAlign.Right)
+                        }
+                    }
                 }
 
+                if (advancedView) {
+                    if (nutritionLogFiltered.isEmpty()) {
+                        Row {
+                            Text(text = "Nothing Logged", fontSize = 12.sp, color = MidBlue, fontWeight = FontWeight(700))
+                        }
+                    } else {
+                        NutritionDetailed(breakfastSum, lunchSum, dinnerSum, snacksSum)
+                    }
+                }
             }
 
         }
