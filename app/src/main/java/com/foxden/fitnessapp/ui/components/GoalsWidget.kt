@@ -31,12 +31,15 @@ import com.foxden.fitnessapp.data.GoalType
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GoalsWidget(log: Goal, activityType: ActivityType,distanceUnit: String) {
+fun GoalsWidget(log: Goal,
+                activityType: ActivityType,
+                distanceUnit: String,
+                modifier: Modifier = Modifier) {
 
 
 
     Row (
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
@@ -46,7 +49,7 @@ fun GoalsWidget(log: Goal, activityType: ActivityType,distanceUnit: String) {
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
 
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(10.dp)
         ) {
