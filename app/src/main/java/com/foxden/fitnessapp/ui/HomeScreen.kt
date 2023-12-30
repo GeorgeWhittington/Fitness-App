@@ -109,14 +109,16 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (!isLoading) {
-                Image(
-                    painter = painterResource(image),
-                    contentDescription = stringResource(id = R.string.cat_alt_text),
-                    modifier = Modifier.size(width = 150.dp, height = 150.dp)
-                )
-            } else {
-                Icon(Icons.Outlined.Image, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+            Row (modifier = Modifier.height(350.dp)){
+                if (!isLoading) {
+                    Image(
+                        painter = painterResource(image),
+                        contentDescription = stringResource(id = R.string.cat_alt_text),
+                        //modifier = Modifier.size(width = 150.dp, height = 150.dp)
+                    )
+                } else {
+                    Icon(Icons.Outlined.Image, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+                }
             }
             Text(text = "activities: 0 | distance: 0km | time: 0h 0m")
 
