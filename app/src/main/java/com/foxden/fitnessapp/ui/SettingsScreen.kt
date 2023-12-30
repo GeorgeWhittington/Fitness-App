@@ -36,7 +36,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -72,6 +71,8 @@ fun SettingsScreen(navigation: NavController, dbHelper: DBHelper) {
             GPSOption()
             Spacer(modifier = Modifier.height(50.dp))
             DeleteButton(dbHelper)
+
+
         }
     }
 }
@@ -116,19 +117,30 @@ fun BackIcon(onClick: () -> Unit) {
     }
 }
 
-@Preview
-@Composable
-fun DeleteButton(dbHelper: DBHelper){
-    Button( onClick = { dbHelper.deleteAndReset() }) {
 
-        Text(text = "Delete all data")
+@Composable
+fun DeleteButton(dbHelper: DBHelper) {
+    var isClicked by remember { mutableStateOf(false) }
+
+    Button(
+        onClick = {
+            dbHelper.deleteAndReset()
+            isClicked = true
+        }
+    ) {
+
+         Text(text = "Delete all data")
+
+
         Icon(
             Icons.Outlined.Delete,
             contentDescription = "bin icon",
             tint = Color.White
         )
     }
-
+    if (isClicked) {
+        Text(text = "Data deleted", color = Color )
+    }
 }
 
 @Composable
