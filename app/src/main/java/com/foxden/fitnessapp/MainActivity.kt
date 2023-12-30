@@ -127,7 +127,7 @@ class MainActivity : ComponentActivity() {
                             enterTransition = { EnterTransition.None },
                             exitTransition = { ExitTransition.None }
                         ) {
-                            SettingsScreen(navController)
+                            SettingsScreen(navController, db)
                         }
 
                         composable(

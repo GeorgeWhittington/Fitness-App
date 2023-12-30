@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
+import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.DarkBlue
 
@@ -43,7 +44,7 @@ import com.foxden.fitnessapp.ui.theme.DarkBlue
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navigation: NavController) {
+fun SettingsScreen(navigation: NavController, dbHelper: DBHelper) {
     Scaffold(
         bottomBar = { NavBar(navigation = navigation) }
     ) {
@@ -65,7 +66,7 @@ fun SettingsScreen(navigation: NavController) {
             PushNotifOption()
             GPSOption()
             Spacer(modifier = Modifier.height(50.dp))
-            DeleteButton()
+            DeleteButton(dbHelper)
         }
     }
 }
@@ -112,8 +113,8 @@ fun BackIcon(onClick: () -> Unit) {
 
 @Preview
 @Composable
-fun DeleteButton(){
-    Button( onClick = { /*do*/ }) {
+fun DeleteButton(dbHelper: DBHelper){
+    Button( onClick = { dbHelper.deleteAndReset() }) {
 
         Text(text = "Delete all data")
         Icon(

@@ -36,6 +36,19 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
     }
 
+    fun deleteAndReset() {
+        Log.e("FITDB", "Deleting Tables")
+        val db = this.writableDatabase
+
+        ActivityTypeDAO.onDelete(db)
+        ActivityLogDAO.onDelete(db)
+        NutritionMealPresetDAO.onDelete(db)
+        NutritionLogDAO.onDelete(db)
+        GoalDAO.onDelete(db)
+
+        this.onCreate(db)
+    }
+
 }
 
 class ColumnDesc(colName : String, colType : String, colExtra : String = ""){
@@ -71,6 +84,11 @@ abstract class DAO(tblName: String, tblColumns: List<ColumnDesc>, var tblForeign
 
         db?.execSQL(query)
 
+    }
+
+    fun onDelete(db: SQLiteDatabase?) {
+        var query = "DROP TABLE IF EXISTS ${tableName}"
+        db?.execSQL(query)
     }
 }
 
