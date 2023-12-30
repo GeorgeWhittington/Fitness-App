@@ -17,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.R
-import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
@@ -115,7 +113,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 Image(
                     painter = painterResource(image),
                     contentDescription = stringResource(id = R.string.cat_alt_text),
-                    modifier = Modifier.size(width = 100.dp, height = 100.dp)
+                    modifier = Modifier.size(width = 150.dp, height = 150.dp)
                 )
             } else {
                 Icon(Icons.Outlined.Image, contentDescription = null, modifier = Modifier.padding(end = 10.dp))

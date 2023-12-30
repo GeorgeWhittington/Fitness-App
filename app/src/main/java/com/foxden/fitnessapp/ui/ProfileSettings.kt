@@ -167,7 +167,7 @@ fun ProfileSettings(navigation: NavController) {
                 Image(
                     painter = painterResource(image),
                     contentDescription = stringResource(id = R.string.cat_alt_text),
-                    modifier = Modifier.size(width = 100.dp, height = 100.dp)
+                    modifier = Modifier.size(width = 200.dp, height = 200.dp)
                 )
             } else {
                 Icon(Icons.Outlined.Image, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
@@ -175,7 +175,7 @@ fun ProfileSettings(navigation: NavController) {
 
 
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically
 
