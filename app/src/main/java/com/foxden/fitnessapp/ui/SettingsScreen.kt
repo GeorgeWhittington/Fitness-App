@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForwardIos
@@ -21,6 +23,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -63,7 +68,7 @@ fun SettingsScreen(navigation: NavController, dbHelper: DBHelper) {
             RowOption("Display") { navigation.navigate(Routes.DISPLAY_SETTINGS_SCREEN) }
             RowDivider()
             Spacer(modifier = Modifier.height(20.dp))
-            PushNotifOption()
+
             GPSOption()
             Spacer(modifier = Modifier.height(50.dp))
             DeleteButton(dbHelper)
@@ -168,6 +173,54 @@ fun GPSOption() {
 }
 
 @Composable
+fun IntInputField(
+    icon: ImageVector,
+    placeholder: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    unit: String,
+    min: Int,
+    max: Int,
+    maxDigits: Int = 6,
+    onChange: () -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Decimal
+) {
+    var textState by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+
+
+        Icon(icon, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+        TextField(
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 16.dp),
+            value = textState,
+            onValueChange = { inputText ->
+                if (inputText.length <= maxDigits) {
+                    textState = inputText
+                    val number = inputText.toIntOrNull()
+                    isError = number == null || number < min || number > max
+                    if (!isError && number != null) {
+                        onValueChange(number)
+                        onChange()
+                    }
+                }
+            },
+            isError = isError,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            placeholder = { Text("$value") },
+            singleLine = true,
+            trailingIcon = { Text(unit) }
+        )
+    }
+
+    if (isError) {
+        Text("Enter a valid $placeholder", color = MaterialTheme.colors.error)
+    }
+}
+@Composable
 fun RowOption(text: String, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -186,3 +239,4 @@ fun RowOption(text: String, onClick: () -> Unit) {
         )
     }
 }
+

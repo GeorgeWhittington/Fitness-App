@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LiveData
@@ -34,6 +35,23 @@ class SettingsDataStoreManager(private val context: Context) {
         Log.d("GET DataStore Tag", "GET")
         return context.dataStore.data
 
+            .map { preferences ->
+                preferences[dataStoreKey] ?: defaultValue
+            }
+    }
+
+    // Function to save a int value
+    suspend fun saveIntSetting(key: String, value: Int) {
+        val dataStoreKey = intPreferencesKey(key)
+        context.dataStore.edit { preferences ->
+            preferences[dataStoreKey] = value
+        }
+    }
+
+    // Function to get a int value
+    fun getIntSetting(key: String, defaultValue: Int = 0): Flow<Int> {
+        val dataStoreKey = intPreferencesKey(key)
+        return context.dataStore.data
             .map { preferences ->
                 preferences[dataStoreKey] ?: defaultValue
             }

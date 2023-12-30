@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -92,7 +93,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 
     //used for saving the data to datastore
     val triggerSave = remember { mutableStateOf(false) }
-    var currentCalorieGoal by rememberSaveable { mutableFloatStateOf(0f) }
+    var currentCalorieGoal by rememberSaveable { mutableIntStateOf(0) }
     var calorieChoice by rememberSaveable { mutableStateOf(false) }
     var distanceUnit by rememberSaveable { mutableStateOf("") }
     var goalAdded by rememberSaveable { mutableStateOf(false) }
@@ -115,7 +116,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
         topBar = {
             TopAppBar(
                 title = {},
-                navigationIcon = { BackIcon { navigation.navigate(Routes.SETTINGS_SCREEN) } },
+                navigationIcon = { BackIcon { navigation.popBackStack() } },
                 backgroundColor = MidBlue,
                 modifier = Modifier.height(56.dp),
                 actions = {
@@ -129,7 +130,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 
                         if (triggerSave.value) {
 
-                            dataStoreManager.saveFloatSetting("CalorieGoalKey", currentCalorieGoal)
+                            dataStoreManager.saveIntSetting("CalorieGoalKey", currentCalorieGoal)
 
                             triggerSave.value = false
                         }
@@ -191,14 +192,14 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                     Spacer(modifier = Modifier.height(20.dp))
 
 
-                    FloatInputField(
+                    IntInputField(
                         icon = Icons.Outlined.Restaurant,
                         placeholder = "Daily calorie goal",
                         value = currentCalorieGoal,
                         onValueChange = { newValue -> currentCalorieGoal = newValue },
                         unit = "kcal",
-                        min =  500f,
-                        max = 4000f,
+                        min =  500,
+                        max = 4000,
                         onChange = { isModified = true },
                         keyboardType = KeyboardType.Number
                     )
@@ -312,6 +313,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 
 
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -543,12 +545,12 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
 
 suspend fun GetGoalsData (
     dataStoreManager: SettingsDataStoreManager,
-    onCalorieGoalLoaded: (Float) -> Unit,
+    onCalorieGoalLoaded: (Int) -> Unit,
     onCalorieChoiceLoaded: (Boolean) -> Unit,
     onDistanceUnitLoaded: (String) -> Unit,
 ){
 
-    val calorieGoal = dataStoreManager.getFloatSetting("CalorieGoalKey", 0f).first()
+    val calorieGoal = dataStoreManager.getIntSetting("CalorieGoalKey", 1500).first()
     onCalorieGoalLoaded(calorieGoal)
     val calorieChoice = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
     onCalorieChoiceLoaded(calorieChoice)
