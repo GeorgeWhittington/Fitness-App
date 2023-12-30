@@ -139,7 +139,7 @@ fun DeleteButton(dbHelper: DBHelper) {
         )
     }
     if (isClicked) {
-        Text(text = "Data deleted", color = Color )
+        Text(text = "Data deleted", color = Color.Green )
     }
 }
 
