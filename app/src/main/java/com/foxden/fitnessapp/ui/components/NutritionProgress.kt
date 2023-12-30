@@ -35,7 +35,7 @@ fun NutritionProgress(numCalories: Int) {
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
 
-    var calorieTarget by remember { mutableStateOf(0) }
+    var calorieTarget by remember { mutableStateOf(1) }
 
     LaunchedEffect(Unit) {
         GetGoalsData(
