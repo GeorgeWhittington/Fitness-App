@@ -369,6 +369,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                                 distance = ""
                             } else {
                                 distance = distanceDouble.toString()
+                                distanceFloat = distanceDouble.toFloat() // stinky because distance is a string?!
                             }
                         } catch (_: NumberFormatException) {
                         }
@@ -492,6 +493,14 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
 
             // Add Activity
             Button(onClick = {
+
+                // really stinky but distance is string :(
+                if  (!distance.isNullOrEmpty()) {
+                    var temp: Float? = distance.toFloatOrNull()
+                    if (temp != null) {
+                        distanceFloat = temp
+                    };
+                }
 
                 var d1 = duration!!.second?.times(60)
                     ?.let { duration!!.first?.times(3600)?.plus(it)  }
@@ -637,7 +646,7 @@ private fun ValidateForm(title: String?, activityType: ActivityType?, startTime:
     if (distance == null)
         return false
 
-    if (activityType.gpsEnabled && distance <= 0.0f)
+    if (activityType.gpsEnabled && distance <= 0.0)
         return false
 
     return true
