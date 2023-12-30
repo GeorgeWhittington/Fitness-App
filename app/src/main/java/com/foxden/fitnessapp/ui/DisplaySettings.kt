@@ -35,7 +35,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
@@ -120,7 +119,7 @@ fun DisplaySettings(navigation: NavController) {
         topBar = {
             TopAppBar(
                 title = { },
-                navigationIcon = {BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}},
+                navigationIcon = {BackIcon{navigation.popBackStack()}},
                 actions = {
 
                     //if a change is detected, will give an option to save - launch effect

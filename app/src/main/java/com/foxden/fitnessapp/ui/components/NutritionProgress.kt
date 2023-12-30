@@ -24,12 +24,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.foxden.fitnessapp.data.NutritionLog
-import com.foxden.fitnessapp.ui.GetGoalsData
-import com.foxden.fitnessapp.ui.theme.DarkBlue
-import java.time.LocalDate
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
+import com.foxden.fitnessapp.ui.GetGoalsData
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalComposeUiApi::class)
@@ -39,7 +35,8 @@ fun NutritionProgress(numCalories: Int) {
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
 
-    var calorieTarget by remember { mutableStateOf(0.0f) }
+    var calorieTarget by remember { mutableStateOf(0) }
+    var progress by remember { mutableStateOf(0.0f) }
 
     LaunchedEffect(Unit) {
         GetGoalsData(
@@ -54,8 +51,9 @@ fun NutritionProgress(numCalories: Int) {
         )
     }
 
-    val progress = (numCalories / calorieTarget) //: Float = calorieTarget / numCalories
-
+    if (calorieTarget != 0) {
+        progress = numCalories.toFloat() / calorieTarget.toFloat()
+    }
 
     val containerModifier = Modifier
         .fillMaxWidth()

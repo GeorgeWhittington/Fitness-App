@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.R
-import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
@@ -117,7 +116,7 @@ fun ProfileSettings(navigation: NavController) {
         topBar = {
             TopAppBar(
                 title = { },
-                navigationIcon = {BackIcon{navigation.navigate(Routes.SETTINGS_SCREEN)}},
+                navigationIcon = {BackIcon{navigation.popBackStack()}},
                 actions = {
                     
                     SaveOption(isModified = isModified) {
