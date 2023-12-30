@@ -35,7 +35,8 @@ fun NutritionProgress(numCalories: Int) {
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
 
-    var calorieTarget by remember { mutableStateOf(1) }
+    var calorieTarget by remember { mutableStateOf(0) }
+    var progress by remember { mutableStateOf(0.0f) }
 
     LaunchedEffect(Unit) {
         GetGoalsData(
@@ -50,8 +51,9 @@ fun NutritionProgress(numCalories: Int) {
         )
     }
 
-    val progress = (numCalories / calorieTarget).toFloat() //: Float = calorieTarget / numCalories
-
+    if (calorieTarget != 0) {
+        progress = numCalories.toFloat() / calorieTarget.toFloat()
+    }
 
     val containerModifier = Modifier
         .fillMaxWidth()

@@ -109,7 +109,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     var notes by remember { mutableStateOf("") }
     var datetime: ZonedDateTime? by remember { mutableStateOf(null) }
     var duration: Pair<Int?, Int?>? by remember { mutableStateOf(null) }
-    var distance: String by remember { mutableStateOf("") }
+    var distance: String by remember { mutableStateOf("0") }
     val imageURIs: MutableList<Uri> = remember { mutableStateListOf() }
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
@@ -492,7 +492,6 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
 
             // Add Activity
             Button(onClick = {
-                distanceFloat = distance.toFloat()
 
                 var d1 = duration!!.second?.times(60)
                     ?.let { duration!!.first?.times(3600)?.plus(it)  }
@@ -635,7 +634,10 @@ private fun ValidateForm(title: String?, activityType: ActivityType?, startTime:
     if (duration == null || duration <= 0)
         return false
 
-    if (distance == null || distance <= 0)
+    if (distance == null)
+        return false
+
+    if (activityType.gpsEnabled && distance <= 0.0f)
         return false
 
     return true
