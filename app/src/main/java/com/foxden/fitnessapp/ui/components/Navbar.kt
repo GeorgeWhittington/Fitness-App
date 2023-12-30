@@ -70,7 +70,7 @@ fun NavIconButton(navigation: NavController, currentDestination: NavDestination?
                 // the same item
                 launchSingleTop = true
                 // Restore state when reselecting a previously selected item
-                restoreState = true
+                restoreState = false
             } },
         modifier = iconButtonModifier,
     ) {
