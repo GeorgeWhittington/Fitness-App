@@ -3,6 +3,12 @@ package com.foxden.fitnessapp.data
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 data class ActivityLog(
     var id : Int = 0,
@@ -53,6 +59,23 @@ object ActivityLogDAO : DAO(
         queryCursor.close()
         return ret
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun fetchBetween(db: SQLiteDatabase?, startTime: LocalDateTime, endTime: LocalDateTime) : List<ActivityLog> {
+        assert(startTime < endTime)
+        val endTimeDur: Long = endTime.toEpochSecond(OffsetDateTime.now().offset) - startTime.toEpochSecond(OffsetDateTime.now().offset)
+        val ret: MutableList<ActivityLog> = ArrayList()
+        val queryCursor = db?.rawQuery("SELECT * FROM $tableName WHERE start_time >= ? AND duration <= ?",
+            arrayOf( startTime.format(DateTimeFormatter.BASIC_ISO_DATE), endTimeDur.toString() ))
+
+        if (queryCursor!!.moveToFirst()) {
+            do { ret.add(cursorToObject(queryCursor, db)) }
+            while (queryCursor!!.moveToNext())
+        }
+        queryCursor.close()
+        return ret
+    }
+
     fun insert(db: SQLiteDatabase?, activityLog: ActivityLog) : Boolean {
         val contentValues = ContentValues()
         contentValues.put(tableColumns[1].name, activityLog.title)
