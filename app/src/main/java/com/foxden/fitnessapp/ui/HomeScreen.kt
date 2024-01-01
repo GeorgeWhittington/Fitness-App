@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,9 +46,11 @@ import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.Goal
 import com.foxden.fitnessapp.data.GoalDAO
 import com.foxden.fitnessapp.data.GoalFrequency
+import com.foxden.fitnessapp.data.GoalType
 import com.foxden.fitnessapp.data.NutritionLogDAO
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
+import com.foxden.fitnessapp.ui.components.HomeGoalWidget
 import com.foxden.fitnessapp.ui.components.HomeWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.components.NutritionProgress
@@ -76,7 +77,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     var character by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var image = if(character == "Fox"){
-        R.drawable.fox
+        R.drawable.fox_happy
     } else if(character == "Racoon"){
         R.drawable.racoon
     } else{ R.drawable.cat
@@ -215,7 +216,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
 
                     totalActivities = ActivityLogList.size
 
-                    Spacer(modifier = Modifier.height(20.dp))
+
 
 
 
@@ -230,40 +231,18 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
-                //TODO:FIFUWUWEIFU
+                Spacer(modifier = Modifier.height(20.dp))
 
-                val matchingActivities = GoalList.flatMap { goal ->
-                    ActivityLogList.filter { activity ->
-                        GetGoalsActivityLogs(activity, goal,currentTime=currentTime)
+                //TODO: ALLOW FOR THE TRACKING OF GOALS OTHER THAN TYPE DISTANCE
+                val goalDistances: Map<Goal, Double> = GoalList
+                    .filter { goal -> goal.type == GoalType.DISTANCE }.associateWith { goal ->
+                        ActivityLogList
+                            .filter { activity ->
+                                GetGoalsActivityLogs(activity, goal, currentTime)
+                            }
+                            .sumOf { it.distance.toDouble() }
                     }
-                }
 
-                val goalDistances: Map<Goal, Double> = GoalList.map { goal ->
-                    goal to ActivityLogList
-                        .filter { activity ->
-                            GetGoalsActivityLogs(activity, goal, currentTime)
-                        }
-                        .sumOf { it.distance.toDouble() }
-                }.toMap()
-
-                /*for(log in matchingActivities){
-                    ActivityWidget(
-                        log,
-                        activityTypeList.filter { it.id == log.activityTypeId }.first(),
-                        distanceUnit = distanceUnit
-                    )
-                }*/
-
-                for (entry in goalDistances) {
-                    val goal = entry.key
-                    val sumDistance = entry.value
-
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Goal Activity Type ID: ${goal.activityTypeId}", style = MaterialTheme.typography.body1)
-                        Text("Frequency: ${goal.frequency}", style = MaterialTheme.typography.body2)
-                        Text("Total Distance: $sumDistance $distanceUnit", style = MaterialTheme.typography.body2)
-                    }
-                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -280,6 +259,55 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                     duration = totalDuration / 60,
                     distanceUnit = distanceUnit,
                 )
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "Goal tracking", fontSize = 20.sp)
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                if (goalDistances.isNotEmpty()) {
+
+
+                    val titles = mapOf(
+                        GoalFrequency.DAILY to "Daily Goals",
+                        GoalFrequency.WEEKLY to "Weekly Goals",
+                        GoalFrequency.MONTHLY to "Monthly Goals"
+                    )
+
+                    Column {
+                        for ((frequency, title) in titles) {
+                            Text(text = title, fontSize = 20.sp, modifier = Modifier.padding(vertical = 10.dp))
+
+                            goalDistances.filter { it.key.frequency == frequency }.forEach { (goal, sumDistance) ->
+                                HomeGoalWidget(
+                                    goal = goal,
+                                    sumDistance = sumDistance,
+                                    activityTypeList.filter { it.id == goal.activityTypeId }.first(),
+                                    distanceUnit = distanceUnit
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+                        }
+                    }
+                }
+                else{
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = "Add goals to track your progress", fontSize = 15.sp)
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+
 
 
             }
