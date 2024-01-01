@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
@@ -75,7 +74,6 @@ import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.ui.theme.Yellow
 import kotlinx.coroutines.flow.first
-import kotlin.math.roundToInt
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -331,13 +329,14 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
     var activityType: ActivityType? by remember { mutableStateOf(activityTypeList[0]) }
     var activityTypeExpanded by remember { mutableStateOf(false) }
 
-    var isFrequencyEnabled by remember { mutableStateOf(false) }
 
     //database
     var goalMainValue by remember { mutableStateOf(0) }
     var goalHourValue by remember { mutableStateOf(0) }
+    var goaldistanceValue by remember { mutableFloatStateOf(0.0f) }
     var hourInput by remember { mutableStateOf("") }
     var mainInput by remember { mutableStateOf("") }
+    var distanceInput by remember { mutableStateOf("") }
 
     var frequency by rememberSaveable { mutableStateOf(GoalFrequency.DAILY) }
     var goalType by rememberSaveable { mutableStateOf(GoalType.DURATION) }
@@ -441,6 +440,20 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                                 modifier = Modifier.weight(1f)
                             )
                         }
+                        else if (goalType == GoalType.DISTANCE){
+
+                            TextField(
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                placeholder = { Text(text = goaldistanceValue.toString()) },
+                                value = distanceInput,
+                                onValueChange = { distanceInput = it},
+                                singleLine = true,
+                                trailingIcon = { Text(text = distanceUnit) },
+
+                                modifier = Modifier.weight(1f)
+                            )
+
+                        }
                         else{
                             TextField(
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -452,7 +465,6 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                                     Text(
                                         when (goalType) {
                                             GoalType.STEPS -> "steps"
-                                            GoalType.DISTANCE -> distanceUnit
                                             GoalType.SETS -> "sets"
                                             else -> ""
 
@@ -476,23 +488,43 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                         Spacer(modifier = Modifier.width(10.dp))
                         Button(onClick = {
                             val g = Goal()
-                            val daily = 23
-                            val weekly = 167
-                            val monthly = 743
                             goalHourValue = hourInput.toIntOrNull() ?: 0
                             goalMainValue = mainInput.toIntOrNull() ?: 0
+                            goaldistanceValue = distanceInput.toFloatOrNull()?: 0f
 
 
 
                             if (goalType == GoalType.DURATION && goalMainValue in 1..60|| goalHourValue in 1..743) {
-                                // Create the Goal object and insert into database
-
 
                                 g.activityTypeId = activityType?.id!!
                                 g.frequency = frequency
                                 g.type = goalType
                                 g.value = goalMainValue
+                                g.distance = goaldistanceValue
                                 g.hours = goalHourValue
+
+                                if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
+                                    Log.d("FIT", "Failed to insert goal into the database")
+                                } else {
+                                    Log.d("FIT", "Inserted goal into the database!")
+                                    isDialogOpen.value = false
+
+                                }
+                                onChange()
+                            }
+                            else if(goalType == GoalType.DISTANCE && goaldistanceValue in 0.1..1000.0) {
+                                g.activityTypeId = activityType?.id!!
+                                g.frequency = frequency
+                                g.type = goalType
+                                g.value = goalMainValue
+                                if(distanceUnit=="Km"){
+                                    goaldistanceValue/= 1.609f
+
+                                }
+                                g.distance = goaldistanceValue
+                                g.hours = goalHourValue
+
+
 
                                 if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {
                                     Log.d("FIT", "Failed to insert goal into the database")
@@ -508,6 +540,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                                 g.frequency = frequency
                                 g.type = goalType
                                 g.value = goalMainValue
+                                g.distance = goaldistanceValue
                                 g.hours = goalHourValue
 
                                 if (!GoalDAO.insert(dbHelper.writableDatabase, g)) {

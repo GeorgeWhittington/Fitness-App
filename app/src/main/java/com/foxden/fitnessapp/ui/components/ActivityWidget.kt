@@ -79,7 +79,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType,distanceUnit: St
     if (distanceUnit=="Km"){
         activityDistance = String.format("%.2f", log.distance*1.609).toFloat()
     }else{
-        activityDistance = log.distance
+        activityDistance = String.format("%.2f", log.distance).toFloat()
     }
 
     val images = listOf(
