@@ -5,15 +5,18 @@ import android.app.Application
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,13 +40,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.R
+import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.Goal
+import com.foxden.fitnessapp.data.GoalDAO
+import com.foxden.fitnessapp.data.GoalFrequency
+import com.foxden.fitnessapp.data.NutritionLogDAO
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
+import com.foxden.fitnessapp.ui.components.HomeWidget
 import com.foxden.fitnessapp.ui.components.NavBar
+import com.foxden.fitnessapp.ui.components.NutritionProgress
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -68,16 +82,46 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     } else{ R.drawable.cat
     }
 
+    //get calorie option
+    var calorieChoice by rememberSaveable { mutableStateOf(false) }
+
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+
+    //nutrition logs
+    val start = LocalDate.now().minusDays(7)
+    val end = LocalDate.now()
+    var nutritionLogList = remember {
+        NutritionLogDAO.fetchRange(dbHelper.writableDatabase, start, end).toMutableStateList()
+    }
+
     //activity logs
     var ActivityLogList = remember {
         ActivityLogDAO.fetchAll(dbHelper.writableDatabase).sortedBy { it.startTime }.toMutableStateList()
     }
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+
+    //weekly activity logs
+    val currentTime = LocalDateTime.now()
+
+
+    //goal list
+    var GoalList = remember {
+        GoalDAO.fetchAll(dbHelper.writableDatabase).sortedBy { it.frequency }.toMutableStateList()
+    }
+
 
 
     //activity type
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    }
+
+    //weekly stat
+    var totalActivities by remember { mutableIntStateOf(0) }
+    var totalDuration = 0
+    var totalDistance = 0.0f
+    for (log in ActivityLogList) {
+        totalDuration += log.duration
+        totalDistance += log.distance
     }
 
     LaunchedEffect(Unit) {
@@ -93,42 +137,61 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 distanceUnit = loadedDistanceUnit
             },
 
+            onCalorieChoiceLoaded = { loadedCalorieChoice ->
+                calorieChoice = loadedCalorieChoice
+            },
+
         )
 
     }
 
     Scaffold (
         bottomBar = { NavBar(navigation = navigation) }
-    ) {
-
-        Column(
+    ) {innerPadding ->
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            Row (modifier = Modifier.height(350.dp)){
-                if (!isLoading) {
-                    Image(
-                        painter = painterResource(image),
-                        contentDescription = stringResource(id = R.string.cat_alt_text),
-                        //modifier = Modifier.size(width = 150.dp, height = 150.dp)
-                    )
-                } else {
-                    Icon(Icons.Outlined.Image, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(modifier = Modifier.height(350.dp)) {
+                    if (!isLoading) {
+                        Image(
+                            painter = painterResource(image),
+                            contentDescription = stringResource(id = R.string.cat_alt_text),
+                            //modifier = Modifier.size(width = 150.dp, height = 150.dp)
+                        )
+                    } else {
+                        Icon(
+                            Icons.Outlined.Image,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                    }
                 }
-            }
-            Text(text = "activities: 0 | distance: 0km | time: 0h 0m")
 
-            /*
+                /*
             Button(onClick = { navigation.navigate(Routes.DBTEST_SCREEN) }) {
                 Text(text = "DBTest")
             }
              */
 
-            if (ActivityLogList.isNotEmpty()) {
-                val lastActivity = ActivityLogList.last()
+
+                if (calorieChoice) {
+
+                    NutritionProgress(nutritionLogList.filter { it.date == LocalDate.now() }
+                        .sumOf { it.calories })
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+
+
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically
 
@@ -137,30 +200,121 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                     Text(text = "Recent activity", fontSize = 20.sp)
                     Spacer(modifier = Modifier.weight(1f))
                 }
+
                 Spacer(modifier = Modifier.height(10.dp))
 
-                ActivityWidget(lastActivity, activityTypeList.filter{ it.id ==  lastActivity.activityTypeId}.first(),distanceUnit=distanceUnit)
+                if (ActivityLogList.isNotEmpty()) {
+                    val lastActivity = ActivityLogList.last()
+
+
+                    ActivityWidget(
+                        lastActivity,
+                        activityTypeList.filter { it.id == lastActivity.activityTypeId }.first(),
+                        distanceUnit = distanceUnit
+                    )
+
+                    totalActivities = ActivityLogList.size
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+
+
+
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = "Please record or manually log your activity", fontSize = 15.sp)
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+                //TODO:FIFUWUWEIFU
+
+                val matchingActivities = GoalList.flatMap { goal ->
+                    ActivityLogList.filter { activity ->
+                        GetGoalsActivityLogs(activity, goal,currentTime=currentTime)
+                    }
+                }
+
+                val goalDistances: Map<Goal, Double> = GoalList.map { goal ->
+                    goal to ActivityLogList
+                        .filter { activity ->
+                            GetGoalsActivityLogs(activity, goal, currentTime)
+                        }
+                        .sumOf { it.distance.toDouble() }
+                }.toMap()
+
+                /*for(log in matchingActivities){
+                    ActivityWidget(
+                        log,
+                        activityTypeList.filter { it.id == log.activityTypeId }.first(),
+                        distanceUnit = distanceUnit
+                    )
+                }*/
+
+                for (entry in goalDistances) {
+                    val goal = entry.key
+                    val sumDistance = entry.value
+
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Goal Activity Type ID: ${goal.activityTypeId}", style = MaterialTheme.typography.body1)
+                        Text("Frequency: ${goal.frequency}", style = MaterialTheme.typography.body2)
+                        Text("Total Distance: $sumDistance $distanceUnit", style = MaterialTheme.typography.body2)
+                    }
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "Statistics", fontSize = 20.sp)
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                HomeWidget(
+                    activities = totalActivities,
+                    distance = totalDistance,
+                    duration = totalDuration / 60,
+                    distanceUnit = distanceUnit,
+                )
+
+
             }
-
-
-
-
         }
     }
 
 
 }
+@RequiresApi(Build.VERSION_CODES.O)
+fun GetGoalsActivityLogs(activity: ActivityLog, goal: Goal, currentTime: LocalDateTime): Boolean {
+
+    if (activity.activityTypeId != goal.activityTypeId) {
+        return false
+    }
+
+    // Check frequency
+    when (goal.frequency) {
+        GoalFrequency.DAILY -> return activity.startTime >= currentTime.minusDays(1).toEpochSecond(ZoneOffset.UTC)
+        GoalFrequency.WEEKLY -> return activity.startTime >= currentTime.minusWeeks(1).toEpochSecond(ZoneOffset.UTC)
+        GoalFrequency.MONTHLY -> return activity.startTime >= currentTime.minusMonths(1).toEpochSecond(ZoneOffset.UTC)
+    }
+}
 
 suspend fun GetHomeData (
     dataStoreManager: SettingsDataStoreManager,
-
+    onCalorieChoiceLoaded: (Boolean) -> Unit,
     onCharacterLoaded: (String) -> Unit,
     onDistanceUnitLoaded: (String) -> Unit,
 ){
 
-
+    val calorieChoice = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
+    onCalorieChoiceLoaded(calorieChoice)
     val character = dataStoreManager.getStringSetting("CharacterKey", "Fox").first()
     onCharacterLoaded(character)
     val distanceUnit = dataStoreManager.getStringSetting("DistanceUnitKey", "Miles").first()
     onDistanceUnitLoaded(distanceUnit)
 }
+

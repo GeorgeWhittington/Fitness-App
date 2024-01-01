@@ -140,7 +140,9 @@ fun DeleteButton(dbHelper: DBHelper) {
     }
     if (isClicked) {
         Text(text = "Data deleted", color = Color.Green )
+        
     }
+
 }
 
 @Composable

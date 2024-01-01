@@ -36,7 +36,13 @@ fun GoalsWidget(log: Goal,
                 distanceUnit: String,
                 modifier: Modifier = Modifier) {
 
+    var goalDistance: Float
 
+    if (distanceUnit=="Km"){
+        goalDistance = String.format("%.2f", log.distance*1.609).toFloat()
+    }else{
+        goalDistance = String.format("%.2f", log.distance).toFloat()
+    }
 
     Row (
         modifier = modifier
@@ -150,7 +156,7 @@ fun GoalsWidget(log: Goal,
                         ) {
 
                             Text(
-                                text = "${log.value}",
+                                text = "$goalDistance",
                                 fontSize = 50.sp,
                                 modifier = Modifier.alignByBaseline()
                             )
