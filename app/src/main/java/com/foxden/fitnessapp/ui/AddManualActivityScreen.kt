@@ -47,6 +47,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -75,11 +76,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityLogDAO
@@ -89,9 +88,6 @@ import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ImageSteppers
-import com.foxden.fitnessapp.ui.theme.MidBlue
-import com.foxden.fitnessapp.ui.theme.Orange
-import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -111,7 +107,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     var duration: Pair<Int?, Int?>? by remember { mutableStateOf(null) }
     var distance: String by remember { mutableStateOf("0") }
     val imageURIs: MutableList<Uri> = remember { mutableStateListOf() }
-    var activityTypeList = remember {
+    val activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
 
@@ -355,7 +351,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             // Activity Distance
             var distanceFloat by rememberSaveable { mutableFloatStateOf(0f) }
             OutlinedTextField(
-                value = distance, suffix = { Text("$distanceUnit") }, label = { Text("Distance" )},
+                value = distance, suffix = { Text(distanceUnit) }, label = { Text("Distance" )},
                 trailingIcon = { Icon(Icons.Outlined.UnfoldMore, null) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -461,7 +457,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                 Column {
                     IconButton(
                         modifier = Modifier
-                            .background(MidBlue, CircleShape)
+                            .background(MaterialTheme.colorScheme.tertiary, CircleShape)
                             .size(56.dp),
                         onClick = { galleryLauncher.launch("image/*") }
                     ) {
@@ -475,7 +471,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                         Spacer(modifier = Modifier.height(16.dp))
                         IconButton(
                             modifier = Modifier
-                                .background(Orange, CircleShape)
+                                .background(MaterialTheme.colorScheme.error, CircleShape)
                                 .size(56.dp),
                             onClick = {
                                 imageURIs.removeAt(imageDisplayed)
@@ -499,7 +495,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                     var temp: Float? = distance.toFloatOrNull()
                     if (temp != null) {
                         distanceFloat = temp
-                    };
+                    }
                 }
 
                 var d1 = duration!!.second?.times(60)
@@ -620,14 +616,6 @@ fun FullscreenImageDialog(onDismiss: () -> Unit, imageURI: Uri, contentDescripti
             }
         }
     )
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-@Preview
-fun PreviewAddManualActivityScreen() {
-    val navController = rememberNavController()
-    //AddManualActivityScreen(navController)
 }
 
 private fun ValidateForm(title: String?, activityType: ActivityType?, startTime: ZonedDateTime?, duration: Int?, distance: Float?) : Boolean {

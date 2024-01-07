@@ -16,10 +16,7 @@ import kotlinx.coroutines.flow.map
 
 val Context.dataStore by preferencesDataStore(name = "SettingsDatastore")
 
-
 class SettingsDataStoreManager(private val context: Context) {
-
-
     // Function to save a string value
     suspend fun saveStringSetting(key: String, value: String) {
         val dataStoreKey = stringPreferencesKey(key)
@@ -74,9 +71,6 @@ class SettingsDataStoreManager(private val context: Context) {
             }
     }
 
-
-
-
     // Function to save a switch value
     suspend fun saveSwitchSetting(key: String, value: Boolean) {
         val dataStoreKey = booleanPreferencesKey(key)
@@ -109,5 +103,4 @@ class SettingsDataStoreManager(private val context: Context) {
             }
             .asLiveData())
     }
-
 }

@@ -1,5 +1,7 @@
 package com.foxden.fitnessapp.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -33,7 +35,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.TextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,89 +49,91 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.Routes.ADD_ACTIVITY_FORM_SCREEN
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityLogDAO
-import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
-import com.foxden.fitnessapp.data.Goal
-import com.foxden.fitnessapp.data.GoalDAO
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
-import com.foxden.fitnessapp.ui.theme.DarkBlue
-import com.foxden.fitnessapp.ui.theme.LightBlue
-import com.foxden.fitnessapp.ui.theme.MidBlue
-import com.foxden.fitnessapp.ui.theme.Yellow
 
 class DropdownOption(val text: String, val icon: ImageVector? = null)
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
     var showSheet by remember { mutableStateOf(false) }
 
-    var activityLogs = remember { mutableStateListOf<ActivityLog>() }
+    val activityLogs = remember { mutableStateListOf<ActivityLog>() }
     activityLogs.clear()
     for (a in ActivityLogDAO.fetchAll(dbHelper.readableDatabase)) {
         activityLogs.add(a)
     }
 
-    var activityTypeList = remember {
+    val activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
 
-    if (showSheet) {
-        BottomSheet() {
-            showSheet = false
-        }
-    }
+    if (showSheet) { BottomSheet { showSheet = false } }
 
-    //get preferred distance unit
+    // get preferred distance unit
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
     var distanceUnit by rememberSaveable { mutableStateOf("") }
 
-    //remove activities
+    // remove activities
     var selectedActivity by remember { mutableStateOf<ActivityLog?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        GetGoalsData(
+            dataStoreManager,
+            onCalorieGoalLoaded = { loadedCalorieGoal ->
+                var currentCalorieGoal = loadedCalorieGoal
+            },
+            onCalorieChoiceLoaded = { loadedCalorieChoice ->
+                var calorieChoice = loadedCalorieChoice
+            },
+            onDistanceUnitLoaded = { loadedDistanceUnit ->
+                distanceUnit = loadedDistanceUnit
+            },
+        )
+    }
 
-    Scaffold (
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Delete Activity") },
+            text = { Text("Are you sure you want to delete this activity?") },
+            confirmButton = { TextButton(onClick = {
+                showDialog = false
+                selectedActivity?.let { activity ->
+                    activityLogs.remove(activity)
+                    ActivityLogDAO.delete(dbHelper.writableDatabase, activity)
+                }
+            }) { Text("Yes") } },
+            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } }
+        )
+    }
 
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.primary,
         bottomBar = { NavBar(navigation = navigation) }
-    ) {
-        Column(modifier = Modifier.padding(it)) {
+    ) { scaffoldPaddingValues ->
+        Column(modifier = Modifier.padding(scaffoldPaddingValues)) {
             Column(
                 Modifier
                     .fillMaxWidth()
                     .padding(start = 25.dp, end = 25.dp, top = 25.dp)
             ) {
-
-                LaunchedEffect(Unit) {
-                    GetGoalsData(
-                        dataStoreManager,
-                        onCalorieGoalLoaded = { loadedCalorieGoal ->
-                            var currentCalorieGoal = loadedCalorieGoal
-                        },
-                        onCalorieChoiceLoaded = { loadedCalorieChoice ->
-                            var calorieChoice = loadedCalorieChoice
-                        },
-                        onDistanceUnitLoaded = { loadedDistanceUnit ->
-                            distanceUnit = loadedDistanceUnit
-                        },
-                    )
-                }
                 Row(
                     verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -135,76 +141,56 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                 ) {
                     Text(
                         text = "Activity Journal", fontSize = 20.sp,
-                        color = MidBlue
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                     Row {
                         IconButton(
                             onClick = { navigation.navigate(ADD_ACTIVITY_FORM_SCREEN) },
-                            modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
+                            modifier = Modifier.offset(x = 9.dp, y = (-11).dp)
                         ) {
                             Icon(
                                 Icons.Outlined.Add, contentDescription = "Add Activity Manually",
-                                tint = MidBlue, modifier = Modifier.size(30.dp)
+                                tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp)
                             )
                         }
 
                         IconButton(
                             onClick = { showSheet = true },
-                            modifier = Modifier.offset(x = 9.dp, y = (-9).dp)
+                            modifier = Modifier.offset(x = 9.dp, y = (-11).dp)
                         ) {
                             Icon(
                                 Icons.Outlined.Tune, contentDescription = "Sort and Filter",
-                                tint = MidBlue, modifier = Modifier.size(30.dp)
+                                tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp)
                             )
                         }
                     }
                 }
 
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-
-                    if (activityLogs.size == 0) {
-                        Text(text = "Nothing logged yet")
-                    }
-
-                    for (log in activityLogs) {
-                        ActivityWidget(log,
-                            activityTypeList.filter{ it.id ==  log.activityTypeId}.first(),
+                if (activityLogs.size == 0) {
+                    Text(text = "No activities logged", color = MaterialTheme.colorScheme.onPrimary)
+                }
+                
+                LazyColumn {
+//                  TODO: last week, last month etc titles
+//                  will need to do something along the lines of:
+//                  if sort == new->old:
+//                      get activities from today
+//                      get activities from past week
+//                      get activities from past month
+//                      etc etc, however many I choose to add
+//                  else:
+//                      just do it as it's done here :)
+                    items(activityLogs) { activityLog ->
+                        ActivityWidget(
+                            activityLog, activityType = activityTypeList.first { it.id == activityLog.activityTypeId},
                             distanceUnit = distanceUnit,
-                            modifier = Modifier.pointerInput(log) {
-                                detectTapGestures(
-                                    onLongPress = {
-                                        selectedActivity = log
-                                        showDialog = true
-                                    }
-                                )
-                            }
-                            )
-                        Spacer(modifier = Modifier.size(10.dp))
-                        if (showDialog) {
-                            AlertDialog(
-                                onDismissRequest = { showDialog = false },
-                                title = { Text("Delete Goal") },
-                                text = { Text("Are you sure you want to delete this goal?") },
-                                confirmButton = {
-                                    Button(
-                                        onClick = {
-                                            showDialog = false
-                                            selectedActivity?.let { activity ->
-                                                activityLogs.remove(activity)
-                                                ActivityLogDAO.delete(dbHelper.writableDatabase, activity)
-                                            }
-                                        }
-                                    ) {
-                                        Text("Confirm")
-                                    }
-                                },
-                                dismissButton = {
-                                    Button(onClick = { showDialog = false }) {
-                                        Text("Cancel")
-                                    }
-                                }
-                            )
-                        }
+                            modifier = Modifier.pointerInput(activityLog) {
+                                detectTapGestures(onLongPress = {
+                                    selectedActivity = activityLog
+                                    showDialog = true
+                                })
+                            })
+                            Spacer(modifier = Modifier.size(10.dp))
                     }
                 }
             }
@@ -222,20 +208,19 @@ fun BottomSheetDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    var leadingIcon: @Composable() (() -> Unit)? = null
+    var leadingIcon: @Composable (() -> Unit)? = null
     if (selectedOption.icon != null) {
         leadingIcon = @Composable { Icon(selectedOption.icon, selectedOption.text) }
     }
 
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        TextField(
+        OutlinedTextField(
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth(), readOnly = true,
             value = selectedOption.text, onValueChange = {}, label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            leadingIcon = if (selectedOption.icon != null) leadingIcon else null,
-            colors = ExposedDropdownMenuDefaults.textFieldColors()
+            leadingIcon = if (selectedOption.icon != null) leadingIcon else null
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach {selectionOption ->
@@ -267,6 +252,7 @@ fun BottomSheet(onDismiss: () -> Unit) {
     val sortOptions = listOf(DropdownOption("Newest Activities"), DropdownOption("Oldest Activities"))
     var selectedSort by remember { mutableStateOf( sortOptions[0]) }
 
+//    TODO: source from db
     val filterOptions = listOf(
         DropdownOption("All"),
         DropdownOption("Jogging",Icons.Outlined.DirectionsRun),
@@ -287,11 +273,14 @@ fun BottomSheet(onDismiss: () -> Unit) {
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextField(
+            OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                 value = searchQuery, onValueChange = { newQuery -> searchQuery = newQuery },
                 placeholder = { Text("Search") },
-                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = "Search Icon") }
+                leadingIcon = { Icon(
+                    Icons.Outlined.Search, contentDescription = "Search Icon",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                ) }
             )
             Spacer(modifier = Modifier.size(10.dp))
             BottomSheetDropdown(
@@ -306,16 +295,9 @@ fun BottomSheet(onDismiss: () -> Unit) {
                 updateSelection = {newSelection -> selectedFilter = newSelection }
             )
             Spacer(modifier = Modifier.size(10.dp))
-            Button(onClick = {/* TODO - use callback to return updated values to main screen */}) {
+            Button(onClick = { /* TODO - use callback to return updated values to main screen */}) {
                 Text(text = "Apply", fontSize = 16.sp)
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewActivityJournal() {
-    //val navController = rememberNavController()
-    //ActivityJournalScreen(navigation = navController)
 }

@@ -26,11 +26,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
@@ -195,7 +192,7 @@ private fun AddActivity(dbHelper: DBHelper, name: String, icon: Int, gpsTracking
         return false
 
     val at = ActivityType()
-    at.name = name;
+    at.name = name
     at.gpsEnabled = gpsTracking
     at.iconId = icon
     at.setsEnabled = setTracking
@@ -206,22 +203,4 @@ private fun AddActivity(dbHelper: DBHelper, name: String, icon: Int, gpsTracking
 
     Log.d("FIT", "Inserted Successfully!")
     return true
-}
-
-@Composable
-@Preview
-fun PreviewAddActivityTypePopup(dbHelper: DBHelper) {
-    var showDialog by remember { mutableStateOf(true) }
-    var showErrorDialog by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-
-    /*
-    if (showDialog)
-        AddActivityTypeDialog(
-            onDismiss = {showDialog = false},
-            onError = {showDialog = false; errorMessage = it; showErrorDialog = true}, null)
-    */
-
-    if (showErrorDialog)
-        AddActivityTypeErrorDialog(errorMessage = errorMessage, onDismiss = { showErrorDialog = false })
 }

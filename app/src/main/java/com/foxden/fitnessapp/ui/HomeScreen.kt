@@ -1,6 +1,5 @@
 package com.foxden.fitnessapp.ui
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -18,7 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,12 +59,9 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun HomeScreen(navigation: NavController, application: Application, dbHelper: DBHelper) {
-
     //link to datastore
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
@@ -76,14 +72,13 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     //used to load chosen character
     var character by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
-    var image = if(character == "Fox"){
-        R.drawable.fox_happy
-    } else if(character == "Racoon"){
-        R.drawable.racoon
-    } else{ R.drawable.cat
+    val image = when (character) {
+        "Fox" -> { R.drawable.fox_happy }
+        "Racoon" -> { R.drawable.racoon }
+        else -> { R.drawable.cat }
     }
 
-    //get calorie option
+    // get calorie option
     var calorieChoice by rememberSaveable { mutableStateOf(false) }
 
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
@@ -103,20 +98,17 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     //weekly activity logs
     val currentTime = LocalDateTime.now()
 
-
     //goal list
     var GoalList = remember {
         GoalDAO.fetchAll(dbHelper.writableDatabase).sortedBy { it.frequency }.toMutableStateList()
     }
-
-
 
     //activity type
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
 
-    //weekly stat
+    // weekly stat
     var totalActivities by remember { mutableIntStateOf(0) }
     var totalDuration = 0
     var totalDistance = 0.0f
@@ -127,33 +119,26 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
 
     LaunchedEffect(Unit) {
         GetHomeData(dataStoreManager,
-
             onCharacterLoaded = { loadedCharacter ->
                 character = loadedCharacter
                 isLoading = false
-
-            }
-            ,
+            },
             onDistanceUnitLoaded = { loadedDistanceUnit ->
                 distanceUnit = loadedDistanceUnit
             },
-
             onCalorieChoiceLoaded = { loadedCalorieChoice ->
                 calorieChoice = loadedCalorieChoice
             },
-
         )
-
     }
 
     Scaffold (
+        containerColor = MaterialTheme.colorScheme.primary,
         bottomBar = { NavBar(navigation = navigation) }
     ) {innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -161,12 +146,11 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(modifier = Modifier.height(350.dp)) {
+                Row(modifier = Modifier.height(200.dp)) {
                     if (!isLoading) {
                         Image(
                             painter = painterResource(image),
-                            contentDescription = stringResource(id = R.string.cat_alt_text),
-                            //modifier = Modifier.size(width = 150.dp, height = 150.dp)
+                            contentDescription = stringResource(id = R.string.cat_alt_text)
                         )
                     } else {
                         Icon(
@@ -176,49 +160,28 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                         )
                     }
                 }
-
-                /*
-            Button(onClick = { navigation.navigate(Routes.DBTEST_SCREEN) }) {
-                Text(text = "DBTest")
-            }
-             */
-
+                Spacer(modifier = Modifier.height(10.dp))
 
                 if (calorieChoice) {
-
                     NutritionProgress(nutritionLogList.filter { it.date == LocalDate.now() }
                         .sumOf { it.calories })
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
-
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-
-                ) {
-                    Spacer(modifier = Modifier.weight(1f))
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Recent activity", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.weight(1f))
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (ActivityLogList.isNotEmpty()) {
                     val lastActivity = ActivityLogList.last()
-
-
                     ActivityWidget(
                         lastActivity,
                         activityTypeList.filter { it.id == lastActivity.activityTypeId }.first(),
                         distanceUnit = distanceUnit
                     )
-
                     totalActivities = ActivityLogList.size
-
-
-
-
 
 
                 } else {
@@ -233,7 +196,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 }
                 Spacer(modifier = Modifier.height(20.dp))
 
-                //TODO: ALLOW FOR THE TRACKING OF GOALS OTHER THAN TYPE DISTANCE
+                // TODO: ALLOW FOR THE TRACKING OF GOALS OTHER THAN TYPE DISTANCE
                 val goalDistances: Map<Goal, Double> = GoalList
                     .filter { goal -> goal.type == GoalType.DISTANCE }.associateWith { goal ->
                         ActivityLogList
@@ -243,11 +206,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                             .sumOf { it.distance.toDouble() }
                     }
 
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(text = "Statistics", fontSize = 20.sp)
                     Spacer(modifier = Modifier.weight(1f))
@@ -261,10 +220,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 )
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(text = "Goal tracking", fontSize = 20.sp)
                     Spacer(modifier = Modifier.weight(1f))
@@ -273,8 +229,6 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (goalDistances.isNotEmpty()) {
-
-
                     val titles = mapOf(
                         GoalFrequency.DAILY to "Daily Goals",
                         GoalFrequency.WEEKLY to "Weekly Goals",
@@ -297,37 +251,27 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                         }
                     }
                 }
-                else{
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-
-                    ) {
-                        Spacer(modifier = Modifier.weight(1f))
+                else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "Add goals to track your progress", fontSize = 15.sp)
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
-
-
-
             }
         }
     }
-
-
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 fun GetGoalsActivityLogs(activity: ActivityLog, goal: Goal, currentTime: LocalDateTime): Boolean {
-
     if (activity.activityTypeId != goal.activityTypeId) {
         return false
     }
 
     // Check frequency
-    when (goal.frequency) {
-        GoalFrequency.DAILY -> return activity.startTime >= currentTime.minusDays(1).toEpochSecond(ZoneOffset.UTC)
-        GoalFrequency.WEEKLY -> return activity.startTime >= currentTime.minusWeeks(1).toEpochSecond(ZoneOffset.UTC)
-        GoalFrequency.MONTHLY -> return activity.startTime >= currentTime.minusMonths(1).toEpochSecond(ZoneOffset.UTC)
+    return when (goal.frequency) {
+        GoalFrequency.DAILY -> activity.startTime >= currentTime.minusDays(1).toEpochSecond(ZoneOffset.UTC)
+        GoalFrequency.WEEKLY -> activity.startTime >= currentTime.minusWeeks(1).toEpochSecond(ZoneOffset.UTC)
+        GoalFrequency.MONTHLY -> activity.startTime >= currentTime.minusMonths(1).toEpochSecond(ZoneOffset.UTC)
     }
 }
 
@@ -337,7 +281,6 @@ suspend fun GetHomeData (
     onCharacterLoaded: (String) -> Unit,
     onDistanceUnitLoaded: (String) -> Unit,
 ){
-
     val calorieChoice = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
     onCalorieChoiceLoaded(calorieChoice)
     val character = dataStoreManager.getStringSetting("CharacterKey", "Fox").first()

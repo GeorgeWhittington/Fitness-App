@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,8 +38,6 @@ import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
-import com.foxden.fitnessapp.ui.theme.MidBlue
-import com.foxden.fitnessapp.ui.theme.Yellow
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -67,21 +66,23 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun ActivityWidget(log: ActivityLog, activityType: ActivityType,distanceUnit: String,modifier: Modifier = Modifier) {
-
-    var startDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())) }
-    var endDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())) }
-    var duration: Duration? by remember { mutableStateOf(Duration.between(startDT, endDT)) }
-    var activityDistance: Float
-
-    if (distanceUnit=="Km"){
-        activityDistance = String.format("%.2f", log.distance*1.609).toFloat()
-    }else{
-        activityDistance = String.format("%.2f", log.distance).toFloat()
+fun ActivityWidget(log: ActivityLog, activityType: ActivityType, distanceUnit: String, modifier: Modifier = Modifier) {
+    val startDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())) }
+    val endDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())) }
+    val duration: Duration? by remember { mutableStateOf(Duration.between(startDT, endDT)) }
+    val totalSeconds = duration?.toSeconds()
+    val durationString = if (totalSeconds != null)
+        String.format("%dh %dm", totalSeconds / 3600, (totalSeconds % 3600) / 60)
+        else ""
+    val activityDistance: Float = if (distanceUnit == "Km") {
+        String.format("%.2f", log.distance * 1.609).toFloat()
+    } else{
+        String.format("%.2f", log.distance).toFloat()
     }
 
+    // TODO: Source this from db
     val images = listOf(
         SlideshowImage(painterResource(R.drawable.hiking_route), "map showing route taken"),
         SlideshowImage(painterResource(R.drawable.hiking_picture), null),
@@ -94,52 +95,51 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType,distanceUnit: St
             .fillMaxWidth()
             .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(MidBlue)
+            .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
         ActivitySlideshow(modifier = Modifier.width(112.dp), images)
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp)
+            modifier = Modifier.fillMaxSize().padding(10.dp)
         ) {
             Column {
                 Row {
                     Icon(
                         Constants.ActivityIcons.values()[activityType.iconId].image, contentDescription = activityType.name,
                         modifier = Modifier.size(20.dp))
-                    Text(text = activityType.name, fontSize = 16.sp)
+                    Text(text = log.title, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
                 Spacer(modifier = Modifier.size(5.dp))
                 Row {
                     Column {
-
-                        Text(text = "Distance", fontSize = 12.sp)
-
-                        Text(text = "$activityDistance "+"$distanceUnit", fontSize = 12.sp,
-                            color = Yellow,
+                        Text(text = "Distance", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(text = "$activityDistance $distanceUnit", fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontWeight = FontWeight(700))
                     }
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
-                        Text(text = "Time", fontSize = 12.sp)
-                        // TODO: split into hours an minutes
-                        Text(text = "${duration?.toMinutes()} min", fontSize = 12.sp,
-                            color = Yellow,
+                        Text(text = "Time", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(text = durationString, fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontWeight = FontWeight(700))
                     }
+                    // TODO: Hide depending on setting
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
-                        Text(text = "Calories", fontSize = 12.sp)
+                        Text(text = "Calories", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Text(
                             text = "${log.calories}", fontSize = 12.sp,
-                            color = Yellow,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontWeight = FontWeight(700))
                     }
                 }
             }
 
-            Text(text = "${startDT?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))}", fontSize = 10.sp)
+            Text(
+                text = "${startDT?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))}", fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
     }
 }

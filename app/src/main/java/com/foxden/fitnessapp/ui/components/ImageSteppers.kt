@@ -32,12 +32,12 @@ fun ImageSteppers(numImages: Int, selectedImage: Int, modifier: Modifier) {
             if (index == selectedImage) {
                 Icon(
                     painterResource(R.drawable.filled_circle), null,
-                    modifier = Modifier.size(7.dp)
+                    modifier = Modifier.size(7.dp), tint = Color.Black
                 )
             } else {
                 Icon(
                     painterResource(R.drawable.stroked_circle), null,
-                    modifier = Modifier.size(7.dp)
+                    modifier = Modifier.size(7.dp), tint = Color.Black
                 )
             }
             // Don't add a spacer if this is the last stepper!

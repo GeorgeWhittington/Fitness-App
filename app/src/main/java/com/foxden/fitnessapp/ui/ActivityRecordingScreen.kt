@@ -29,6 +29,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,7 +45,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
@@ -59,9 +59,6 @@ import com.foxden.fitnessapp.ui.components.ActivitySelector
 import com.foxden.fitnessapp.ui.components.AddActivityTypeDialog
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.components.AddActivityTypeErrorDialog
-import com.foxden.fitnessapp.ui.theme.DarkBlue
-import com.foxden.fitnessapp.ui.theme.LightBlue
-import com.foxden.fitnessapp.ui.theme.MidBlue
 import com.foxden.fitnessapp.utils.LocationViewModel
 import com.foxden.fitnessapp.utils.PermissionEvent
 import com.foxden.fitnessapp.utils.ViewState
@@ -87,7 +84,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
     var selectedActivity: ActivityType? by remember { mutableStateOf(null) }
     val focusManager = LocalFocusManager.current
 
-    var activityList = remember { mutableStateListOf<ActivityType>() }
+    val activityList = remember { mutableStateListOf<ActivityType>() }
     activityList.clear()
     for (a in ActivityTypeDAO.fetchAll(dbHelper.readableDatabase)) {
         activityList.add(a)
@@ -137,7 +134,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
 
     // --- content ---
     Scaffold (
-        containerColor = LightBlue,
+        containerColor = MaterialTheme.colorScheme.primary,
         bottomBar = { NavBar(navigation = navigation) },
         modifier = Modifier
             .focusable()
@@ -152,7 +149,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                     .fillMaxWidth()
                     .padding(start = 25.dp, end = 25.dp, top = 25.dp)
             ) {
-                Text(text = "Record an Activity", fontSize = 20.sp, color = DarkBlue)
+                Text(text = "Record an Activity", fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
 
                 Spacer(modifier = Modifier.size(15.dp))
 
@@ -166,9 +163,9 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                         .clickable { showActivityDialog = true },
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(Icons.Outlined.Add, null)
+                    Icon(Icons.Outlined.Add, null, tint = MaterialTheme.colorScheme.onPrimary)
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Add new activity")
+                    Text("Add new activity", color = MaterialTheme.colorScheme.onPrimary)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -216,12 +213,12 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                     IconButton(
                         onClick = { /* TODO - open correct activity recording screen for whichever type is selected */ },
                         modifier = Modifier
-                            .background(MidBlue, CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape)
                             .size(65.dp)
                     ) {
                         Icon(
                             Icons.Filled.PlayArrow, contentDescription = null,
-                            tint = Color.White, modifier = Modifier.size(65.dp)
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(65.dp)
                         )
                     }
                 }
@@ -254,14 +251,20 @@ fun RevokedPermsMap(selectedActivity: ActivityType?) {
             .fillMaxWidth()
             .height(200.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(15.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         if (selectedActivity != null) {
-            Text("Location permissions are required to track ${selectedActivity.name}")
+            Text(
+                "Location permissions are required to track ${selectedActivity.name}",
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         } else {
-            Text(text = "Location permissions are required to track some activities")
+            Text(
+                text = "Location permissions are required to track some activities",
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
         Button(
             onClick = { startActivity(context, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), null) },
@@ -270,10 +273,10 @@ fun RevokedPermsMap(selectedActivity: ActivityType?) {
             if (context.hasLocationPermission()) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(14.dp),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             } else {
-                Text("Settings")
+                Text("Settings", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
     }
