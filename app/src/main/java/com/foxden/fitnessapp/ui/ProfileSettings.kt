@@ -14,14 +14,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Height
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -35,7 +34,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -48,68 +46,53 @@ import androidx.navigation.NavController
 import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.NavBar
-import com.foxden.fitnessapp.ui.theme.MidBlue
 import kotlinx.coroutines.flow.first
 
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSettings(navigation: NavController) {
-
     //Saving and retrieving data:
-        //used for save option
-        var isModified by remember { mutableStateOf(false) }
-        //link to datastore
-        val context = LocalContext.current
-        val dataStoreManager = SettingsDataStoreManager(context)
-        //used for saving the data to datastore
-        val triggerSave = remember { mutableStateOf(false) }
-        var currentName by rememberSaveable { mutableStateOf("") }
-        var currentWeight by rememberSaveable { mutableFloatStateOf(0f) }
-        var currentHeight by rememberSaveable { mutableFloatStateOf(0f) }
-        var weightUnit by rememberSaveable { mutableStateOf("") }
-        var heightUnit by rememberSaveable { mutableStateOf("") }
-        //used to check which character
-        var character by remember { mutableStateOf("") }
-        var isLoading by remember { mutableStateOf(true) }
+    //used for save option
+    var isModified by remember { mutableStateOf(false) }
+    //link to datastore
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
+    //used for saving the data to datastore
+    val triggerSave = remember { mutableStateOf(false) }
+    var currentName by rememberSaveable { mutableStateOf("") }
+    var currentWeight by rememberSaveable { mutableFloatStateOf(0f) }
+    var currentHeight by rememberSaveable { mutableFloatStateOf(0f) }
+    var weightUnit by rememberSaveable { mutableStateOf("") }
+    var heightUnit by rememberSaveable { mutableStateOf("") }
+    //used to check which character
+    var character by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(true) }
 
-    var image = if(character == "Fox"){
-        R.drawable.fox
-    } else if(character == "Racoon"){
-        R.drawable.racoon
-    } else{ R.drawable.cat
+    val image = when (character) {
+        "Fox" -> { R.drawable.fox_happy }
+        "Racoon" -> { R.drawable.racoon }
+        else -> { R.drawable.cat }
     }
-
 
     LaunchedEffect(Unit) {
         GetProfileData(dataStoreManager,
             onWeightUnitLoaded = { loadedWeightUnit ->
                 weightUnit = loadedWeightUnit
             },
-
             onHeightUnitLoaded = { loadedHeightUnit ->
                 heightUnit = loadedHeightUnit
             },
             onNameLoaded = { loadedName ->
                 currentName = loadedName},
-
-
             onWeightLoaded = { loadedWeight ->
                 currentWeight = loadedWeight},
-
-
             onHeightLoaded = { loadedHeight ->
                 currentHeight = loadedHeight},
-
             onCharacterLoaded = { loadedCharacter ->
                 character = loadedCharacter
                 isLoading = false
-
             }
-
         )
-
     }
 
     Scaffold (
@@ -118,14 +101,11 @@ fun ProfileSettings(navigation: NavController) {
                 title = { },
                 navigationIcon = {BackIcon{navigation.popBackStack()}},
                 actions = {
-                    
                     SaveOption(isModified = isModified) {
                         triggerSave.value = true
                         isModified = false
                     }
                     LaunchedEffect(triggerSave.value) {
-
-
                         if (triggerSave.value) {
                             val weightToSave = if (weightUnit == "lbs") convertLbsToKg(currentWeight) else currentWeight
                             val heightToSave = if (heightUnit == "Cm") convertCmToFeet(currentHeight) else currentHeight
@@ -137,7 +117,7 @@ fun ProfileSettings(navigation: NavController) {
                             triggerSave.value = false
                         }
                 }},
-                backgroundColor = MidBlue,
+                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.height(56.dp)
             )
             Box(
@@ -146,10 +126,8 @@ fun ProfileSettings(navigation: NavController) {
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                Text("Profile", color = Color.Black, fontSize = 20.sp)
+                Text("Profile", color = MaterialTheme.colorScheme.onSecondaryContainer, fontSize = 20.sp)
             }
-
-
         },
         bottomBar = { NavBar(navigation = navigation)}
     ) { innerPadding->
@@ -161,7 +139,6 @@ fun ProfileSettings(navigation: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-
             if (!isLoading) {
                 Image(
                     painter = painterResource(image),
@@ -172,15 +149,10 @@ fun ProfileSettings(navigation: NavController) {
                 Icon(Icons.Outlined.Image, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
             }
 
-
-
             Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = "Personal" ,fontSize = 20.sp)
+                Text(text = "Personal", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.weight(1f))
             }
 
@@ -221,14 +193,6 @@ fun ProfileSettings(navigation: NavController) {
                 onChange = { isModified = true },
                 keyboardType = KeyboardType.Number
             )
-
-
-
-
-
-
-
-
         }
     }
 }
@@ -271,12 +235,14 @@ fun ProfileInputField(
     onChange: () -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
-
     var textState by remember { mutableStateOf(TextFieldValue(textValue)) }
     val maxInputLength = 20
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+        Icon(
+            icon, contentDescription = null, modifier = Modifier.padding(end = 10.dp),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
         TextField(
             modifier = Modifier
                 .weight(1f)
@@ -320,7 +286,10 @@ fun FloatInputField(
             value
         }
 
-        Icon(icon, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+        Icon(
+            icon, contentDescription = null, modifier = Modifier.padding(end = 10.dp),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
         TextField(
             modifier = Modifier
                 .weight(1f)
@@ -346,7 +315,7 @@ fun FloatInputField(
     }
 
     if (isError) {
-        Text("Enter a valid $placeholder", color = MaterialTheme.colors.error)
+        Text("Enter a valid $placeholder", color = MaterialTheme.colorScheme.error)
     }
 }
 

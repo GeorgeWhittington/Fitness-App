@@ -117,6 +117,16 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
         totalDistance += log.distance
     }
 
+    // TODO: ALLOW FOR THE TRACKING OF GOALS OTHER THAN TYPE DISTANCE
+    val goalDistances: Map<Goal, Double> = GoalList
+        .filter { goal -> goal.type == GoalType.DISTANCE }.associateWith { goal ->
+            ActivityLogList
+                .filter { activity ->
+                    GetGoalsActivityLogs(activity, goal, currentTime)
+                }
+                .sumOf { it.distance.toDouble() }
+        }
+
     LaunchedEffect(Unit) {
         GetHomeData(dataStoreManager,
             onCharacterLoaded = { loadedCharacter ->
@@ -133,7 +143,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     }
 
     Scaffold (
-        containerColor = MaterialTheme.colorScheme.primary,
+        containerColor = MaterialTheme.colorScheme.secondary,
         bottomBar = { NavBar(navigation = navigation) }
     ) {innerPadding ->
         Box(modifier = Modifier
@@ -182,13 +192,8 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                         distanceUnit = distanceUnit
                     )
                     totalActivities = ActivityLogList.size
-
-
                 } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Spacer(modifier = Modifier.weight(1f))
                         Text(text = "Please record or manually log your activity", fontSize = 15.sp)
                         Spacer(modifier = Modifier.weight(1f))
@@ -196,26 +201,14 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 }
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // TODO: ALLOW FOR THE TRACKING OF GOALS OTHER THAN TYPE DISTANCE
-                val goalDistances: Map<Goal, Double> = GoalList
-                    .filter { goal -> goal.type == GoalType.DISTANCE }.associateWith { goal ->
-                        ActivityLogList
-                            .filter { activity ->
-                                GetGoalsActivityLogs(activity, goal, currentTime)
-                            }
-                            .sumOf { it.distance.toDouble() }
-                    }
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.weight(1f))
                     Text(text = "Statistics", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 HomeWidget(
                     activities = totalActivities,
                     distance = totalDistance,
-                    duration = totalDuration / 60,
+                    duration = totalDuration,
                     distanceUnit = distanceUnit,
                 )
                 Spacer(modifier = Modifier.height(20.dp))

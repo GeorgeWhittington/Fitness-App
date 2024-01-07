@@ -10,40 +10,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.foxden.fitnessapp.ui.theme.LightBlue
 
 @Composable
 fun HomeWidget(activities:Int,distance:Float,duration:Int,distanceUnit:String){
-
-
-    var totalDistance: Float
-
-    if (distanceUnit=="Km"){
-        totalDistance = String.format("%.2f", distance*1.609).toFloat()
-    }else{
-        totalDistance = String.format("%.2f", distance).toFloat()
+    val totalDistance: Float = if (distanceUnit=="Km"){
+        String.format("%.2f", distance*1.609).toFloat()
+    } else{
+        String.format("%.2f", distance).toFloat()
     }
+    val durationString = String.format("%dh %dm", duration / 3600, (duration % 3600) / 60)
 
     Row (
         modifier = Modifier
             .fillMaxWidth()
             .height(70.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(LightBlue)
+            .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
-
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
-
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp)
+            modifier = Modifier.fillMaxSize().padding(10.dp)
         ) {
             Row {
                 Column(
@@ -73,7 +66,7 @@ fun HomeWidget(activities:Int,distance:Float,duration:Int,distanceUnit:String){
                     Spacer(modifier = Modifier.height(5.dp))
                     Row {
                         Spacer(modifier = Modifier.weight(1f))
-                        Text(text = "$totalDistance "+"$distanceUnit", fontSize = 15.sp)
+                        Text(text = "$totalDistance $distanceUnit", fontSize = 15.sp)
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -88,19 +81,11 @@ fun HomeWidget(activities:Int,distance:Float,duration:Int,distanceUnit:String){
                     Spacer(modifier = Modifier.height(5.dp))
                     Row {
                         Spacer(modifier = Modifier.weight(1f))
-                        Text(text = "$duration Min", fontSize = 15.sp)
+                        Text(text = durationString, fontSize = 15.sp)
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
-                //Spacer(modifier = Modifier.weight(1f))
-
-
-
-
             }
-
-
-
         }
     }
 }

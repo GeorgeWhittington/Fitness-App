@@ -36,12 +36,10 @@ fun GoalsWidget(log: Goal,
                 distanceUnit: String,
                 modifier: Modifier = Modifier) {
 
-    var goalDistance: Float
-
-    if (distanceUnit=="Km"){
-        goalDistance = String.format("%.2f", log.distance*1.609).toFloat()
-    }else{
-        goalDistance = String.format("%.2f", log.distance).toFloat()
+    val goalDistance: Float = if (distanceUnit=="Km"){
+        String.format("%.2f", log.distance*1.609).toFloat()
+    } else{
+        String.format("%.2f", log.distance).toFloat()
     }
 
     Row (
@@ -51,7 +49,6 @@ fun GoalsWidget(log: Goal,
             .clip(shape = RoundedCornerShape(size = 10.dp))
             .background(MidBlue)
     ) {
-
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
 
@@ -60,37 +57,23 @@ fun GoalsWidget(log: Goal,
                 .padding(10.dp)
         ) {
             Row {
-                Column (
-                    verticalArrangement = Arrangement.Center
-                ){
-
+                Column (verticalArrangement = Arrangement.Center) {
                     Row {
-
                         Icon(
                             Constants.ActivityIcons.values()[activityType.iconId].image, contentDescription = activityType.name,
                             modifier = Modifier.size(50.dp)
                         )
                     }
                     //Spacer(modifier = Modifier.weight(1f))
-                    Row {
-
-                        Text(text = activityType.name, fontSize = 16.sp)
-                    }
-
-
+                    Row { Text(text = activityType.name, fontSize = 16.sp) }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-
                 if(log.type == GoalType.DURATION){
                     if(log.hours >0){
-                        Column (
-
-                        ){
-                            Row(
-                                verticalAlignment = Alignment.Bottom
-                            ) {
+                        Column {
+                            Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
                                     text = "${log.hours}",
                                     fontSize = 50.sp,
@@ -117,64 +100,42 @@ fun GoalsWidget(log: Goal,
                                         .padding(start = 4.dp)
                                 )
                             }
-
-
-
                         }
                     }
-                    else{
+                    else {
                         Column {
                             Row(
                                 verticalAlignment = Alignment.Bottom
                             ) {
-
                                 Text(
-                                    text = "${log.value}",
-                                    fontSize = 50.sp,
+                                    text = "${log.value}", fontSize = 50.sp,
                                     modifier = Modifier.alignByBaseline()
                                 )
                                 Text(
-                                    text = "Min",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier
-                                        .alignByBaseline()
-                                        .padding(start = 4.dp)
+                                    text = "Min", fontSize = 16.sp,
+                                    modifier = Modifier.alignByBaseline().padding(start = 4.dp)
                                 )
                             }
-
-
-
                         }
                     }
-
-                }else if(log.type == GoalType.DISTANCE){
-
-
+                } else if (log.type == GoalType.DISTANCE) {
                     Column {
-                        Row(
-                            verticalAlignment = Alignment.Bottom
-                        ) {
+                        Row(verticalAlignment = Alignment.Bottom) {
 
                             Text(
-                                text = "$goalDistance",
-                                fontSize = 50.sp,
+                                text = "$goalDistance", fontSize = 50.sp,
                                 modifier = Modifier.alignByBaseline()
                             )
 
                             Text(
-                                text = distanceUnit,
-                                fontSize = 16.sp,
-                                modifier = Modifier
-                                    .alignByBaseline()
-                                    .padding(start = 6.dp)
+                                text = distanceUnit, fontSize = 16.sp,
+                                modifier = Modifier.alignByBaseline().padding(start = 6.dp)
                             )
                         }
 
                     }
                 }
-
-                else{
-
+                else {
                     Column {
                         Row(
                             verticalAlignment = Alignment.Bottom
@@ -193,11 +154,8 @@ fun GoalsWidget(log: Goal,
                                     .padding(start = 6.dp)
                             )
                         }
-
                     }
                 }
-
-
                 Spacer(modifier = Modifier.weight(1f))
                 Column {
                     Modifier.weight(1f)
@@ -206,14 +164,7 @@ fun GoalsWidget(log: Goal,
                         fontWeight = FontWeight(700)
                     )
                 }
-
-
-
-
             }
-
-
-
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.foxden.fitnessapp.ui
-import android.annotation.SuppressLint
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -22,7 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -50,7 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -71,13 +71,9 @@ import com.foxden.fitnessapp.data.GoalType
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.GoalsWidget
 import com.foxden.fitnessapp.ui.components.NavBar
-import com.foxden.fitnessapp.ui.theme.MidBlue
-import com.foxden.fitnessapp.ui.theme.Yellow
 import kotlinx.coroutines.flow.first
 
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     val isDialogOpen = remember { mutableStateOf(false) }
@@ -108,28 +104,37 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedGoal by remember { mutableStateOf<Goal?>(null) }
 
-
+    // get data from datastore
+    LaunchedEffect(Unit) {
+        GetGoalsData(
+            dataStoreManager,
+            onCalorieGoalLoaded = { loadedCalorieGoal ->
+                currentCalorieGoal = loadedCalorieGoal
+            },
+            onCalorieChoiceLoaded = { loadedCalorieChoice ->
+                calorieChoice = loadedCalorieChoice
+            },
+            onDistanceUnitLoaded = { loadedDistanceUnit ->
+                distanceUnit = loadedDistanceUnit
+            },
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = { BackIcon { navigation.popBackStack() } },
-                backgroundColor = MidBlue,
+                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.height(56.dp),
                 actions = {
-
                     SaveOption(isModified = isModified) {
                         triggerSave.value = true
                         isModified = false
                     }
                     LaunchedEffect(triggerSave.value) {
-
-
                         if (triggerSave.value) {
-
                             dataStoreManager.saveIntSetting("CalorieGoalKey", currentCalorieGoal)
-
                             triggerSave.value = false
                         }
                     }}
@@ -139,31 +144,11 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-            ) {
-                PageName(text = "Goals")
-            }
+            ) { PageName(text = "Goals") }
 
         },
-
-
         bottomBar = { NavBar(navigation = navigation) }
     ) { innerPadding ->
-        //get data from datastore
-        LaunchedEffect(Unit) {
-            GetGoalsData(
-                dataStoreManager,
-                onCalorieGoalLoaded = { loadedCalorieGoal ->
-                    currentCalorieGoal = loadedCalorieGoal
-                },
-                onCalorieChoiceLoaded = { loadedCalorieChoice ->
-                    calorieChoice = loadedCalorieChoice
-                },
-                onDistanceUnitLoaded = { loadedDistanceUnit ->
-                    distanceUnit = loadedDistanceUnit
-                },
-            )
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -176,19 +161,11 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 if(calorieChoice){
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-
-                    ) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(text = "Daily calorie goal", fontSize = 20.sp, color = MidBlue)
-                        Spacer(modifier = Modifier.weight(1f))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "Daily calorie goal", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
                     }
                     Spacer(modifier = Modifier.height(20.dp))
-
 
                     IntInputField(
                         icon = Icons.Outlined.Restaurant,
@@ -201,21 +178,14 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                         onChange = { isModified = true },
                         keyboardType = KeyboardType.Number
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-
-                    ) {
-                        Spacer(modifier = Modifier.weight(1f))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "The recommended daily kcal for adults is 1500-2500 kcal daily",
                             fontSize = 13.sp,
-                            color = Yellow
+                            color = MaterialTheme.colorScheme.error
                         )
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                 }
-
-
 
                 if (isDialogOpen.value) {
                     CreateGoalPopup(isDialogOpen,
@@ -224,21 +194,14 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                         distanceUnit = distanceUnit)
                 }
 
-
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Activity Goals", fontSize = 20.sp, color = MidBlue)
+                    Text(text = "Activity Goals", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
 
-
                 LaunchedEffect(goalAdded) {
-
                     if (goalAdded) {
                         GoalList = GoalDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
                         goalAdded = false // Reset the flag
@@ -287,10 +250,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                         }
                     )
                 }
-
-
             }
-
 
             // Floating Action Button
             IconButton(
@@ -298,12 +258,12 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
-                    .background(Yellow, CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape)
                     .size(56.dp)
             ) {
                 Icon(
                     Icons.Outlined.Add, "Add a goal",
-                    tint = Color.White, modifier = Modifier.size(24.dp)
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -566,7 +526,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                     if (isError) {
                         Text(
                             "Enter a valid Number",
-                            color = MaterialTheme.colors.error
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
                 }

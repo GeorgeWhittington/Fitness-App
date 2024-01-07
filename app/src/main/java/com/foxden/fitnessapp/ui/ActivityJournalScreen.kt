@@ -125,7 +125,7 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.primary,
+        containerColor = MaterialTheme.colorScheme.secondary,
         bottomBar = { NavBar(navigation = navigation) }
     ) { scaffoldPaddingValues ->
         Column(modifier = Modifier.padding(scaffoldPaddingValues)) {
@@ -141,7 +141,7 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                 ) {
                     Text(
                         text = "Activity Journal", fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onSecondary
                     )
                     Row {
                         IconButton(
@@ -150,7 +150,7 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                         ) {
                             Icon(
                                 Icons.Outlined.Add, contentDescription = "Add Activity Manually",
-                                tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp)
+                                tint = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(30.dp)
                             )
                         }
 
@@ -160,14 +160,14 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                         ) {
                             Icon(
                                 Icons.Outlined.Tune, contentDescription = "Sort and Filter",
-                                tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp)
+                                tint = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(30.dp)
                             )
                         }
                     }
                 }
 
                 if (activityLogs.size == 0) {
-                    Text(text = "No activities logged", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(text = "No activities logged", color = MaterialTheme.colorScheme.onSecondary)
                 }
                 
                 LazyColumn {
@@ -279,7 +279,7 @@ fun BottomSheet(onDismiss: () -> Unit) {
                 placeholder = { Text("Search") },
                 leadingIcon = { Icon(
                     Icons.Outlined.Search, contentDescription = "Search Icon",
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onSecondary
                 ) }
             )
             Spacer(modifier = Modifier.size(10.dp))

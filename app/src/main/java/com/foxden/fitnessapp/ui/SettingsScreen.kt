@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForwardIos
@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -32,7 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -42,20 +40,15 @@ import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.components.NavBar
-import com.foxden.fitnessapp.ui.theme.DarkBlue
-
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navigation: NavController, dbHelper: DBHelper) {
     Scaffold(
         bottomBar = { NavBar(navigation = navigation) }
     ) {
         Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+            Modifier.fillMaxWidth().padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             RowOption("Profile") { navigation.navigate(Routes.PROFILE_SETTINGS_SCREEN) }
@@ -71,8 +64,6 @@ fun SettingsScreen(navigation: NavController, dbHelper: DBHelper) {
             GPSOption()
             Spacer(modifier = Modifier.height(50.dp))
             DeleteButton(dbHelper)
-
-
         }
     }
 }
@@ -80,25 +71,18 @@ fun SettingsScreen(navigation: NavController, dbHelper: DBHelper) {
 @Composable
 fun PageName(text: String) {
     Text(
-        text = text,
-        fontSize = 20.sp,
-        textAlign = TextAlign.Center
+        text = text, fontSize = 20.sp, textAlign = TextAlign.Center,
+        color = MaterialTheme.colorScheme.onSecondaryContainer
     )
 }
 
 @Composable
 fun SaveOption(isModified: Boolean, onClick: () -> Unit) {
-
     if (isModified) {
-        //Spacer(modifier = androidx.compose.ui.Modifier.weight(1f))
-        TextButton(
-            onClick = { onClick() }
-        ) {
-            Text(text = "Save",
-                color = DarkBlue)
+        TextButton(onClick = { onClick() }) {
+            Text(text = "Save", color = MaterialTheme.colorScheme.onSecondaryContainer)
         }
     }
-
 }
 
 @Composable
@@ -106,17 +90,13 @@ fun BackIcon(onClick: () -> Unit) {
     IconButton(
         onClick = { onClick() }, // Replace "home" with your destination route
         modifier = Modifier
-        //.padding(start = 16.dp)
-        //.clickable { navController.navigate("home") } // Clickable modifier for the IconButton
     ) {
         Icon(
             Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
-            //modifier = Modifier.padding(start = 16.dp),
-            tint = DarkBlue
+            tint = MaterialTheme.colorScheme.onSecondary
         )
     }
 }
-
 
 @Composable
 fun DeleteButton(dbHelper: DBHelper) {
@@ -128,33 +108,22 @@ fun DeleteButton(dbHelper: DBHelper) {
             isClicked = true
         }
     ) {
-
-         Text(text = "Delete all data")
-
-
+        Text(text = "Delete all data")
         Icon(
             Icons.Outlined.Delete,
             contentDescription = "bin icon",
-            tint = Color.White
+            tint = MaterialTheme.colorScheme.onPrimary
         )
     }
     if (isClicked) {
-        Text(text = "Data deleted", color = Color.Green )
-        
+        Text(text = "Data deleted", color = MaterialTheme.colorScheme.tertiary )
     }
-
 }
 
 @Composable
-fun RowDivider(
-    height: Int = 1,
-
-    modifier: Modifier = Modifier
-) {
+fun RowDivider(modifier: Modifier = Modifier) {
     Divider(modifier = modifier.fillMaxWidth())
 }
-
-
 
 @Composable
 fun PushNotifOption() {
@@ -171,10 +140,7 @@ fun PushNotifOption() {
 @Composable
 fun GPSOption() {
     var checkedState by rememberSaveable { mutableStateOf(false) }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-
-        ) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "GPS tracking",
             fontSize = 16.sp, modifier = Modifier.weight(1f)
@@ -203,13 +169,12 @@ fun IntInputField(
     var isError by remember { mutableStateOf(false) }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-
-
-        Icon(icon, contentDescription = null, modifier = Modifier.padding(end = 10.dp))
+        Icon(
+            icon, contentDescription = null, modifier = Modifier.padding(end = 10.dp),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
         TextField(
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 16.dp),
+            modifier = Modifier.weight(1f).padding(end = 16.dp),
             value = textState,
             onValueChange = { inputText ->
                 if (inputText.length <= maxDigits) {
@@ -231,7 +196,7 @@ fun IntInputField(
     }
 
     if (isError) {
-        Text("Enter a valid $placeholder", color = MaterialTheme.colors.error)
+        Text("Enter a valid $placeholder", color = MaterialTheme.colorScheme.error)
     }
 }
 @Composable
@@ -248,8 +213,8 @@ fun RowOption(text: String, onClick: () -> Unit) {
         )
 
         Icon(
-            Icons.Outlined.ArrowForwardIos,
-            contentDescription = "next arrow"
+            Icons.Outlined.ArrowForwardIos, contentDescription = "next arrow",
+            tint = MaterialTheme.colorScheme.onSecondary
         )
     }
 }

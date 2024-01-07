@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,17 +19,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.GetGoalsData
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun NutritionProgress(numCalories: Int) {
 
@@ -44,10 +42,8 @@ fun NutritionProgress(numCalories: Int) {
             onCalorieGoalLoaded = { loadedCalorieGoal ->
                 calorieTarget = loadedCalorieGoal
             },
-            onCalorieChoiceLoaded = { loadedCalorieChoice ->
-            },
-            onDistanceUnitLoaded = { loadedDistanceUnit ->
-            },
+            onCalorieChoiceLoaded = { _ -> },
+            onDistanceUnitLoaded = { _ -> },
         )
     }
 
@@ -57,10 +53,7 @@ fun NutritionProgress(numCalories: Int) {
 
     val containerModifier = Modifier
         .fillMaxWidth()
-        //.height(279.dp)
-        //.focusable()
         .clip(RoundedCornerShape(20.dp))
-
 
     Column (
         modifier = containerModifier,
@@ -70,16 +63,14 @@ fun NutritionProgress(numCalories: Int) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .padding(horizontal = 16.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
                 Row(modifier = Modifier) {
-
                     Column(modifier = Modifier
                         .fillMaxWidth()){
-
                         Row(modifier = Modifier.align(Alignment.CenterHorizontally)){
                             Text("$numCalories/$calorieTarget kcal")
                         }
@@ -87,7 +78,7 @@ fun NutritionProgress(numCalories: Int) {
                             LinearProgressIndicator(
                                 progress = progress,
                                 modifier = Modifier.fillMaxWidth(),
-                                color = Color(0, 0, 255),
+                                color = MaterialTheme.colorScheme.onSecondary,
                             )
                         }
                     }

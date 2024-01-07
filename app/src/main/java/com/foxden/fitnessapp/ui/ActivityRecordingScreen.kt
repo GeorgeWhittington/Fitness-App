@@ -134,7 +134,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
 
     // --- content ---
     Scaffold (
-        containerColor = MaterialTheme.colorScheme.primary,
+        containerColor = MaterialTheme.colorScheme.secondary,
         bottomBar = { NavBar(navigation = navigation) },
         modifier = Modifier
             .focusable()
@@ -149,7 +149,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                     .fillMaxWidth()
                     .padding(start = 25.dp, end = 25.dp, top = 25.dp)
             ) {
-                Text(text = "Record an Activity", fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                Text(text = "Record an Activity", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSecondary)
 
                 Spacer(modifier = Modifier.size(15.dp))
 
@@ -163,9 +163,9 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                         .clickable { showActivityDialog = true },
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(Icons.Outlined.Add, null, tint = MaterialTheme.colorScheme.onPrimary)
+                    Icon(Icons.Outlined.Add, null, tint = MaterialTheme.colorScheme.onSecondary)
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Add new activity", color = MaterialTheme.colorScheme.onPrimary)
+                    Text("Add new activity", color = MaterialTheme.colorScheme.onSecondary)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

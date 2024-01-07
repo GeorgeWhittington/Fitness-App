@@ -14,17 +14,19 @@ import androidx.core.view.WindowCompat
 
 // TODO: Fill out more values so that material components look right
 private val LightColorScheme = lightColorScheme(
-    primary = LightBlue, onPrimary = DarkBlue,
+    primary = MidBlue, onPrimary = Color.White,
+    secondary = LightBlue, onSecondary = DarkBlue,
     primaryContainer = Color.White, onPrimaryContainer = DarkBlue,
     secondaryContainer = MidBlue, onSecondaryContainer = Color.White,
     tertiary = MidBlue, onTertiary = Yellow, error = Orange
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = DarkBlue, onPrimary = Color.White,
+    primary = MidBlue, onPrimary = Color.White,
+    secondary = DarkBlue, onSecondary = Color.White,
     primaryContainer = MidBlue, onPrimaryContainer = Color.White,
     secondaryContainer = MidBlue, onSecondaryContainer = Color.White,
-    tertiary = LightBlue, onTertiary = Color.Green, error = Color.Magenta
+    tertiary = LightBlue, onTertiary = Yellow, error = Orange
 )
 
 @Composable
