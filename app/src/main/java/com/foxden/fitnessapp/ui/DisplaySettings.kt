@@ -16,6 +16,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -119,7 +120,7 @@ fun DisplaySettings(navigation: NavController) {
         topBar = {
             TopAppBar(
                 title = { },
-                navigationIcon = {BackIcon{navigation.popBackStack()}},
+                navigationIcon = { BackIcon{navigation.popBackStack()} },
                 actions = {
 
                     //if a change is detected, will give an option to save - launch effect
@@ -140,7 +141,7 @@ fun DisplaySettings(navigation: NavController) {
                             triggerSave.value = false
                         }
                     }},
-                backgroundColor = MidBlue,
+                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.height(56.dp)
             )
             Box(
@@ -149,7 +150,7 @@ fun DisplaySettings(navigation: NavController) {
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                Text("Display", color = Color.Black, fontSize = 20.sp)
+                Text("Display", color = MaterialTheme.colorScheme.onSecondaryContainer, fontSize = 20.sp)
             }
 
         },

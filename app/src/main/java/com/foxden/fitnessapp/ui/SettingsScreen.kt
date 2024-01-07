@@ -93,7 +93,7 @@ fun BackIcon(onClick: () -> Unit) {
     ) {
         Icon(
             Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
-            tint = MaterialTheme.colorScheme.onSecondary
+            tint = MaterialTheme.colorScheme.onSecondaryContainer
         )
     }
 }
