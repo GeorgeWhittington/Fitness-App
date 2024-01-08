@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,6 +40,7 @@ import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -90,10 +93,12 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, distanceUnit: S
         SlideshowImage(painterResource(R.drawable.hiking_picture), null)
     )
 
+    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val caloriesEnabled by dataStoreManager.caloriesEnabledFlow.collectAsState(initial = true)
+
     Row (
         modifier = modifier
-            .fillMaxWidth()
-            .height(112.dp)
+            .fillMaxWidth().height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
             .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
@@ -124,14 +129,20 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, distanceUnit: S
                             color = MaterialTheme.colorScheme.tertiary,
                             fontWeight = FontWeight(700))
                     }
-                    // TODO: Hide depending on setting
-                    Spacer(modifier = Modifier.size(10.dp))
-                    Column {
-                        Text(text = "Calories", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text(
-                            text = "${log.calories}", fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            fontWeight = FontWeight(700))
+                    if (caloriesEnabled == true) {
+                        Spacer(modifier = Modifier.size(10.dp))
+                        Column {
+                            Text(
+                                text = "Calories",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "${log.calories}", fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight(700)
+                            )
+                        }
                     }
                 }
             }
@@ -143,4 +154,3 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, distanceUnit: S
         }
     }
 }
-

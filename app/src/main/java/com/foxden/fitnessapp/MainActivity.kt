@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
         val settingsDataStoreManager = SettingsDataStoreManager(context = this)
         //theme
         val darkModeLiveData = settingsDataStoreManager.checkDarkmode
+
         darkModeLiveData.observe(this, Observer { isDarkMode ->
             setContent {
                 val navController = rememberNavController()
@@ -124,7 +125,7 @@ class MainActivity : ComponentActivity() {
                             enterTransition = { EnterTransition.None },
                             exitTransition = { ExitTransition.None }
                         ) {
-                            SettingsScreen(navController, db)
+                            SettingsScreen(navController, locationViewModel, db)
                         }
 
                         composable(

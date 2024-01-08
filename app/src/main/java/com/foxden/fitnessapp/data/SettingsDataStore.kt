@@ -103,4 +103,8 @@ class SettingsDataStoreManager(private val context: Context) {
             }
             .asLiveData())
     }
+
+    val caloriesEnabledFlow: Flow<Boolean?> = context.dataStore.data.map { preferences ->
+        preferences[booleanPreferencesKey("CalorieKey")]
+    }
 }
