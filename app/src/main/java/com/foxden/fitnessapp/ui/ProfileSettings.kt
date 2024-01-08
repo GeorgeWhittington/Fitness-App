@@ -71,7 +71,8 @@ fun ProfileSettings(navigation: NavController) {
     val image = when (character) {
         "Fox" -> { R.drawable.fox_happy }
         "Racoon" -> { R.drawable.racoon }
-        else -> { R.drawable.cat }
+        "Cat" -> { R.drawable.hendrix_window }
+        else -> { R.drawable.fox_happy }
     }
 
     LaunchedEffect(Unit) {

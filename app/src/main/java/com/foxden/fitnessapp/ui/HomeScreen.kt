@@ -75,7 +75,8 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     val image = when (character) {
         "Fox" -> { R.drawable.fox_happy }
         "Racoon" -> { R.drawable.racoon }
-        else -> { R.drawable.cat }
+        "Cat" -> { R.drawable.hendrix_window }
+        else -> { R.drawable.fox_happy }
     }
 
     // get calorie option
@@ -152,7 +153,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(start = 10.dp, end = 10.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
