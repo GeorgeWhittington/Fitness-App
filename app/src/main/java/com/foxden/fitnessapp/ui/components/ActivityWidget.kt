@@ -40,7 +40,9 @@ import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
+import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
+import com.foxden.fitnessapp.utils.formatDistance
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -71,7 +73,11 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun ActivityWidget(log: ActivityLog, activityType: ActivityType, distanceUnit: String, modifier: Modifier = Modifier) {
+fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modifier = Modifier) {
+    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
+    val caloriesEnabled by dataStoreManager.caloriesEnabledFlow.collectAsState(initial = Settings.DefaultValues[Settings.CALORIES_ENABLED])
+
     val startDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())) }
     val endDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())) }
     val duration: Duration? by remember { mutableStateOf(Duration.between(startDT, endDT)) }
@@ -79,11 +85,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, distanceUnit: S
     val durationString = if (totalSeconds != null)
         String.format("%dh %dm", totalSeconds / 3600, (totalSeconds % 3600) / 60)
         else ""
-    val activityDistance: Float = if (distanceUnit == "Km") {
-        String.format("%.2f", log.distance * 1.609).toFloat()
-    } else{
-        String.format("%.2f", log.distance).toFloat()
-    }
+    val activityDistance: Float = formatDistance(log.distance, distanceUnit)
 
     // TODO: Source this from db
     val images = listOf(
@@ -92,9 +94,6 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, distanceUnit: S
         SlideshowImage(painterResource(R.drawable.hiking_picture), null),
         SlideshowImage(painterResource(R.drawable.hiking_picture), null)
     )
-
-    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
-    val caloriesEnabled by dataStoreManager.caloriesEnabledFlow.collectAsState(initial = true)
 
     Row (
         modifier = modifier

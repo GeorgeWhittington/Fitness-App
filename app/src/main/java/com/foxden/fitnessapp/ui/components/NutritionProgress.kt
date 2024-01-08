@@ -13,7 +13,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
-import com.foxden.fitnessapp.ui.GetGoalsData
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -32,20 +31,9 @@ fun NutritionProgress(numCalories: Int) {
 
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
+    val calorieTarget by dataStoreManager.calorieGoalFlow.collectAsState(initial = 0)
 
-    var calorieTarget by remember { mutableStateOf(0) }
     var progress by remember { mutableStateOf(0.0f) }
-
-    LaunchedEffect(Unit) {
-        GetGoalsData(
-            dataStoreManager,
-            onCalorieGoalLoaded = { loadedCalorieGoal ->
-                calorieTarget = loadedCalorieGoal
-            },
-            onCalorieChoiceLoaded = { _ -> },
-            onDistanceUnitLoaded = { _ -> },
-        )
-    }
 
     if (calorieTarget != 0) {
         progress = numCalories.toFloat() / calorieTarget.toFloat()

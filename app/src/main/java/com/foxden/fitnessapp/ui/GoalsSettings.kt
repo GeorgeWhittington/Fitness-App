@@ -542,7 +542,6 @@ suspend fun GetGoalsData (
     onCalorieChoiceLoaded: (Boolean) -> Unit,
     onDistanceUnitLoaded: (String) -> Unit,
 ){
-
     val calorieGoal = dataStoreManager.getIntSetting("CalorieGoalKey", 2000).first()
     onCalorieGoalLoaded(calorieGoal)
     val calorieChoice = dataStoreManager.getSwitchSetting("CalorieKey", true).first()

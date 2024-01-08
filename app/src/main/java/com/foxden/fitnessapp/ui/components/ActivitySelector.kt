@@ -137,7 +137,7 @@ fun ActivitySelector(selectedActivity: ActivityType?, setSelectedActivity: (Acti
 
         if (!searching) {
             val activitiesSelectedFirst = remember {
-                mutableStateListOf<ActivityType>(activityList[0], activityList[1], activityList[2])
+                mutableStateListOf(activityList[0], activityList[1], activityList[2])
             }
 
             LaunchedEffect(selectedActivity) {

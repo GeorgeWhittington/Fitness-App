@@ -128,10 +128,6 @@ fun NutritionTrackingScreen(navigation: NavController, dbHelper: DBHelper) {
                         }
                     }
                 }
-
-
-
-
             }
         }
     }

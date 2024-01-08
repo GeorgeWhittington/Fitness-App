@@ -16,6 +16,22 @@ import kotlinx.coroutines.flow.map
 
 val Context.dataStore by preferencesDataStore(name = "SettingsDatastore")
 
+object Settings {
+    const val CALORIES_ENABLED = "CalorieKey"
+    const val DARK_MODE = "DarkmodeKey"
+    const val DISTANCE_UNIT = "DistanceUnitKey"
+    const val CHARACTER = "CharacterKey"
+    const val CALORIE_GOAL = "CalorieGoalKey"
+
+    val DefaultValues = mapOf<String, Any>(
+        CALORIES_ENABLED to true,
+        DARK_MODE to false,
+        DISTANCE_UNIT to "Miles",
+        CHARACTER to "Fox",
+        CALORIE_GOAL to 2000
+    )
+}
+
 class SettingsDataStoreManager(private val context: Context) {
     // Function to save a string value
     suspend fun saveStringSetting(key: String, value: String) {
@@ -104,7 +120,19 @@ class SettingsDataStoreManager(private val context: Context) {
             .asLiveData())
     }
 
-    val caloriesEnabledFlow: Flow<Boolean?> = context.dataStore.data.map { preferences ->
-        preferences[booleanPreferencesKey("CalorieKey")]
+    val caloriesEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[booleanPreferencesKey(Settings.CALORIES_ENABLED)] ?: true
+    }
+
+    val distanceUnitFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[stringPreferencesKey(Settings.DISTANCE_UNIT)] ?: "Miles"
+    }
+
+    val characterFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[stringPreferencesKey(Settings.CHARACTER)] ?: "Fox"
+    }
+
+    val calorieGoalFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[intPreferencesKey(Settings.CALORIE_GOAL)] ?: 2000
     }
 }

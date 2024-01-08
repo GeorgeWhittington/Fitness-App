@@ -28,6 +28,7 @@ import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.Goal
 import com.foxden.fitnessapp.data.GoalType
 import com.foxden.fitnessapp.ui.theme.MidBlue
+import com.foxden.fitnessapp.utils.formatDistance
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -36,22 +37,14 @@ fun GoalsWidget(log: Goal,
                 distanceUnit: String,
                 modifier: Modifier = Modifier) {
 
-    val goalDistance: Float = if (distanceUnit=="Km"){
-        String.format("%.2f", log.distance*1.609).toFloat()
-    } else{
-        String.format("%.2f", log.distance).toFloat()
-    }
+    val goalDistance = formatDistance(log.distance, distanceUnit)
 
-    Row (
-        modifier = modifier
-            .fillMaxWidth()
-            .height(112.dp)
-            .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(MidBlue)
+    Row (modifier = modifier
+        .fillMaxWidth().height(112.dp)
+        .clip(shape = RoundedCornerShape(size = 10.dp)).background(MidBlue)
     ) {
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
-
             modifier = modifier
                 .fillMaxSize()
                 .padding(10.dp)

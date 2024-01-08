@@ -58,6 +58,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -86,6 +87,7 @@ import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ImageSteppers
 import java.time.Instant
@@ -113,8 +115,8 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
 
     //get unit preference
     val context = LocalContext.current
-    val dataStoreManager = SettingsDataStoreManager(context)
-    var distanceUnit by rememberSaveable { mutableStateOf("") }
+    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
 
     // other state
     var activityTypeExpanded by remember { mutableStateOf(false) }
@@ -134,7 +136,6 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     var imageDisplayed by remember { mutableIntStateOf(0) }
     var fullscreenImageExpanded by remember { mutableStateOf(false) }
     var fullscreenImageUri: Uri? by remember { mutableStateOf(null) }
-
     
     if (datePickerExpanded) {
         DatePickerDialog(
@@ -212,21 +213,6 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             }
         }
     ) {scaffoldingPaddingValues ->
-        LaunchedEffect(Unit) {
-            GetGoalsData(
-                dataStoreManager,
-                onCalorieGoalLoaded = { loadedCalorieGoal ->
-                    var currentCalorieGoal = loadedCalorieGoal
-                },
-                onCalorieChoiceLoaded = { loadedCalorieChoice ->
-                    var calorieChoice = loadedCalorieChoice
-                },
-                onDistanceUnitLoaded = { loadedDistanceUnit ->
-                    distanceUnit = loadedDistanceUnit
-                },
-            )
-        }
-
         Column (modifier = Modifier.padding(scaffoldingPaddingValues)) {
         Column (modifier = Modifier
             .padding(start = 15.dp, end = 15.dp)
@@ -351,7 +337,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             // Activity Distance
             var distanceFloat by rememberSaveable { mutableFloatStateOf(0f) }
             OutlinedTextField(
-                value = distance, suffix = { Text(distanceUnit) }, label = { Text("Distance" )},
+                value = distance, suffix = { Text(distanceUnit.toString()) }, label = { Text("Distance" )},
                 trailingIcon = { Icon(Icons.Outlined.UnfoldMore, null) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -365,7 +351,8 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                                 distance = ""
                             } else {
                                 distance = distanceDouble.toString()
-                                distanceFloat = distanceDouble.toFloat() // stinky because distance is a string?!
+                                distanceFloat =
+                                    distanceDouble.toFloat() // stinky because distance is a string?!
                             }
                         } catch (_: NumberFormatException) {
                         }

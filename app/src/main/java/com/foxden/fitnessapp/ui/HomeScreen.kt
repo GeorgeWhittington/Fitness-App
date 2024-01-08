@@ -1,6 +1,5 @@
 package com.foxden.fitnessapp.ui
 
-import android.app.Application
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -21,12 +20,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -47,52 +44,41 @@ import com.foxden.fitnessapp.data.GoalDAO
 import com.foxden.fitnessapp.data.GoalFrequency
 import com.foxden.fitnessapp.data.GoalType
 import com.foxden.fitnessapp.data.NutritionLogDAO
+import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.HomeGoalWidget
 import com.foxden.fitnessapp.ui.components.HomeWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.components.NutritionProgress
-import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun HomeScreen(navigation: NavController, application: Application, dbHelper: DBHelper) {
-    //link to datastore
-    val context = LocalContext.current
-    val dataStoreManager = SettingsDataStoreManager(context)
+fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
+    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val calorieChoice by dataStoreManager.caloriesEnabledFlow.collectAsState(initial = Settings.DefaultValues[Settings.CALORIES_ENABLED])
+    val character by dataStoreManager.characterFlow.collectAsState(initial = Settings.DefaultValues[Settings.CHARACTER])
 
-    //distance unit
-    var distanceUnit by rememberSaveable { mutableStateOf("") }
-
-    //used to load chosen character
-    var character by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(true) }
+    // used to load chosen character
     val image = when (character) {
         "Fox" -> { R.drawable.fox_happy }
         "Racoon" -> { R.drawable.racoon }
         "Cat" -> { R.drawable.hendrix_window }
-        else -> { R.drawable.fox_happy }
+        else -> { 0 }
     }
-
-    // get calorie option
-    var calorieChoice by rememberSaveable { mutableStateOf(false) }
-
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
 
     //nutrition logs
     val start = LocalDate.now().minusDays(7)
     val end = LocalDate.now()
-    var nutritionLogList = remember {
+    val nutritionLogList = remember {
         NutritionLogDAO.fetchRange(dbHelper.writableDatabase, start, end).toMutableStateList()
     }
 
     //activity logs
-    var ActivityLogList = remember {
+    val ActivityLogList = remember {
         ActivityLogDAO.fetchAll(dbHelper.writableDatabase).sortedBy { it.startTime }.toMutableStateList()
     }
 
@@ -100,12 +86,12 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
     val currentTime = LocalDateTime.now()
 
     //goal list
-    var GoalList = remember {
+    val GoalList = remember {
         GoalDAO.fetchAll(dbHelper.writableDatabase).sortedBy { it.frequency }.toMutableStateList()
     }
 
     //activity type
-    var activityTypeList = remember {
+    val activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
 
@@ -128,25 +114,10 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 .sumOf { it.distance.toDouble() }
         }
 
-    LaunchedEffect(Unit) {
-        GetHomeData(dataStoreManager,
-            onCharacterLoaded = { loadedCharacter ->
-                character = loadedCharacter
-                isLoading = false
-            },
-            onDistanceUnitLoaded = { loadedDistanceUnit ->
-                distanceUnit = loadedDistanceUnit
-            },
-            onCalorieChoiceLoaded = { loadedCalorieChoice ->
-                calorieChoice = loadedCalorieChoice
-            },
-        )
-    }
-
     Scaffold (
         containerColor = MaterialTheme.colorScheme.secondary,
         bottomBar = { NavBar(navigation = navigation) }
-    ) {innerPadding ->
+    ) { innerPadding ->
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)) {
@@ -158,7 +129,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(modifier = Modifier.height(200.dp)) {
-                    if (!isLoading) {
+                    if (image != 0) {
                         Image(
                             painter = painterResource(image),
                             contentDescription = stringResource(id = R.string.cat_alt_text)
@@ -173,7 +144,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
-                if (calorieChoice) {
+                if (calorieChoice == true) {
                     NutritionProgress(nutritionLogList.filter { it.date == LocalDate.now() }
                         .sumOf { it.calories })
                 }
@@ -189,8 +160,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                     val lastActivity = ActivityLogList.last()
                     ActivityWidget(
                         lastActivity,
-                        activityTypeList.filter { it.id == lastActivity.activityTypeId }.first(),
-                        distanceUnit = distanceUnit
+                        activityTypeList.filter { it.id == lastActivity.activityTypeId }.first()
                     )
                     totalActivities = ActivityLogList.size
                 } else {
@@ -209,8 +179,7 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                 HomeWidget(
                     activities = totalActivities,
                     distance = totalDistance,
-                    duration = totalDuration,
-                    distanceUnit = distanceUnit,
+                    duration = totalDuration
                 )
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -236,9 +205,8 @@ fun HomeScreen(navigation: NavController, application: Application, dbHelper: DB
                             goalDistances.filter { it.key.frequency == frequency }.forEach { (goal, sumDistance) ->
                                 HomeGoalWidget(
                                     goal = goal,
-                                    sumDistance = sumDistance,
-                                    activityTypeList.filter { it.id == goal.activityTypeId }.first(),
-                                    distanceUnit = distanceUnit
+                                    sumDistance = sumDistance.toFloat(),
+                                    activityTypeList.filter { it.id == goal.activityTypeId }.first()
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
                             }
@@ -267,19 +235,5 @@ fun GetGoalsActivityLogs(activity: ActivityLog, goal: Goal, currentTime: LocalDa
         GoalFrequency.WEEKLY -> activity.startTime >= currentTime.minusWeeks(1).toEpochSecond(ZoneOffset.UTC)
         GoalFrequency.MONTHLY -> activity.startTime >= currentTime.minusMonths(1).toEpochSecond(ZoneOffset.UTC)
     }
-}
-
-suspend fun GetHomeData (
-    dataStoreManager: SettingsDataStoreManager,
-    onCalorieChoiceLoaded: (Boolean) -> Unit,
-    onCharacterLoaded: (String) -> Unit,
-    onDistanceUnitLoaded: (String) -> Unit,
-){
-    val calorieChoice = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
-    onCalorieChoiceLoaded(calorieChoice)
-    val character = dataStoreManager.getStringSetting("CharacterKey", "Fox").first()
-    onCharacterLoaded(character)
-    val distanceUnit = dataStoreManager.getStringSetting("DistanceUnitKey", "Miles").first()
-    onDistanceUnitLoaded(distanceUnit)
 }
 

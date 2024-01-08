@@ -40,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +62,7 @@ import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
@@ -85,28 +87,12 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
     if (showSheet) { BottomSheet { showSheet = false } }
 
     // get preferred distance unit
-    val context = LocalContext.current
-    val dataStoreManager = SettingsDataStoreManager(context)
-    var distanceUnit by rememberSaveable { mutableStateOf("") }
+    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
 
     // remove activities
     var selectedActivity by remember { mutableStateOf<ActivityLog?>(null) }
     var showDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        GetGoalsData(
-            dataStoreManager,
-            onCalorieGoalLoaded = { loadedCalorieGoal ->
-                var currentCalorieGoal = loadedCalorieGoal
-            },
-            onCalorieChoiceLoaded = { loadedCalorieChoice ->
-                var calorieChoice = loadedCalorieChoice
-            },
-            onDistanceUnitLoaded = { loadedDistanceUnit ->
-                distanceUnit = loadedDistanceUnit
-            },
-        )
-    }
 
     if (showDialog) {
         AlertDialog(
@@ -183,7 +169,6 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                     items(activityLogs) { activityLog ->
                         ActivityWidget(
                             activityLog, activityType = activityTypeList.first { it.id == activityLog.activityTypeId},
-                            distanceUnit = distanceUnit,
                             modifier = Modifier.pointerInput(activityLog) {
                                 detectTapGestures(onLongPress = {
                                     selectedActivity = activityLog

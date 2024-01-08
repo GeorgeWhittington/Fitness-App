@@ -47,8 +47,6 @@ sealed class Screen(val route: String, val icon: ImageVector, val contentDesc: S
     object Settings : Screen(Routes.SETTINGS_SCREEN, Icons.Outlined.Settings, "Settings")
 }
 
-// TODO: Exclude nutrition tracking from this list based on settings!
-
 
 @Composable
 fun NavIconButton(navigation: NavController, currentDestination: NavDestination?, screen: Screen) {
@@ -91,8 +89,6 @@ fun NavBar(navigation: NavController) {
     val dataStoreManager = SettingsDataStoreManager(context)
     val showCalorieOption = dataStoreManager.getSwitchSetting("CalorieKey", true)
         .collectAsState(initial = true)
-
-
 
     val navItems = if (showCalorieOption.value) {
         listOf(

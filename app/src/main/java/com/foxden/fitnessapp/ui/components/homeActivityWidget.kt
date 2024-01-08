@@ -13,19 +13,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.foxden.fitnessapp.data.Settings
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
+import com.foxden.fitnessapp.utils.formatDistance
+import com.foxden.fitnessapp.utils.formatDuration
 
 @Composable
-fun HomeWidget(activities:Int,distance:Float,duration:Int,distanceUnit:String){
-    val totalDistance: Float = if (distanceUnit=="Km"){
-        String.format("%.2f", distance*1.609).toFloat()
-    } else{
-        String.format("%.2f", distance).toFloat()
-    }
-    val durationString = String.format("%dh %dm", duration / 3600, (duration % 3600) / 60)
+fun HomeWidget(activities: Int, distance: Float, duration: Int){
+    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
+
+    val totalDistance: Float = formatDistance(distance, distanceUnit)
+    val durationString = formatDuration(duration)
 
     Row (
         modifier = Modifier

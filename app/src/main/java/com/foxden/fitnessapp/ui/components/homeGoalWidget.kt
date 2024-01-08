@@ -13,59 +13,43 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.Goal
 import com.foxden.fitnessapp.data.GoalType
+import com.foxden.fitnessapp.data.Settings
+import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.theme.Orange
 import com.foxden.fitnessapp.ui.theme.Yellow
+import com.foxden.fitnessapp.utils.formatDistance
 
 @Composable
-fun HomeGoalWidget(goal: Goal, sumDistance: Double, activityType: ActivityType, distanceUnit:String){
+fun HomeGoalWidget(goal: Goal, sumDistance: Float, activityType: ActivityType){
+    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
 
+    val totalDistance = formatDistance(sumDistance, distanceUnit)
+    val goalDistance = formatDistance(goal.distance, distanceUnit)
 
-    var totalDistance: Float
-    var goalDistance: Float
-
-    if (distanceUnit=="Km"){
-        totalDistance = String.format("%.2f", sumDistance*1.609).toFloat()
-        goalDistance = String.format("%.2f", goal.distance*1.609).toFloat()
-    }else{
-        totalDistance = String.format("%.2f", sumDistance).toFloat()
-        goalDistance = String.format("%.2f", goal.distance).toFloat()
-    }
-
-    var backgroundColour = Yellow
-
-    if (totalDistance >= goalDistance) {
-        backgroundColour= Orange
-    }
-
-    Row (
-        modifier = Modifier
-            .fillMaxWidth()
-
-            .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(backgroundColour)
+    Row (modifier = Modifier
+        .fillMaxWidth()
+        .clip(shape = RoundedCornerShape(size = 10.dp))
+        .background(if (totalDistance >= goalDistance) Orange else Yellow)
     ) {
-
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
-
             modifier = Modifier
                 .fillMaxSize()
                 .padding(10.dp)
         ) {
             Row {
-
-
-
-
-
                     Column(modifier = Modifier.padding(16.dp)) {
                         if (goal.type == GoalType.DISTANCE) {
 
@@ -74,18 +58,13 @@ fun HomeGoalWidget(goal: Goal, sumDistance: Double, activityType: ActivityType, 
                                 Text("$goalDistance $distanceUnit/$goalDistance $distanceUnit")
                             } else {
                                 Text(text = "Total Distance:")
-
                                 Text("$totalDistance $distanceUnit/$goalDistance $distanceUnit")
-
                             }
                         }
-
                     }
-
                 Spacer(modifier = Modifier.weight(1f))
 
                 Column {
-
                     Icon(
                         Constants.ActivityIcons.values()[activityType.iconId].image,
                         contentDescription = activityType.name,
@@ -93,13 +72,7 @@ fun HomeGoalWidget(goal: Goal, sumDistance: Double, activityType: ActivityType, 
                     )
                     Text(text = activityType.name, fontSize = 16.sp)
                 }
-
-
-
             }
-
-
-
         }
     }
 }
