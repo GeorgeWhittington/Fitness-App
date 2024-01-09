@@ -9,10 +9,20 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 val FOX_IMAGES = listOf<Int>(
-    R.drawable.fox_happy,
-    R.drawable.fox_neutral,
+    R.drawable.fox_angry,
     R.drawable.fox_sad,
-    R.drawable.fox_angry
+    R.drawable.fox_neutral,
+    R.drawable.fox_happy,
+)
+
+val RACOON_IMAGES = listOf<Int>(
+    R.drawable.sadracoon,
+    R.drawable.racoon,
+    R.drawable.happyracoon,
+)
+
+val CAT_IMAGES = listOf<Int>(
+    R.drawable.hendrix_window,
 )
 
 enum class EvaluationMessage(var completeText : String, var uncompleteText: String, var approval: Int) {
@@ -33,7 +43,10 @@ data class Evaluation (
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun Evaluate(totalActivites: Int, calorieGoal: Int, nutritionLogList: List<NutritionLog>) : Evaluation {
+fun Evaluate(totalActivites: Int, calorieGoal: Int, nutritionLogList: List<NutritionLog>, character: String) : Evaluation {
+
+    val approvalMin: Int = -10
+    val approvalMax: Int = 10
 
     var ret = Evaluation();
 
@@ -96,7 +109,11 @@ fun Evaluate(totalActivites: Int, calorieGoal: Int, nutritionLogList: List<Nutri
     if (approval < -10) { approval = -10 }
     if (approval > 10) { approval = 10 }
 
-    val imageId: Int = 0 + ((FOX_IMAGES.size - 0) / (10 - -10)) * (approval - -10)
+    var imageList = FOX_IMAGES
+    if (character == "racoon") { imageList = RACOON_IMAGES  }
+    else if (character == "cat") { imageList = CAT_IMAGES }
+
+    val imageId: Int = (((imageList.size) / (approvalMax - approvalMin)) * (approval - approvalMin)).toInt()
 
     ret.approval = approval
     ret.image = FOX_IMAGES[imageId]

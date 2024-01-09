@@ -118,7 +118,7 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
 
     // Make evaulation
     var evaluation by remember {
-        mutableStateOf(Evaluate(totalActivities, 2000, nutritionLogList))
+        mutableStateOf(Evaluate(totalActivities, 2000, nutritionLogList, character.toString()))
     }
 
     image = evaluation.image
