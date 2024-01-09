@@ -22,13 +22,15 @@ object Settings {
     const val DISTANCE_UNIT = "DistanceUnitKey"
     const val CHARACTER = "CharacterKey"
     const val CALORIE_GOAL = "CalorieGoalKey"
+    const val CALORIE_UNIT = "CalorieUnitKey"
 
     val DefaultValues = mapOf(
         CALORIES_ENABLED to true,
         DARK_MODE to false,
         DISTANCE_UNIT to "Miles",
         CHARACTER to "Fox",
-        CALORIE_GOAL to 2000
+        CALORIE_GOAL to 2000,
+        CALORIE_UNIT to "kcal"
     )
 
     val SettingType = mapOf(
@@ -36,7 +38,8 @@ object Settings {
         DARK_MODE to Boolean,
         DISTANCE_UNIT to String,
         CHARACTER to String,
-        CALORIE_GOAL to Int
+        CALORIE_GOAL to Int,
+        CALORIE_UNIT to String
     )
 }
 

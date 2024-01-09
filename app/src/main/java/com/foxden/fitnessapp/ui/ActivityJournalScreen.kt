@@ -141,6 +141,8 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                     activityLogs.remove(activity)
                     ActivityLogDAO.delete(dbHelper.writableDatabase, activity)
                 }
+                activityLogs.remove(selectedActivity)
+                sortedActivityLogs.remove(selectedActivity)
             }) { Text("Yes") } },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } }
         )

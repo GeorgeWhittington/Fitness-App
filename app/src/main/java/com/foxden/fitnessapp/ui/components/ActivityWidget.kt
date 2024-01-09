@@ -48,7 +48,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-
 class SlideshowImage(val image: Painter, val imageDescription: String?)
 
 @Composable
@@ -117,13 +116,21 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
                 }
                 Spacer(modifier = Modifier.size(5.dp))
                 Row {
-                    Column {
-                        Text(text = "Distance", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text(text = "$activityDistance $distanceUnit", fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            fontWeight = FontWeight(700))
+                    if (activityType.gpsEnabled) {
+                        Column {
+                            Text(
+                                text = "Distance",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "$activityDistance $distanceUnit", fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight(700)
+                            )
+                        }
+                        Spacer(modifier = Modifier.size(10.dp))
                     }
-                    Spacer(modifier = Modifier.size(10.dp))
                     Column {
                         Text(text = "Time", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Text(text = durationString, fontSize = 12.sp,
@@ -139,7 +146,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Text(
-                                text = "${log.calories}", fontSize = 12.sp,
+                                text = "${log.calories / 1000}", fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.tertiary,
                                 fontWeight = FontWeight(700)
                             )

@@ -60,12 +60,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -113,7 +111,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
 
-    //get unit preference
+    // get unit preference
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
     val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
 
@@ -128,14 +126,13 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     var timePickerExpanded by remember { mutableStateOf(false) }
     var durationPickerExpanded by remember { mutableStateOf(false) }
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-        for (uri in it) {
-            imageURIs.add(uri)
-        }
+        for (uri in it) { imageURIs.add(uri) }
     }
     var imageDisplayed by remember { mutableIntStateOf(0) }
     var fullscreenImageExpanded by remember { mutableStateOf(false) }
     var fullscreenImageUri: Uri? by remember { mutableStateOf(null) }
-    
+
+    // form dialog boxes
     if (datePickerExpanded) {
         DatePickerDialog(
             onDismissRequest = { datePickerExpanded = false },
@@ -168,9 +165,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                     )
                 }) { Text("Ok") }
             },
-            dismissButton = {
-                TextButton(onClick = { timePickerExpanded = false }) { Text("Cancel") }
-            },
+            dismissButton = { TextButton(onClick = { timePickerExpanded = false }) { Text("Cancel") } },
             text = { TimePicker(state = timePickerState) }
         )
     }
@@ -190,14 +185,13 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
         }
     }
 
+    // main form
     Scaffold (
         topBar = {
             Column {
-                Box (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 15.dp, start = 15.dp, end = 15.dp)
-                ) {
+                Box (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 15.dp, start = 15.dp, end = 15.dp)) {
                     IconButton(onClick = { navigation.popBackStack() }) {
                         Icon(
                             Icons.Outlined.ChevronLeft, "Go Back",
@@ -207,16 +201,14 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                     Text("Add Manual Activity", fontSize = 20.sp, modifier = Modifier.align(Alignment.Center))
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-
                 Divider()
             }
         }
-    ) {scaffoldingPaddingValues ->
-        Column (modifier = Modifier.padding(scaffoldingPaddingValues)) {
+    ) { scaffoldingPaddingValues ->
         Column (modifier = Modifier
-            .padding(start = 15.dp, end = 15.dp)
-            .verticalScroll(rememberScrollState())
-        ) {
+                .padding(scaffoldingPaddingValues)
+                .padding(start = 15.dp, end = 15.dp)
+                .verticalScroll(rememberScrollState())) {
             Spacer(modifier = Modifier.height(10.dp))
             // Activity Title
             OutlinedTextField(
@@ -239,23 +231,19 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                         .fillMaxWidth()
                         .menuAnchor(),
                     value = activityType?.name ?: "", onValueChange = {}, readOnly = true,
-                    label = { Text("Activity Type") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = activityTypeExpanded) },
-                    leadingIcon = leadingIcon
+                    label = { Text("Activity Type") }, leadingIcon = leadingIcon,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = activityTypeExpanded) }
                 )
                 ExposedDropdownMenu(
                     expanded = activityTypeExpanded,
                     onDismissRequest = { activityTypeExpanded = false }
                 ) {
-
                     activityTypeList.forEach {
                         DropdownMenuItem(
                             text = {
                                 Row {
-                                    if (it.id != null) {
-                                        Icon(Constants.ActivityIcons.values()[it.iconId].image, it.name)
-                                        Spacer(modifier = Modifier.width(5.dp))
-                                    }
+                                    Icon(Constants.ActivityIcons.values()[it.iconId].image, it.name)
+                                    Spacer(modifier = Modifier.width(5.dp))
                                     Text(it.name)
                                 }
                             },
@@ -334,7 +322,6 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // Activity Distance
-            var distanceFloat by rememberSaveable { mutableFloatStateOf(0f) }
             OutlinedTextField(
                 value = distance, suffix = { Text(distanceUnit.toString()) }, label = { Text("Distance" )},
                 trailingIcon = { Icon(Icons.Outlined.UnfoldMore, null) },
@@ -345,13 +332,11 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                             return@onFocusChanged
 
                         try {
-                            val distanceDouble = distance.toDouble()
-                            if (distanceDouble == 0.0) {
-                                distance = ""
+                            val distanceFloat = distance.toFloat()
+                            distance = if (distanceFloat == 0.0f) {
+                                ""
                             } else {
-                                distance = distanceDouble.toString()
-                                distanceFloat =
-                                    distanceDouble.toFloat() // stinky because distance is a string?!
+                                distanceFloat.toString()
                             }
                         } catch (_: NumberFormatException) {
                         }
@@ -371,10 +356,8 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                         return@OutlinedTextField
 
                     distance = input
-
                 }
             )
-
             Spacer(modifier = Modifier.height(10.dp))
 
             // Activity Attachments
@@ -475,20 +458,18 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
 
             // Add Activity
             Button(onClick = {
+                var distanceFloat: Float = if (distance.isEmpty()) 0.0f else distance.toFloat()
+                if (distanceUnit == "Km") { distanceFloat /= 1.609f }
 
-                // really stinky but distance is string :(
-                if  (!distance.isNullOrEmpty()) {
-                    val temp: Float? = distance.toFloatOrNull()
-                    if (temp != null) {
-                        distanceFloat = temp
+                var d1 = 0
+                if (duration != null) {
+                    if (duration!!.first != null) {
+                        d1 += duration!!.first?.times(3600) ?: 0
                     }
-                }
 
-                val d1 = duration!!.second?.times(60)
-                    ?.let { duration!!.first?.times(3600)?.plus(it)  }
-
-                if(distanceUnit=="Km"){
-                    distanceFloat /= 1.609f
+                    if (duration!!.second != null) {
+                        d1 += duration!!.second?.times(60) ?: 0
+                    }
                 }
 
                 if (AddManualActivity(dbHelper, title, activityType, notes, datetime, d1, distanceFloat)) {
@@ -498,7 +479,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             }) {
                 Text("Add Activity")
             }
-        }}
+        }
     }
 }
 
@@ -617,17 +598,15 @@ private fun ValidateForm(title: String?, activityType: ActivityType?, startTime:
     if (duration == null || duration <= 0)
         return false
 
-    if (distance == null)
+    if (activityType.gpsEnabled && (distance == null || distance <= 0.0)) {
         return false
-
-    if (activityType.gpsEnabled && distance <= 0.0)
-        return false
+    }
 
     return true
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: ActivityType?, notes: String?, startTime: ZonedDateTime?, duration: Int?, distance: Float?) : Boolean {
+private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: ActivityType?, notes: String?, startTime: ZonedDateTime?, duration: Int, distance: Float?) : Boolean {
 
     if (!ValidateForm(title, activityType, startTime, duration, distance))
         return false
@@ -637,8 +616,9 @@ private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: 
         activityTypeId = activityType!!.id,
         notes = notes!!,
         startTime = startTime!!.toEpochSecond(),
-        duration = duration!!,
-        distance = distance!!
+        duration = duration,
+        distance = distance!!,
+        calories = duration * 65 * 7 // not very accurate
     )
 
     if (!ActivityLogDAO.insert(dbHelper.writableDatabase, log)) {
