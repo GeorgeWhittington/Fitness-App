@@ -33,7 +33,7 @@ import com.foxden.fitnessapp.utils.formatDistance
 @Composable
 fun HomeGoalWidget(goal: Goal, sumDistance: Float, activityType: ActivityType){
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
-    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
+    val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
 
     val totalDistance = formatDistance(sumDistance, distanceUnit)
     val goalDistance = formatDistance(goal.distance, distanceUnit)

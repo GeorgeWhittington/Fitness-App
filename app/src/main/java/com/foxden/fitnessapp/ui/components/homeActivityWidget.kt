@@ -28,7 +28,7 @@ import com.foxden.fitnessapp.utils.formatDuration
 @Composable
 fun HomeWidget(activities: Int, distance: Float, duration: Int){
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
-    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
+    val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
 
     val totalDistance: Float = formatDistance(distance, distanceUnit)
     val durationString = formatDuration(duration)

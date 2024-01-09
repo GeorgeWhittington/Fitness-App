@@ -114,9 +114,8 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     }
 
     //get unit preference
-    val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
-    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
+    val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
 
     // other state
     var activityTypeExpanded by remember { mutableStateOf(false) }
@@ -479,13 +478,13 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
 
                 // really stinky but distance is string :(
                 if  (!distance.isNullOrEmpty()) {
-                    var temp: Float? = distance.toFloatOrNull()
+                    val temp: Float? = distance.toFloatOrNull()
                     if (temp != null) {
                         distanceFloat = temp
                     }
                 }
 
-                var d1 = duration!!.second?.times(60)
+                val d1 = duration!!.second?.times(60)
                     ?.let { duration!!.first?.times(3600)?.plus(it)  }
 
                 if(distanceUnit=="Km"){
@@ -633,7 +632,7 @@ private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: 
     if (!ValidateForm(title, activityType, startTime, duration, distance))
         return false
 
-    var log = ActivityLog(
+    val log = ActivityLog(
         title=title!!,
         activityTypeId = activityType!!.id,
         notes = notes!!,

@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -31,7 +32,7 @@ fun NutritionProgress(numCalories: Int) {
 
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
-    val calorieTarget by dataStoreManager.calorieGoalFlow.collectAsState(initial = 0)
+    val calorieTarget by dataStoreManager.getSettingFlow(Settings.CALORIE_GOAL).collectAsState(initial = 0)
 
     var progress by remember { mutableStateOf(0.0f) }
 
@@ -75,4 +76,11 @@ fun NutritionProgress(numCalories: Int) {
         }
     }
 
+}
+
+private fun Any?.toFloat(): Float {
+    if (this is Int) {
+        return this.toFloat()
+    }
+    return 0.0f
 }

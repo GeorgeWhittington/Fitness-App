@@ -23,12 +23,20 @@ object Settings {
     const val CHARACTER = "CharacterKey"
     const val CALORIE_GOAL = "CalorieGoalKey"
 
-    val DefaultValues = mapOf<String, Any>(
+    val DefaultValues = mapOf(
         CALORIES_ENABLED to true,
         DARK_MODE to false,
         DISTANCE_UNIT to "Miles",
         CHARACTER to "Fox",
         CALORIE_GOAL to 2000
+    )
+
+    val SettingType = mapOf(
+        CALORIES_ENABLED to Boolean,
+        DARK_MODE to Boolean,
+        DISTANCE_UNIT to String,
+        CHARACTER to String,
+        CALORIE_GOAL to Int
     )
 }
 
@@ -120,19 +128,18 @@ class SettingsDataStoreManager(private val context: Context) {
             .asLiveData())
     }
 
-    val caloriesEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[booleanPreferencesKey(Settings.CALORIES_ENABLED)] ?: true
-    }
-
-    val distanceUnitFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[stringPreferencesKey(Settings.DISTANCE_UNIT)] ?: "Miles"
-    }
-
-    val characterFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[stringPreferencesKey(Settings.CHARACTER)] ?: "Fox"
-    }
-
-    val calorieGoalFlow: Flow<Int> = context.dataStore.data.map { preferences ->
-        preferences[intPreferencesKey(Settings.CALORIE_GOAL)] ?: 2000
+    fun getSettingFlow(settingKey: String): Flow<Any?> {
+        val key = when(Settings.SettingType[settingKey]) {
+            Boolean -> { booleanPreferencesKey(settingKey) }
+            Int -> { intPreferencesKey(settingKey) }
+            String -> { stringPreferencesKey(settingKey) }
+            Float -> floatPreferencesKey(settingKey)
+            else -> {
+                throw Exception("Invalid setting key provided")
+            }
+        }
+        return context.dataStore.data.map { preferences ->
+            preferences[key] ?: Settings.DefaultValues[settingKey]
+        }
     }
 }

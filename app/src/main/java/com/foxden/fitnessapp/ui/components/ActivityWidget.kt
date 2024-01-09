@@ -75,8 +75,8 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
 @Composable
 fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modifier = Modifier) {
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
-    val distanceUnit by dataStoreManager.distanceUnitFlow.collectAsState(initial = Settings.DefaultValues[Settings.DISTANCE_UNIT])
-    val caloriesEnabled by dataStoreManager.caloriesEnabledFlow.collectAsState(initial = Settings.DefaultValues[Settings.CALORIES_ENABLED])
+    val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
+    val caloriesEnabled by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED).collectAsState(initial = true)
 
     val startDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())) }
     val endDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())) }
@@ -97,14 +97,17 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
 
     Row (
         modifier = modifier
-            .fillMaxWidth().height(112.dp)
+            .fillMaxWidth()
+            .height(112.dp)
             .clip(shape = RoundedCornerShape(size = 10.dp))
             .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
         ActivitySlideshow(modifier = Modifier.width(112.dp), images)
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxSize().padding(10.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp)
         ) {
             Column {
                 Row {

@@ -59,8 +59,8 @@ import java.time.ZoneOffset
 @Composable
 fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
-    val calorieChoice by dataStoreManager.caloriesEnabledFlow.collectAsState(initial = Settings.DefaultValues[Settings.CALORIES_ENABLED])
-    val character by dataStoreManager.characterFlow.collectAsState(initial = Settings.DefaultValues[Settings.CHARACTER])
+    val calorieChoice by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED).collectAsState(initial = true)
+    val character by dataStoreManager.getSettingFlow(Settings.CHARACTER).collectAsState(initial = "")
 
     // used to load chosen character
     val image = when (character) {
