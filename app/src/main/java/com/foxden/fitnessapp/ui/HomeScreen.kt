@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
@@ -51,6 +52,7 @@ import com.foxden.fitnessapp.ui.components.HomeGoalWidget
 import com.foxden.fitnessapp.ui.components.HomeWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.components.NutritionProgress
+import com.foxden.fitnessapp.utils.Evaluate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -63,7 +65,7 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
     val character by dataStoreManager.characterFlow.collectAsState(initial = Settings.DefaultValues[Settings.CHARACTER])
 
     // used to load chosen character
-    val image = when (character) {
+    var image = when (character) {
         "Fox" -> { R.drawable.fox_happy }
         "Racoon" -> { R.drawable.racoon }
         "Cat" -> { R.drawable.hendrix_window }
@@ -114,6 +116,13 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                 .sumOf { it.distance.toDouble() }
         }
 
+    // Make evaulation
+    var evaluation by remember {
+        mutableStateOf(Evaluate(totalActivities, 2000, nutritionLogList))
+    }
+
+    image = evaluation.image
+
     Scaffold (
         containerColor = MaterialTheme.colorScheme.secondary,
         bottomBar = { NavBar(navigation = navigation) }
@@ -131,7 +140,7 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                 Row(modifier = Modifier.height(200.dp)) {
                     if (image != 0) {
                         Image(
-                            painter = painterResource(image),
+                            painter = painterResource(evaluation.image),
                             contentDescription = stringResource(id = R.string.cat_alt_text)
                         )
                     } else {
@@ -142,6 +151,7 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                         )
                     }
                 }
+                Text(text="${evaluation.message} ${evaluation.approval}")
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (calorieChoice == true) {
