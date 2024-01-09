@@ -18,15 +18,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.DirectionsBike
-import androidx.compose.material.icons.outlined.DirectionsRun
-import androidx.compose.material.icons.outlined.DirectionsWalk
-import androidx.compose.material.icons.outlined.Hiking
-import androidx.compose.material.icons.outlined.Pool
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Button
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -39,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,29 +51,80 @@ import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes.ADD_ACTIVITY_FORM_SCREEN
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityLogDAO
+import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
+import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 
-class DropdownOption(val text: String, val icon: ImageVector? = null)
+class DropdownOption(val id: Int, val text: String, val icon: ImageVector? = null)
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
+    val activityTypeList = remember { ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList() }
+
+    val sortOptions = listOf(DropdownOption(0, "Newest Activities"), DropdownOption(1, "Oldest Activities"))
+    val filterOptions = remember { mutableStateListOf<DropdownOption>() }
+    LaunchedEffect(Unit) {
+        for (activityType: ActivityType in activityTypeList) {
+            filterOptions.add(DropdownOption(
+                activityType.id,
+                activityType.name,
+                Constants.ActivityIcons.values()[activityType.iconId].image
+            ))
+        }
+    }
+
+    var searchQuery: String by remember { mutableStateOf("") }
+    var selectedSort: DropdownOption by remember { mutableStateOf( sortOptions[0] ) }
+    var selectedFilter: DropdownOption? by remember { mutableStateOf( null ) }
+
     var showSheet by remember { mutableStateOf(false) }
+    if (showSheet) { BottomSheet(
+        searchQuery, { newQuery -> searchQuery = newQuery },
+        selectedSort, { newSort -> selectedSort = newSort },
+        selectedFilter, { newFilter -> selectedFilter = newFilter },
+        sortOptions, filterOptions) { showSheet = false } }
 
     val activityLogs = remember { mutableStateListOf<ActivityLog>() }
-    activityLogs.clear()
-    for (a in ActivityLogDAO.fetchAll(dbHelper.readableDatabase)) {
-        activityLogs.add(a)
+    val sortedActivityLogs = remember { mutableStateListOf<ActivityLog>() }
+
+    fun sortActivities() {
+        var activities: List<ActivityLog> = activityLogs
+
+        if (searchQuery != "") {
+            activities = activities.filter { log -> log.title.contains(searchQuery) || log.notes.contains(searchQuery) }
+        }
+
+        if (selectedFilter != null) {
+            activities = activities.filter { log -> log.activityTypeId == selectedFilter!!.id }
+        }
+
+        activities = if (selectedSort.id == 0) {
+            activities.sortedByDescending { log -> log.startTime }
+        } else {
+            activities.sortedBy { log -> log.startTime }
+        }
+
+        sortedActivityLogs.clear()
+        for (log: ActivityLog in activities) {
+            sortedActivityLogs.add(log)
+        }
     }
 
-    val activityTypeList = remember {
-        ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
+    LaunchedEffect(Unit) {
+        for (a in ActivityLogDAO.fetchAll(dbHelper.readableDatabase)) {
+            activityLogs.add(a)
+            sortedActivityLogs.add(a)
+        }
+        sortActivities()
     }
 
-    if (showSheet) { BottomSheet { showSheet = false } }
+    LaunchedEffect(key1 = searchQuery, key2 = selectedSort.text, key3 = selectedFilter?.text) {
+        sortActivities()
+    }
 
     // remove activities
     var selectedActivity by remember { mutableStateOf<ActivityLog?>(null) }
@@ -147,16 +193,7 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
                 }
                 
                 LazyColumn {
-//                  TODO: last week, last month etc titles
-//                  will need to do something along the lines of:
-//                  if sort == new->old:
-//                      get activities from today
-//                      get activities from past week
-//                      get activities from past month
-//                      etc etc, however many I choose to add
-//                  else:
-//                      just do it as it's done here :)
-                    items(activityLogs) { activityLog ->
+                    items(sortedActivityLogs) { activityLog ->
                         ActivityWidget(
                             activityLog, activityType = activityTypeList.first { it.id == activityLog.activityTypeId},
                             modifier = Modifier.pointerInput(activityLog) {
@@ -178,13 +215,13 @@ fun ActivityJournalScreen(navigation: NavController, dbHelper: DBHelper) {
 fun BottomSheetDropdown(
     options: List<DropdownOption>,
     label: String,
-    selectedOption: DropdownOption,
+    selectedOption: DropdownOption?,
     updateSelection: (newSelection: DropdownOption) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     var leadingIcon: @Composable (() -> Unit)? = null
-    if (selectedOption.icon != null) {
+    if (selectedOption?.icon != null) {
         leadingIcon = @Composable { Icon(selectedOption.icon, selectedOption.text) }
     }
 
@@ -193,9 +230,9 @@ fun BottomSheetDropdown(
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth(), readOnly = true,
-            value = selectedOption.text, onValueChange = {}, label = { Text(label) },
+            value = selectedOption?.text ?: "", onValueChange = {}, label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            leadingIcon = if (selectedOption.icon != null) leadingIcon else null
+            leadingIcon = if (selectedOption?.icon != null) leadingIcon else null
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach {selectionOption ->
@@ -218,24 +255,15 @@ fun BottomSheetDropdown(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheet(onDismiss: () -> Unit) {
+fun BottomSheet(
+    searchQuery: String, updateSearchQuery: (new: String) -> Unit,
+    selectedSort: DropdownOption, updateSelectedSort: (new: DropdownOption) -> Unit,
+    selectedFilter: DropdownOption?, updateSelectedFilter: (new: DropdownOption) -> Unit,
+    sortOptions: List<DropdownOption>,
+    filterOptions: List<DropdownOption>,
+    onDismiss: () -> Unit
+) {
     val modalBottomSheetState = rememberModalBottomSheetState()
-
-    // TODO: This data should be provided with default values by container
-    var searchQuery by remember { mutableStateOf("") }
-
-    val sortOptions = listOf(DropdownOption("Newest Activities"), DropdownOption("Oldest Activities"))
-    var selectedSort by remember { mutableStateOf( sortOptions[0]) }
-
-//    TODO: source from db
-    val filterOptions = listOf(
-        DropdownOption("All"),
-        DropdownOption("Jogging",Icons.Outlined.DirectionsRun),
-        DropdownOption("Hiking", Icons.Outlined.Hiking),
-        DropdownOption("Walking", Icons.Outlined.DirectionsWalk),
-        DropdownOption("Swimming", Icons.Outlined.Pool),
-        DropdownOption("Cycling", Icons.Outlined.DirectionsBike))
-    var selectedFilter by remember { mutableStateOf(filterOptions[0]) }
 
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
@@ -250,7 +278,7 @@ fun BottomSheet(onDismiss: () -> Unit) {
         ) {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(), singleLine = true,
-                value = searchQuery, onValueChange = { newQuery -> searchQuery = newQuery },
+                value = searchQuery, onValueChange = { newQuery -> updateSearchQuery(newQuery) },
                 placeholder = { Text("Search") },
                 leadingIcon = { Icon(
                     Icons.Outlined.Search, contentDescription = "Search Icon",
@@ -261,18 +289,14 @@ fun BottomSheet(onDismiss: () -> Unit) {
             BottomSheetDropdown(
                 options = sortOptions, label = "Sort By",
                 selectedOption = selectedSort,
-                updateSelection = { newSelection -> selectedSort = newSelection }
+                updateSelection = { newSelection -> updateSelectedSort(newSelection) }
             )
             Spacer(modifier = Modifier.size(10.dp))
             BottomSheetDropdown(
                 options = filterOptions, label = "Filter Activity Type",
                 selectedOption = selectedFilter,
-                updateSelection = {newSelection -> selectedFilter = newSelection }
+                updateSelection = {newSelection -> updateSelectedFilter(newSelection) }
             )
-            Spacer(modifier = Modifier.size(10.dp))
-            Button(onClick = { /* TODO - use callback to return updated values to main screen */}) {
-                Text(text = "Apply", fontSize = 16.sp)
-            }
         }
     }
 }

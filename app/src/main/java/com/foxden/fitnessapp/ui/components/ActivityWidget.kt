@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -78,9 +77,9 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
     val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
     val caloriesEnabled by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED).collectAsState(initial = true)
 
-    val startDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())) }
-    val endDT: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())) }
-    val duration: Duration? by remember { mutableStateOf(Duration.between(startDT, endDT)) }
+    val startDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())
+    val endDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())
+    val duration: Duration? = Duration.between(startDT, endDT)
     val totalSeconds = duration?.toSeconds()
     val durationString = if (totalSeconds != null)
         String.format("%dh %dm", totalSeconds / 3600, (totalSeconds % 3600) / 60)
