@@ -1,6 +1,7 @@
 package com.foxden.fitnessapp.ui.components
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -79,7 +80,8 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
     val startDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())
     val endDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())
     val duration: Duration? = Duration.between(startDT, endDT)
-    val totalSeconds = duration?.toSeconds()
+    Log.d("Duration!", "ActivityWidget: $duration")
+    val totalSeconds = duration?.seconds
     val durationString = if (totalSeconds != null)
         String.format("%dh %dm", totalSeconds / 3600, (totalSeconds % 3600) / 60)
         else ""
