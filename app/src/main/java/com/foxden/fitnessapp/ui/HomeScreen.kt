@@ -150,8 +150,10 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                         )
                     }
                 }
-                Text(text="${evaluation.messagePositive} ${evaluation.approval}")
-                Text(text="${evaluation.messageNegative} ${evaluation.approval}")
+
+                Text(text=evaluation.messagePositive)
+                Text(text=evaluation.messageNegative)
+
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (calorieChoice == true) {

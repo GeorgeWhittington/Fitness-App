@@ -26,18 +26,18 @@ val CAT_IMAGES = listOf<Int>(
     R.drawable.hendrix_window,
 )
 
-enum class EvaluationMessage(var completeText : String, var uncompleteText: String, var approval: Int) {
+enum class Evaluation(var completeText : String, var uncompleteText: String, var approval: Int) {
     NONE("...", "...", 0),
     GOAL("Congratulations on completing your goal!","", 10),
-    ACTIVE("Nice activity today!","Try to get some activities in today", 10),
-    NUTRITION_LOGGED_TODAY("Good job logging all of your meals!","No meals logged today", 10),
-    NUTRITION_LOGGED_BREAKFAST("Yummy breakfast today!", "Nothing Logged For Breakfast", 3),
-    NUTRITION_LOGGED_LUNCH("Lunch!!", "Nothing Logged For Lunch", 3),
-    NUTRITION_LOGGED_DINNER("Dinner Dinner", "Nothing Logged For Dinner", 3),
-    NUTRITION_CALORIE_GOAL("Calories under budget! Congratulations", "Too many calories today, try again tomorrow :3", 8),
+    ACTIVE("Good job on your activity today!","Try to get active today", 10),
+    NUTRITION_LOGGED_TODAY("All meals logged, well done :3","Try to log some meals", 10),
+    NUTRITION_LOGGED_BREAKFAST("Well done logging your breakfast!", "I think you forgot to log breakfast", 3),
+    NUTRITION_LOGGED_LUNCH("Well done logging your lunch!", "I think you forgot to log lunch!", 3),
+    NUTRITION_LOGGED_DINNER("Well done logging your dinner!", "I think it might be dinner time", 3),
+    NUTRITION_CALORIE_GOAL("Calories under budget! Congratulations", "You've overshot your calories for today, try again tomorrow :3", 8),
 }
 
-data class Evaluation (
+data class EvaluationResult (
     var image: Int = R.drawable.fox_happy,
     var message: String = "...",
     var messagePositive: String = "...",
@@ -46,22 +46,22 @@ data class Evaluation (
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun Evaluate(totalActivites: Int, caloriesEnabled: Boolean, calorieGoal: Int, nutritionLogList: List<NutritionLog>, character: String) : Evaluation {
+fun Evaluate(totalActivites: Int, caloriesEnabled: Boolean, calorieGoal: Int, nutritionLogList: List<NutritionLog>, character: String) : EvaluationResult {
 
     val approvalMin: Int = -10
     val approvalMax: Int = 10
 
-    var ret = Evaluation();
+    var ret = EvaluationResult();
 
-    val evaluations = mutableListOf<Pair<EvaluationMessage, Boolean>>()
+    val evaluations = mutableListOf<Pair<Evaluation, Boolean>>()
 
     val currentHour = LocalTime.now().hour
 
     // Activities
     if (totalActivites > 0) {
-        evaluations.add(Pair(EvaluationMessage.ACTIVE, true))
+        evaluations.add(Pair(Evaluation.ACTIVE, true))
     } else if (totalActivites == 0 && currentHour >= 20) {
-        evaluations.add(Pair(EvaluationMessage.ACTIVE, false))
+        evaluations.add(Pair(Evaluation.ACTIVE, false))
     }
 
     // Nutrition
@@ -69,24 +69,24 @@ fun Evaluate(totalActivites: Int, caloriesEnabled: Boolean, calorieGoal: Int, nu
 
     //  nothing logged for today
     if (caloriesEnabled && nutritionToday.isEmpty()) {
-        evaluations.add(Pair(EvaluationMessage.NUTRITION_LOGGED_TODAY, false))
+        evaluations.add(Pair(Evaluation.NUTRITION_LOGGED_TODAY, false))
     } else if (caloriesEnabled) {
         var breakfastCount = nutritionToday.filter { it.type == NutritionType.BREAKFAST }.size
         var lunchCount = nutritionToday.filter { it.type == NutritionType.LUNCH }.size
         var dinnerCount = nutritionToday.filter { it.type == NutritionType.DINNER }.size
 
-        if (breakfastCount > 0) { evaluations.add(Pair(EvaluationMessage.NUTRITION_LOGGED_BREAKFAST, true)) }
-        if (lunchCount > 0) { evaluations.add(Pair(EvaluationMessage.NUTRITION_LOGGED_LUNCH, true)) }
-        if (dinnerCount > 0) { evaluations.add(Pair(EvaluationMessage.NUTRITION_LOGGED_DINNER, true)) }
+        if (breakfastCount > 0) { evaluations.add(Pair(Evaluation.NUTRITION_LOGGED_BREAKFAST, true)) }
+        if (lunchCount > 0) { evaluations.add(Pair(Evaluation.NUTRITION_LOGGED_LUNCH, true)) }
+        if (dinnerCount > 0) { evaluations.add(Pair(Evaluation.NUTRITION_LOGGED_DINNER, true)) }
 
 
-        if (breakfastCount == 0 && currentHour >= 10) { evaluations.add(Pair(EvaluationMessage.NUTRITION_LOGGED_BREAKFAST, false)) }
-        if (lunchCount == 0 && currentHour >= 15) { evaluations.add(Pair(EvaluationMessage.NUTRITION_LOGGED_LUNCH, false)) }
-        if (breakfastCount == 0 && currentHour >= 20) { evaluations.add(Pair(EvaluationMessage.NUTRITION_LOGGED_DINNER, false)) }
+        if (breakfastCount == 0 && currentHour >= 10) { evaluations.add(Pair(Evaluation.NUTRITION_LOGGED_BREAKFAST, false)) }
+        if (lunchCount == 0 && currentHour >= 15) { evaluations.add(Pair(Evaluation.NUTRITION_LOGGED_LUNCH, false)) }
+        if (breakfastCount == 0 && currentHour >= 20) { evaluations.add(Pair(Evaluation.NUTRITION_LOGGED_DINNER, false)) }
 
         if (breakfastCount > 0 && lunchCount > 0 && dinnerCount > 0 && currentHour > 20) {
             var totalCalories = nutritionToday.sumOf { it.calories }
-            evaluations.add(Pair(EvaluationMessage.NUTRITION_CALORIE_GOAL, totalCalories <= calorieGoal))
+            evaluations.add(Pair(Evaluation.NUTRITION_CALORIE_GOAL, totalCalories <= calorieGoal))
         }
     }
 
@@ -134,8 +134,10 @@ fun Evaluate(totalActivites: Int, caloriesEnabled: Boolean, calorieGoal: Int, nu
     if (character == "Racoon") { imageList = RACOON_IMAGES  }
     else if (character == "Cat") { imageList = CAT_IMAGES }
 
-    var listSize = imageList.size
-    val imageId: Int = ((listSize.toFloat() / (approvalMax.toFloat() - approvalMin.toFloat())) * (approval.toFloat() - approvalMin.toFloat())).toInt()
+    var imageId: Int = ((imageList.size.toFloat() / (approvalMax.toFloat() - approvalMin.toFloat())) * (approval.toFloat() - approvalMin.toFloat())).toInt()
+
+    if (imageId > imageList.size - 1) { imageId = imageList.size - 1 }
+    if (imageId < 0) { imageId = 0 }
 
 
     ret.approval = approval
