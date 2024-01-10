@@ -1,5 +1,6 @@
 package com.foxden.fitnessapp.ui
 
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -19,9 +20,12 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +51,7 @@ import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
+import com.foxden.fitnessapp.ui.components.AddActivityAttachmentsWidget
 import kotlinx.coroutines.delay
 import java.time.ZonedDateTime
 import kotlin.time.Duration.Companion.seconds
@@ -92,6 +97,46 @@ fun ActivityRecordingNoGPSScreen(activityTypeId: Int, navigation: NavController,
         .height(116.dp)
         .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(10.dp))
 
+    var showFinalisationPopUp by remember { mutableStateOf(false) }
+
+    fun addActivity(title: String?, notes: String?, imageURIs: List<Uri>?) {
+        if (title == null || notes == null || imageURIs == null || selectedActivity == null) {
+            navigation.popBackStack()
+            return
+        }
+
+        val duration = if (selectedActivity.setsEnabled) completedSets.sumOf { it.totalSeconds } else ticks
+
+        ActivityLogDAO.insert(dbHelper.writableDatabase, ActivityLog(
+            title = title,
+            activityTypeId = selectedActivity.id,
+            notes = notes,
+            startTime = startTime.toEpochSecond(),
+            duration = duration,
+            distance = 0.0f,
+            calories = duration / 60 * 65 * 7
+        ))
+        navigation.popBackStack()
+    }
+
+    if (showFinalisationPopUp) {
+        val notes = if (selectedActivity?.setsEnabled == true) {
+            var note = ""
+            for (set: Set in completedSets) {
+                val time = String.format("%01d:%02d:%02d", set.totalSeconds / 3600, (set.totalSeconds % 3600) / 60, set.totalSeconds % 60)
+                note += "Set ${set.setNumber}: ${time}\n"
+            }
+            note
+        } else {
+            ""
+        }
+
+        FinaliseActivityPopUp(
+            initialTitle = selectedActivity!!.name,
+            initialNotes = notes,
+            onDismiss = {title_, notes_, uris_ -> addActivity(title_, notes_, uris_)})
+    }
+    
     Scaffold (containerColor = MaterialTheme.colorScheme.secondary) {
         Box(modifier = Modifier
             .padding(it)
@@ -166,37 +211,11 @@ fun ActivityRecordingNoGPSScreen(activityTypeId: Int, navigation: NavController,
                         // Because I Don't want to add extra field data to activities, I'm going to save the set data
                         // in the notes field. something like "set 1: 00:10:11, set 2: 00:20:10" etc etc
                         // and then ovs the actual data saved to the duration is just all of them summed
-                        var log: ActivityLog
-
-                        // show dialog where you can edit:
-                        // title
-                        // notes (set data will be pre-filled at top if applicable)
-
                         if (selectedActivity?.setsEnabled == true) {
                             completedSets.add(Set(currentSet, ticks))
-                            log = ActivityLog(
-                                title = selectedActivity.name, // TODO: replace
-                                activityTypeId = selectedActivity.id,
-                                notes = "", // TODO: replace
-                                startTime = startTime.toEpochSecond(),
-                                duration = completedSets.sumOf { it.totalSeconds },
-                                distance = 0.0f,
-                                calories = completedSets.sumOf { it.totalSeconds } / 60 * 65 * 7
-                            )
-                        } else {
-                            log = ActivityLog(
-                                title = selectedActivity!!.name, // TODO: replace
-                                activityTypeId = selectedActivity.id,
-                                notes = "", // TODO: replace
-                                startTime = startTime.toEpochSecond(),
-                                duration = ticks,
-                                distance = 0.0f,
-                                calories = ticks / 60 * 65 * 7
-                            )
                         }
-
-                        ActivityLogDAO.insert(dbHelper.writableDatabase, log)
-                        navigation.popBackStack()
+                        timerPaused = true
+                        showFinalisationPopUp = true
                     }
                 ) {
                     Icon(
@@ -228,4 +247,42 @@ fun ActivityRecordingNoGPSScreen(activityTypeId: Int, navigation: NavController,
             }
         }
     }
+}
+
+@Composable
+fun FinaliseActivityPopUp(initialTitle: String, initialNotes: String, onDismiss: (title: String?, notes: String?, uris: List<Uri>?) -> Unit) {
+    var title by remember { mutableStateOf(initialTitle) }
+    var notes by remember { mutableStateOf(initialNotes) }
+    val imageURIs: MutableList<Uri> = remember { mutableStateListOf() }
+
+    AlertDialog(
+        title = { Text(text = "Add Recorded Activity") },
+        onDismissRequest = { onDismiss(null, null, null) },
+        confirmButton = { Button(onClick = {
+            if (title.isEmpty()) {
+                return@Button
+            }
+
+            onDismiss(title, notes, imageURIs)
+        }) { Text("Confirm") } },
+        dismissButton = { Button(onClick = { onDismiss(null, null, listOf()) }) { Text("Discard") } },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = title, onValueChange = { title = it }, singleLine = true,
+                    modifier = Modifier.fillMaxWidth(), label = { Text("Activity Title") }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = notes, onValueChange = { notes = it }, label = { Text("Notes") },
+                    modifier = Modifier.fillMaxWidth(), minLines = 5
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                AddActivityAttachmentsWidget(
+                    imageURIs = imageURIs, addImageUri = { uri -> imageURIs.add(uri) },
+                    removeImageUri = { uriIndex -> imageURIs.removeAt(uriIndex) }
+                )
+            }
+        }
+    )
 }
