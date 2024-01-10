@@ -37,7 +37,7 @@ object Constants {
         SKATEBOARDING(Icons.Outlined.Skateboarding, "Skateboarding"),
         SPORTS_CRICKET(Icons.Outlined.SportsCricket, "Cricket"),
         SPORTS_MARTIAL_ARTS(Icons.Outlined.SportsMartialArts, "Martial Arts"),
-        NORDIC_WALKING(Icons.Outlined.NordicWalking, "Hiking 2"),
+        NORDIC_WALKING(Icons.Outlined.NordicWalking, "Nordic Walking"),
         SPORTS_GOLF(Icons.Outlined.SportsGolf, "Golf"),
         PARAGLIDING(Icons.Outlined.Paragliding, "Paragliding"),
         SNOWBOARDING(Icons.Outlined.Snowboarding, "Snowboarding"),

@@ -4,12 +4,7 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -23,18 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.ChevronLeft
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.UnfoldMore
-import androidx.compose.material.icons.outlined.ZoomOutMap
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -47,12 +36,10 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -60,7 +47,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,17 +54,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
@@ -87,7 +69,7 @@ import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
-import com.foxden.fitnessapp.ui.components.ImageSteppers
+import com.foxden.fitnessapp.ui.components.AddActivityAttachmentsWidget
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -125,12 +107,6 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     var datePickerExpanded by remember { mutableStateOf(false) }
     var timePickerExpanded by remember { mutableStateOf(false) }
     var durationPickerExpanded by remember { mutableStateOf(false) }
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-        for (uri in it) { imageURIs.add(uri) }
-    }
-    var imageDisplayed by remember { mutableIntStateOf(0) }
-    var fullscreenImageExpanded by remember { mutableStateOf(false) }
-    var fullscreenImageUri: Uri? by remember { mutableStateOf(null) }
 
     // form dialog boxes
     if (datePickerExpanded) {
@@ -177,14 +153,6 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
         )
     }
 
-    if (fullscreenImageExpanded) {
-        fullscreenImageUri?.let {imageURI ->
-            FullscreenImageDialog(
-                onDismiss = { fullscreenImageExpanded = false },
-                imageURI = imageURI, contentDescription = null)
-        }
-    }
-
     // main form
     Scaffold (
         topBar = {
@@ -206,9 +174,9 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
         }
     ) { scaffoldingPaddingValues ->
         Column (modifier = Modifier
-                .padding(scaffoldingPaddingValues)
-                .padding(start = 15.dp, end = 15.dp)
-                .verticalScroll(rememberScrollState())) {
+            .padding(scaffoldingPaddingValues)
+            .padding(start = 15.dp, end = 15.dp)
+            .verticalScroll(rememberScrollState())) {
             Spacer(modifier = Modifier.height(10.dp))
             // Activity Title
             OutlinedTextField(
@@ -361,100 +329,10 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // Activity Attachments
-            Row (
-                modifier = Modifier
-                    .padding(TextFieldDefaults.contentPaddingWithLabel(start = 0.dp, end = 0.dp))
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // when there are no images, this is the placeholder
-                if (imageURIs.size == 0) {
-                    Box (
-                        modifier = Modifier
-                            .height(200.dp)
-                            .weight(1f)
-                            .background(Color.Gray, RoundedCornerShape(20.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Outlined.Image,
-                            "No images attached",
-                            tint = Color.White,
-                            modifier = Modifier.size(64.dp)
-                        )
-                    }
-                } else {
-                    Box (
-                        modifier = Modifier
-                            .height(200.dp)
-                            .weight(1f)
-                            .clip(RoundedCornerShape(20.dp))
-                            .clickable {
-                                if (imageDisplayed + 1 == imageURIs.size)
-                                    imageDisplayed = 0
-                                else
-                                    imageDisplayed++
-                            }
-                    ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(model = imageURIs[imageDisplayed]),
-                            contentDescription = "Attached image ${imageDisplayed + 1}/${imageURIs.size}",
-                            contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth()
-                        )
-                        ImageSteppers(
-                            numImages = imageURIs.size, selectedImage = imageDisplayed,
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = 5.dp)
-                        )
-                        IconButton(
-                            onClick = {
-                                fullscreenImageUri = imageURIs[imageDisplayed]
-                                fullscreenImageExpanded = true
-                            },
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .background(Color.White, CircleShape)
-                                .align(Alignment.TopEnd)
-                        ) {
-                            Icon(Icons.Outlined.ZoomOutMap, "View Photo in full")
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    IconButton(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.tertiary, CircleShape)
-                            .size(56.dp),
-                        onClick = { galleryLauncher.launch("image/*") }
-                    ) {
-                        Icon(
-                            Icons.Outlined.Add, "Add photo(s) to activity",
-                            tint = Color.White, modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-                    if (imageURIs.size != 0) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        IconButton(
-                            modifier = Modifier
-                                .background(MaterialTheme.colorScheme.error, CircleShape)
-                                .size(56.dp),
-                            onClick = {
-                                imageURIs.removeAt(imageDisplayed)
-                                imageDisplayed = 0.coerceAtLeast(imageDisplayed - 1)
-                            }
-                        ) {
-                            Icon(
-                                Icons.Outlined.Delete, "Remove photo from activity",
-                                tint = Color.White, modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-                }
-            }
+            AddActivityAttachmentsWidget(
+                imageURIs = imageURIs, addImageUri = {uri -> imageURIs.add(uri)},
+                removeImageUri = {uriIndex -> imageURIs.removeAt(uriIndex)}
+            )
 
             // Add Activity
             Button(onClick = {
@@ -561,25 +439,6 @@ fun DurationPicker(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
                 Text("Minute(s)", fontSize = 18.sp)
-            }
-        }
-    )
-}
-
-@Composable
-fun FullscreenImageDialog(onDismiss: () -> Unit, imageURI: Uri, contentDescription: String?) {
-    AlertDialog(
-        onDismissRequest = { onDismiss() },
-        confirmButton = { TextButton(onClick = { onDismiss() }) {
-            Text("Close")
-        } },
-        text = {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = imageURI),
-                    contentDescription = contentDescription,
-                    contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth()
-                )
             }
         }
     )
