@@ -7,6 +7,9 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.LocalDateTime
 import java.time.ZoneId
+import org.json.JSONObject
+import org.json.JSONArray
+import org.json.JSONException
 
 data class ActivityLog(
     var id : Int = 0,
@@ -17,6 +20,8 @@ data class ActivityLog(
     var duration: Int = 0,          // duration, in seconds
     var distance: Float = 0.0f,
     var calories: Int = 0,
+    var images: MutableList<String> = mutableListOf<String>(),
+    var gpx: String = "",
 )
 
 object ActivityLogDAO : DAO(
@@ -30,6 +35,8 @@ object ActivityLogDAO : DAO(
         ColumnDesc("duration", "INTEGER"),
         ColumnDesc("distance", "REAL"),
         ColumnDesc("calories", "INTEGER"),
+        ColumnDesc("images", "TEXT"),
+        ColumnDesc("gpx", "TEXT"),
     )
 ) {
     @SuppressLint("Range")
@@ -43,6 +50,23 @@ object ActivityLogDAO : DAO(
         ret.duration = cursor.getInt(cursor.getColumnIndex("duration"))
         ret.distance = cursor.getFloat(cursor.getColumnIndex("distance"))
         ret.calories = cursor.getInt(cursor.getColumnIndex("calories"))
+
+        var imageString = cursor.getString(cursor.getColumnIndex("images"))
+
+        try {
+            var loopIdx = 0
+            var imageArr = JSONArray("{$imageString}")
+            while (loopIdx < imageArr.length()) {
+                ret.images.add(imageArr.getString(loopIdx))
+            }
+        } catch (e: JSONException) {
+            // handler
+        } finally {
+            // optional finally block
+        }
+
+        ret.gpx = cursor.getString(cursor.getColumnIndex("gpx"))
+
         return ret
     }
 
@@ -67,8 +91,6 @@ object ActivityLogDAO : DAO(
         val endTimestamp = endTime.atZone(ZoneId.systemDefault()).toEpochSecond()
 
         val ret: MutableList<ActivityLog> = ArrayList()
-
-
 
             val queryCursor = db?.rawQuery(
                 "SELECT * FROM $tableName WHERE start_time >= ? AND start_time <= ?",
@@ -95,6 +117,17 @@ object ActivityLogDAO : DAO(
         contentValues.put(tableColumns[5].name, activityLog.duration)
         contentValues.put(tableColumns[6].name, activityLog.distance)
         contentValues.put(tableColumns[7].name, activityLog.calories)
+
+        if (activityLog.images.size > 0) {
+            val imageArray = JSONArray()
+            activityLog.images.forEach { imageArray.put(it) }
+            contentValues.put(tableColumns[8].name, imageArray.toString())
+        } else {
+            contentValues.put(tableColumns[8].name, "")
+        }
+
+        contentValues.put(tableColumns[9].name, activityLog.gpx)
+
         val result = db?.insert(tableName, null, contentValues)
         db?.close()
         return (result != (0).toLong())

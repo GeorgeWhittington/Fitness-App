@@ -133,7 +133,7 @@ fun Evaluate(totalActivites: Int, caloriesEnabled: Boolean, calorieGoal: Int, nu
     var imageList = FOX_IMAGES
     if (character == "Racoon") { imageList = RACOON_IMAGES  }
     else if (character == "Cat") { imageList = CAT_IMAGES }
-    Well done logging your lunch!
+
     var imageId: Int = ((imageList.size.toFloat() / (approvalMax.toFloat() - approvalMin.toFloat())) * (approval.toFloat() - approvalMin.toFloat())).toInt()
 
     if (imageId > imageList.size - 1) { imageId = imageList.size - 1 }
