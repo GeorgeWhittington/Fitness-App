@@ -1,8 +1,9 @@
 package com.foxden.fitnessapp.ui
 
 import android.Manifest
+import android.location.Location
+import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.foxden.fitnessapp.data.ActivityLog
+import com.foxden.fitnessapp.data.ActivityLogDAO
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
@@ -63,6 +67,7 @@ import com.foxden.fitnessapp.utils.hasLocationPermission
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -99,13 +104,55 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
     val startTime: ZonedDateTime by remember { mutableStateOf(ZonedDateTime.now()) }
     var timerPaused by remember { mutableStateOf(true) }
     var ticks by remember { mutableStateOf(0) }
+    val locations = remember { mutableStateListOf<LatLng>() }
+    var totalDistance by remember { mutableStateOf(0.0f) } // in meters
     val timeString = String.format("%01d:%02d:%02d", ticks / 3600, (ticks % 3600) / 60, ticks % 60)
+    val distanceString = String.format("%.2f", if (distanceUnit == "Meters") totalDistance * 0.00062137f else totalDistance / 1000.0f)
     val calorieString = String.format("%d", ticks / 60 * 65 * 7)
     LaunchedEffect(Unit) {
-        while(true) {
+        while (true) {
             delay(1.seconds)
             if (!timerPaused)
                 ticks++
+        }
+    }
+    LaunchedEffect(Unit) {
+        var previousLocationIndex: Int? = null
+        while (true) {
+            delay(1.seconds)
+
+            val currentLocation = locations.lastOrNull()
+
+            if (previousLocationIndex == null || currentLocation == null) {
+                previousLocationIndex = locations.lastIndex
+                continue
+            }
+
+            // if the user pauses, moves a significant distance and then unpauses
+            // that distance should *not* be counted. This should invalidate that
+            // sort of data
+            if (timerPaused) {
+                previousLocationIndex = null
+                continue
+            }
+
+            val previousLocation = locations[previousLocationIndex]
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                previousLocation.latitude, previousLocation.longitude,
+                currentLocation.latitude, currentLocation.longitude,
+                results
+            )
+
+            // check if distance is greater than a 2 meters, if so add to distance and update prev location
+            // otherwise leave prev location as it is, and wait until the current location is far enough away
+            // to be worth storing. This should stop the distance from rocketing when someone is at a standstill
+            if (results[0] >= 2.0f) {
+                totalDistance += results[0]
+                previousLocationIndex = locations.lastIndex
+
+                // TODO: Keep track of split pace (speed of last kilometer/mile)
+            }
         }
     }
 
@@ -135,6 +182,34 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
     }
 
     var mapMaximised by remember { mutableStateOf(false) }
+
+    var showFinalisationPopUp by remember { mutableStateOf(false) }
+    fun addActivity(title: String?, notes: String?, imageURIs: List<Uri>?) {
+        if (title == null || notes == null || imageURIs == null || selectedActivity == null) {
+            navigation.popBackStack()
+            return
+        }
+
+        ActivityLogDAO.insert(dbHelper.writableDatabase, ActivityLog(
+            title = title,
+            activityTypeId = selectedActivity.id,
+            notes = notes,
+            startTime = startTime.toEpochSecond(),
+            duration = ticks,
+            // convert distance from meters to miles in order to store it
+            distance = totalDistance * 0.00062137f,
+            // TODO: make this actually accurate, since relative effort can actually be calculated here
+            calories = ticks / 60 * 65 * 7
+        ))
+        navigation.popBackStack()
+    }
+
+    if (showFinalisationPopUp) {
+        FinaliseActivityPopUp(
+            initialTitle = selectedActivity!!.name,
+            initialNotes = "",
+            onDismiss = {title, notes, uris -> addActivity(title, notes, uris)})
+    }
 
     Scaffold (containerColor = MaterialTheme.colorScheme.secondary) {
         Column(
@@ -169,8 +244,9 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
                             val cameraPositionState = rememberCameraPositionState()
                             LaunchedEffect(currentLocation) {
                                 if (currentLocation != null) {
-                                    // TODO: store new location info here
-                                    Log.d("FIT", "$currentLocation")
+                                    if (!timerPaused)
+                                        locations.add(currentLocation)
+
                                     cameraPositionState.centerOnLocation(currentLocation)
                                 }
                             }
@@ -191,7 +267,7 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
                     Spacer(modifier = Modifier.height(10.dp))
                     if (selectedCard == 0) {
                         StatsCard(
-                            value = "1.5", unit = distanceUnit.toString(), index = 0,
+                            value = distanceString, unit = distanceUnit.toString(), index = 0,
                             totalCards = totalCards, incrementSelectedCard = incrementSelectedCard
                         )
                     } else if (selectedCard == 1) {
@@ -221,6 +297,7 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
                     onClick = {
                         // TODO: Add Activity
                         timerPaused = true
+                        showFinalisationPopUp = true
                     }
                 ) {
                     Icon(
