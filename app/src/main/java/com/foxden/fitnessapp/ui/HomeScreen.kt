@@ -62,6 +62,7 @@ import java.time.ZoneOffset
 fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
     val calorieChoice by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED).collectAsState(initial = true)
+    val calorieGoal by dataStoreManager.getSettingFlow(Settings.CALORIE_GOAL).collectAsState(initial = 2000)
     val character by dataStoreManager.getSettingFlow(Settings.CHARACTER).collectAsState(initial = "")
 
     // used to load chosen character
@@ -117,10 +118,8 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
         }
 
     // Make evaulation
-    var evaluation by remember {
-        mutableStateOf(Evaluate(totalActivities, 2000, nutritionLogList, character.toString()))
-    }
-
+    val calgoal: Int = if (calorieGoal is Int) calorieGoal as Int else 0
+    var evaluation = Evaluate(totalActivities, (calorieChoice == true), calgoal, nutritionLogList, character.toString())
     image = evaluation.image
 
     Scaffold (
@@ -151,7 +150,10 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                         )
                     }
                 }
-                Text(text="${evaluation.message} ${evaluation.approval}")
+
+                Text(text=evaluation.messagePositive)
+                Text(text=evaluation.messageNegative)
+
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (calorieChoice == true) {
