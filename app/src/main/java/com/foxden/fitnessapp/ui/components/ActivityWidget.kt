@@ -80,7 +80,6 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
     val startDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())
     val endDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())
     val duration: Duration? = Duration.between(startDT, endDT)
-    Log.d("Duration!", "ActivityWidget: $duration")
     val totalSeconds = duration?.seconds
     val durationString = if (totalSeconds != null)
         String.format("%dh %dm", totalSeconds / 3600, (totalSeconds % 3600) / 60)
