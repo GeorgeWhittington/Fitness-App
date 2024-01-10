@@ -146,7 +146,7 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Text(
-                                text = "${log.calories / 1000}", fontSize = 12.sp,
+                                text = log.calories.toString(), fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.tertiary,
                                 fontWeight = FontWeight(700)
                             )

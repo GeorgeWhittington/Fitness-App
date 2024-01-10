@@ -35,7 +35,7 @@ import com.foxden.fitnessapp.data.DBHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit, dbHelper: DBHelper) {
+fun AddActivityTypeDialog(onDismiss: () -> Unit, onError: (String) -> Unit, onSuccess: () -> Unit, dbHelper: DBHelper) {
     var activityName by remember { mutableStateOf("") }
     var selectedIcon: Int? by remember { mutableStateOf(0) }
     var gpsTracking by remember { mutableStateOf(true) }

@@ -15,6 +15,8 @@ import androidx.navigation.compose.rememberNavController
 import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.ActivityJournalScreen
+import com.foxden.fitnessapp.ui.ActivityRecordingGPSScreen
+import com.foxden.fitnessapp.ui.ActivityRecordingNoGPSScreen
 import com.foxden.fitnessapp.ui.ActivityRecordingScreen
 import com.foxden.fitnessapp.ui.AddManualActivityScreen
 import com.foxden.fitnessapp.ui.DisplaySettings
@@ -31,15 +33,19 @@ import dagger.hilt.android.AndroidEntryPoint
 
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
-    const val SETTINGS_SCREEN = "SettingsScreen"
-    const val ACTIVITY_JOURNAL_SCREEN = "ActivityJournalScreen"
-    const val ACTIVITY_RECORDING_SCREEN = "ActivityRecordingScreen"
 
+    const val ACTIVITY_JOURNAL_SCREEN = "ActivityJournalScreen"
     const val ADD_ACTIVITY_FORM_SCREEN = "AddActivityFormScreen"
 
+    const val ACTIVITY_RECORDING_SCREEN = "ActivityRecordingScreen"
+    const val ACTIVITY_RECORDING_NO_GPS_SCREEN = "ActivityRecordingNoGPSScreen"
+    const val ACTIVITY_RECORDING_GPS_SCREEN = "ActivityRecordingGPSScreen"
+
+    const val SETTINGS_SCREEN = "SettingsScreen"
     const val PROFILE_SETTINGS_SCREEN = "ProfileSettingsScreen"
     const val DISPLAY_SETTINGS_SCREEN = "DisplaySettingsScreen"
     const val GOALS_SETTINGS_SCREEN = "GoalsSettingsScreen"
+
     const val NUTRITION_TRACKING_SCREEN = "NutritionTrackingScreen"
     const val NUTRITION_LOG_MEAL_SCREEN = "NutritionLogMealScreen"
     const val NUTRITION_ADD_PRESET_SCREEN = "NutritionAddPresetScreen"
@@ -88,7 +94,6 @@ class MainActivity : ComponentActivity() {
                         ) {
                             AddManualActivityScreen(navController, db)
                         }
-
                         composable(
                             Routes.ACTIVITY_RECORDING_SCREEN,
                             enterTransition = { EnterTransition.None },
@@ -97,13 +102,30 @@ class MainActivity : ComponentActivity() {
                             ActivityRecordingScreen(navController, locationViewModel, db)
                         }
                         composable(
+                            "${Routes.ACTIVITY_RECORDING_NO_GPS_SCREEN}/{activityTypeId}",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {navBackStackEntry ->
+                            // invalid navigation signaled to component with -1 value
+                            val activityTypeId = navBackStackEntry.arguments?.getString("activityTypeId") ?: "-1"
+                            ActivityRecordingNoGPSScreen(activityTypeId.toInt(), navController, db)
+                        }
+                        composable(
+                            "${Routes.ACTIVITY_RECORDING_GPS_SCREEN}/{activityTypeId}",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None }
+                        ) {navBackStackEntry ->
+                            // invalid navigation signaled to component with -1 value
+                            val activityTypeId = navBackStackEntry.arguments?.getString("activityTypeId") ?: "-1"
+                            ActivityRecordingGPSScreen(activityTypeId.toInt(), navController, db)
+                        }
+                        composable(
                             Routes.NUTRITION_TRACKING_SCREEN,
                             enterTransition = { EnterTransition.None },
                             exitTransition = { ExitTransition.None }
                         ) {
                             NutritionTrackingScreen(navController, db)
                         }
-
                         composable(
                             Routes.NUTRITION_LOG_MEAL_SCREEN,
                             enterTransition = { EnterTransition.None },
@@ -111,7 +133,6 @@ class MainActivity : ComponentActivity() {
                         ) {
                             NutritionLogMealScreen(navController, db)
                         }
-
                         composable(
                             Routes.NUTRITION_ADD_PRESET_SCREEN,
                             enterTransition = { EnterTransition.None },

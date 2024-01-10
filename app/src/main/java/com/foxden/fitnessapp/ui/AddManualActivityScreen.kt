@@ -618,7 +618,7 @@ private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: 
         startTime = startTime!!.toEpochSecond(),
         duration = duration,
         distance = distance!!,
-        calories = duration * 65 * 7 // not very accurate
+        calories = duration / 60 * 65 * 7 // not very accurate
     )
 
     if (!ActivityLogDAO.insert(dbHelper.writableDatabase, log)) {

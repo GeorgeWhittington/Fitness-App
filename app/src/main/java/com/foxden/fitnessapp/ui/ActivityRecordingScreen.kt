@@ -36,10 +36,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.ActivityTypeDAO
 import com.foxden.fitnessapp.data.DBHelper
@@ -84,14 +85,8 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
     var selectedActivity: ActivityType? by remember { mutableStateOf(null) }
     val focusManager = LocalFocusManager.current
 
-    val activityList = remember { mutableStateListOf<ActivityType>() }
-    activityList.clear()
-    for (a in ActivityTypeDAO.fetchAll(dbHelper.readableDatabase)) {
-        activityList.add(a)
-    }
-
-    // TODO: Initial value should be the most commonly used activity type, read from db
-    LaunchedEffect(null) {
+    val activityList = remember { ActivityTypeDAO.fetchAll(dbHelper.readableDatabase).toMutableStateList() }
+    LaunchedEffect(Unit) {
         selectedActivity = activityList[0]
     }
 
@@ -122,6 +117,12 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                 showActivityDialog = false
                 activityDialogErrorMessage = it
                 showActivityDialogError = true
+            },
+            onSuccess = {
+                activityList.clear()
+                for (a in ActivityTypeDAO.fetchAll(dbHelper.readableDatabase)) {
+                    activityList.add(a)
+                }
             },
             dbHelper)
     }
@@ -211,7 +212,17 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                     contentAlignment = Alignment.Center
                 ) {
                     IconButton(
-                        onClick = { /* TODO - open correct activity recording screen for whichever type is selected */ },
+                        onClick = {
+                            if (selectedActivity == null) {
+                                return@IconButton
+                            }
+
+                            if (selectedActivity!!.gpsEnabled && viewState is ViewState.Success) {
+                                navigation.navigate("${Routes.ACTIVITY_RECORDING_GPS_SCREEN}/${selectedActivity!!.id}")
+                            } else if (!selectedActivity!!.gpsEnabled) {
+                                navigation.navigate("${Routes.ACTIVITY_RECORDING_NO_GPS_SCREEN}/${selectedActivity!!.id}")
+                            }
+                        },
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape)
                             .size(65.dp)
@@ -276,7 +287,7 @@ fun RevokedPermsMap(selectedActivity: ActivityType?) {
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             } else {
-                Text("Settings", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text("Settings", color = MaterialTheme.colorScheme.onSecondaryContainer)
             }
         }
     }
