@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
@@ -136,7 +135,7 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(modifier = Modifier.height(200.dp)) {
+                Row(modifier = Modifier.height(300.dp)) {
                     if (image != 0) {
                         Image(
                             painter = painterResource(evaluation.image),
@@ -211,16 +210,21 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                     )
 
                     Column {
-                        for ((frequency, title) in titles) {
-                            Text(text = title, fontSize = 20.sp, modifier = Modifier.padding(vertical = 10.dp))
+                        titles.forEach { (frequency, title) ->
+                            // Get goals for the current frequency
+                            val frequencyGoals = goalDistances.filter { it.key.frequency == frequency }
 
-                            goalDistances.filter { it.key.frequency == frequency }.forEach { (goal, sumDistance) ->
-                                HomeGoalWidget(
-                                    goal = goal,
-                                    sumDistance = sumDistance.toFloat(),
-                                    activityTypeList.filter { it.id == goal.activityTypeId }.first()
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
+                            if (frequencyGoals.isNotEmpty()) {
+                                Text(text = title, fontSize = 20.sp, modifier = Modifier.padding(vertical = 10.dp))
+
+                                frequencyGoals.forEach { (goal, sumDistance) ->
+                                    HomeGoalWidget(
+                                        goal = goal,
+                                        sumDistance = sumDistance.toFloat(),
+                                        activityTypeList.filter { it.id == goal.activityTypeId }.first()
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                }
                             }
                         }
                     }
