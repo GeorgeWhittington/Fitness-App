@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
                         ) {navBackStackEntry ->
                             // invalid navigation signaled to component with -1 value
                             val activityTypeId = navBackStackEntry.arguments?.getString("activityTypeId") ?: "-1"
-                            ActivityRecordingGPSScreen(activityTypeId.toInt(), navController, db)
+                            ActivityRecordingGPSScreen(activityTypeId.toInt(), navController, db, locationViewModel)
                         }
                         composable(
                             Routes.NUTRITION_TRACKING_SCREEN,

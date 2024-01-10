@@ -60,14 +60,15 @@ import com.foxden.fitnessapp.ui.components.ActivitySelector
 import com.foxden.fitnessapp.ui.components.AddActivityTypeDialog
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.components.AddActivityTypeErrorDialog
+import com.foxden.fitnessapp.ui.theme.DarkBlue
 import com.foxden.fitnessapp.utils.LocationViewModel
 import com.foxden.fitnessapp.utils.PermissionEvent
 import com.foxden.fitnessapp.utils.ViewState
+import com.foxden.fitnessapp.utils.centerOnLocation
 import com.foxden.fitnessapp.utils.hasLocationPermission
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.GoogleMapOptions
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -85,6 +86,7 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
     var selectedActivity: ActivityType? by remember { mutableStateOf(null) }
     val focusManager = LocalFocusManager.current
 
+    // TODO: re-fetch after new activity type is added!
     val activityList = remember { ActivityTypeDAO.fetchAll(dbHelper.readableDatabase).toMutableStateList() }
     LaunchedEffect(Unit) {
         selectedActivity = activityList[0]
@@ -174,10 +176,6 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
                 if (selectedActivity?.gpsEnabled != false) {
                     with(viewState) {
                         when (this) {
-                            // TODO: the loading state is only selected if the user has provided
-                            // permissions previously. If they have only just given permissions
-                            // the state goes from RevokedPermissions -> Success instead of
-                            // correctly doing RevokedPermissions -> Loading -> Success
                             ViewState.Loading -> {
                                 Box(
                                     modifier = Modifier
@@ -239,17 +237,22 @@ fun ActivityRecordingScreen(navigation: NavController, locationViewModel: Locati
 }
 
 @Composable
-fun Map(cameraPositionState: CameraPositionState) {
+private fun Map(cameraPositionState: CameraPositionState) {
+    // nasty way to check, but fetching from settings is too slow
+    val darkModeEnabled = MaterialTheme.colorScheme.secondary == DarkBlue
+
     GoogleMap (
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
             .clip(RoundedCornerShape(20.dp)),
         cameraPositionState = cameraPositionState,
-        properties = MapProperties(
-            isMyLocationEnabled = true,
-            mapType = MapType.NORMAL
-        )
+        properties = if (darkModeEnabled) {
+            MapProperties(isMyLocationEnabled = true)
+        } else {
+            MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
+        },
+        googleMapOptionsFactory = { if (darkModeEnabled) GoogleMapOptions().mapId("80a2ba4bcd1dc68f") else GoogleMapOptions() }
     )
 }
 
@@ -311,12 +314,3 @@ fun RationaleAlert(selectedActivity: ActivityType?, onDismiss: () -> Unit, onCon
         }
     )
 }
-
-private suspend fun CameraPositionState.centerOnLocation(
-    location: LatLng
-) = animate(
-    update = CameraUpdateFactory.newLatLngZoom(
-        location, 15f
-    ),
-    durationMs = 1500
-)

@@ -207,10 +207,6 @@ fun ActivityRecordingNoGPSScreen(activityTypeId: Int, navigation: NavController,
                         .size(55.dp)
                         .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                     onClick = {
-                        /*TODO: stop and save activity */
-                        // Because I Don't want to add extra field data to activities, I'm going to save the set data
-                        // in the notes field. something like "set 1: 00:10:11, set 2: 00:20:10" etc etc
-                        // and then ovs the actual data saved to the duration is just all of them summed
                         if (selectedActivity?.setsEnabled == true) {
                             completedSets.add(Set(currentSet, ticks))
                         }
