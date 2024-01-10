@@ -55,11 +55,19 @@ import com.foxden.fitnessapp.utils.LocationViewModel
 import com.foxden.fitnessapp.utils.PermissionEvent
 import com.foxden.fitnessapp.utils.ViewState
 
+/*
+SettingsScreen()
+
+The main page for settings.
+Offers the user to navigate to other settings pages/ change GPS option
+ */
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SettingsScreen(navigation: NavController, locationViewModel: LocationViewModel, dbHelper: DBHelper) {
+
+    //GPS Option: allows the user to turn GPS off/on
     var alreadyAskedPermission by rememberSaveable { mutableStateOf(false) }
     val permissionState = rememberMultiplePermissionsState(permissions = listOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -92,6 +100,7 @@ fun SettingsScreen(navigation: NavController, locationViewModel: LocationViewMod
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            //Pages: uses a composable to create a clickable row to navigate to other pages
             RowOption("Profile") { navigation.navigate(Routes.PROFILE_SETTINGS_SCREEN) }
             RowDivider()
             Spacer(modifier = Modifier.height(20.dp))
@@ -102,6 +111,7 @@ fun SettingsScreen(navigation: NavController, locationViewModel: LocationViewMod
             RowDivider()
             Spacer(modifier = Modifier.height(20.dp))
 
+            //GPS switch
             GPSOption(gpsCheckedState) {
                 if (it && !alreadyAskedPermission) {
                     permissionState.launchMultiplePermissionRequest()
@@ -117,36 +127,37 @@ fun SettingsScreen(navigation: NavController, locationViewModel: LocationViewMod
     }
 }
 
-@Composable
-fun PageName(text: String) {
-    Text(
-        text = text, fontSize = 20.sp, textAlign = TextAlign.Center,
-        color = MaterialTheme.colorScheme.onSecondaryContainer
-    )
-}
+/*
+RowOption()
 
+Used for a clickable row to navigate to different pages
+ */
 @Composable
-fun SaveOption(isModified: Boolean, onClick: () -> Unit) {
-    if (isModified) {
-        TextButton(onClick = { onClick() }) {
-            Text(text = "Save", color = MaterialTheme.colorScheme.onSecondaryContainer)
-        }
-    }
-}
-
-@Composable
-fun BackIcon(onClick: () -> Unit) {
-    IconButton(
-        onClick = { onClick() }, // Replace "home" with your destination route
+fun RowOption(text: String, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .clickable { onClick() }
+            .padding(vertical = 16.dp)
     ) {
+        Text(
+            text = text,
+            fontSize = 16.sp, modifier = Modifier.weight(1f)
+        )
+
         Icon(
-            Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
-            tint = MaterialTheme.colorScheme.onSecondaryContainer
+            Icons.Outlined.ArrowForwardIos, contentDescription = "next arrow",
+            tint = MaterialTheme.colorScheme.onSecondary
         )
     }
 }
 
+
+/*
+DeleteButton()
+
+Used to be able to delete the user's data stored within the database
+ */
 @Composable
 fun DeleteButton(dbHelper: DBHelper) {
     var isClicked by remember { mutableStateOf(false) }
@@ -169,11 +180,11 @@ fun DeleteButton(dbHelper: DBHelper) {
     }
 }
 
-@Composable
-fun RowDivider(modifier: Modifier = Modifier) {
-    Divider(modifier = modifier.fillMaxWidth())
-}
+/*
+GPSOption()
 
+GPS switch: used for turning GPS off and on
+ */
 @Composable
 fun GPSOption(checkedState: Boolean, setCheckedState: (Boolean) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -188,6 +199,64 @@ fun GPSOption(checkedState: Boolean, setCheckedState: (Boolean) -> Unit) {
     }
 }
 
+
+//Shared composables - used by other setting pages
+
+/*
+RowDivider()
+
+Used for a divider which has a specific modifier
+ */
+@Composable
+fun RowDivider(modifier: Modifier = Modifier) {
+    Divider(modifier = modifier.fillMaxWidth())
+}
+
+
+
+/*
+SaveOption()
+
+Composable used on other setting's pages.
+
+Used for a clickable save text which will save preferences based on certain input text/dropdowns changing
+ */
+@Composable
+fun SaveOption(isModified: Boolean, onClick: () -> Unit) {
+    if (isModified) {
+        TextButton(onClick = { onClick() }) {
+            Text(text = "Save", color = MaterialTheme.colorScheme.onSecondaryContainer)
+        }
+    }
+}
+
+/*
+BackIcon()
+
+used in other pages to go back to the mains settings page
+
+creates a clickable icon which performs an action once clicked.
+ */
+@Composable
+fun BackIcon(onClick: () -> Unit) {
+    IconButton(
+        onClick = { onClick() }, // Replace "home" with your destination route
+        modifier = Modifier
+    ) {
+        Icon(
+            Icons.Outlined.ChevronLeft, contentDescription = "back arrow",
+            tint = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    }
+}
+
+/*
+IntInputField()
+
+Used for a text input of type Int (used for calorie goal)
+
+allows an input within a certain range, uses placeholders
+ */
 @Composable
 fun IntInputField(
     icon: ImageVector,
@@ -237,23 +306,5 @@ fun IntInputField(
         Text("Enter a valid $placeholder", color = MaterialTheme.colorScheme.error)
     }
 }
-@Composable
-fun RowOption(text: String, onClick: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clickable { onClick() }
-            .padding(vertical = 16.dp)
-    ) {
-        Text(
-            text = text,
-            fontSize = 16.sp, modifier = Modifier.weight(1f)
-        )
 
-        Icon(
-            Icons.Outlined.ArrowForwardIos, contentDescription = "next arrow",
-            tint = MaterialTheme.colorScheme.onSecondary
-        )
-    }
-}
 

@@ -144,7 +144,13 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-            ) { PageName(text = "Goals") }
+            ) {
+                Text(
+                    "Goals",
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontSize = 20.sp
+                )
+            }
 
         },
         bottomBar = { NavBar(navigation = navigation) }
