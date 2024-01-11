@@ -30,6 +30,13 @@ import com.foxden.fitnessapp.ui.theme.Orange
 import com.foxden.fitnessapp.ui.theme.Yellow
 import com.foxden.fitnessapp.utils.formatDistance
 
+
+/*
+HomeGoalWidget()
+
+This widget is used in order to display collected data from activities to track goals
+
+ */
 @Composable
 fun HomeGoalWidget(goal: Goal, sumDistance: Float, activityType: ActivityType){
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)

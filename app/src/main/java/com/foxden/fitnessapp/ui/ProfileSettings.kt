@@ -48,26 +48,35 @@ import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.NavBar
 import kotlinx.coroutines.flow.first
 
+/*
+ProfileSettings()
+
+allows the user to enter details (name,weight,height)
+
+these details are then saved to datastore preferences
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileSettings(navigation: NavController) {
     //Saving and retrieving data:
     //used for save option
     var isModified by remember { mutableStateOf(false) }
+
     //link to datastore
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
-    //used for saving the data to datastore
+    //used for getting and saving the data to datastore
     val triggerSave = remember { mutableStateOf(false) }
     var currentName by rememberSaveable { mutableStateOf("") }
     var currentWeight by rememberSaveable { mutableFloatStateOf(0f) }
     var currentHeight by rememberSaveable { mutableFloatStateOf(0f) }
     var weightUnit by rememberSaveable { mutableStateOf("") }
     var heightUnit by rememberSaveable { mutableStateOf("") }
-    //used to check which character
+
+
+    //used to get character option from datastore and load
     var character by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
-
     val image = when (character) {
         "Fox" -> { R.drawable.fox_happy }
         "Racoon" -> { R.drawable.racoon }
@@ -75,6 +84,7 @@ fun ProfileSettings(navigation: NavController) {
         else -> { R.drawable.fox_happy }
     }
 
+    // update variables once data has been collected from datastore
     LaunchedEffect(Unit) {
         GetProfileData(dataStoreManager,
             onWeightUnitLoaded = { loadedWeightUnit ->
@@ -101,11 +111,14 @@ fun ProfileSettings(navigation: NavController) {
             TopAppBar(
                 title = { },
                 navigationIcon = {BackIcon{navigation.popBackStack()}},
+
+                //the save option appears in the top bar once 'isModified' value is set to true by an action
                 actions = {
                     SaveOption(isModified = isModified) {
                         triggerSave.value = true
                         isModified = false
                     }
+                    //once the save option is clicked -> causes data to be saved
                     LaunchedEffect(triggerSave.value) {
                         if (triggerSave.value) {
                             val weightToSave = if (weightUnit == "lbs") convertLbsToKg(currentWeight) else currentWeight
@@ -121,6 +134,7 @@ fun ProfileSettings(navigation: NavController) {
                 backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.height(56.dp)
             )
+
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -140,10 +154,12 @@ fun ProfileSettings(navigation: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
+
+            // if the character image is waiting to be loaded, display a placeholder image
             if (!isLoading) {
                 Image(
                     painter = painterResource(image),
-                    contentDescription = stringResource(id = R.string.cat_alt_text),
+                    contentDescription = stringResource(id = R.string.animal_alt_text),
                     modifier = Modifier.size(width = 200.dp, height = 200.dp)
                 )
             } else {
@@ -151,6 +167,7 @@ fun ProfileSettings(navigation: NavController) {
             }
 
             Spacer(modifier = Modifier.height(10.dp))
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = "Personal", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
@@ -158,6 +175,8 @@ fun ProfileSettings(navigation: NavController) {
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+
+            //Used for user to input a name as a string
             ProfileInputField(
                 icon = Icons.Outlined.Person,
                 placeholder = "Name",
@@ -168,7 +187,7 @@ fun ProfileSettings(navigation: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-
+            //used for user to input weight
             FloatInputField(
                 icon = Icons.Outlined.MonitorWeight,
                 placeholder = "Weight",
@@ -180,8 +199,10 @@ fun ProfileSettings(navigation: NavController) {
                 onChange = { isModified = true },
                 keyboardType = KeyboardType.Number
             )
+
             Spacer(modifier = Modifier.height(20.dp))
 
+            //used for user to input height
             FloatInputField(
                 icon = Icons.Outlined.Height,
                 placeholder = "Height",
@@ -198,6 +219,11 @@ fun ProfileSettings(navigation: NavController) {
     }
 }
 
+/*
+GetProfileData()
+
+retrieves the needed data from datastore
+ */
 suspend fun GetProfileData (
     dataStoreManager: SettingsDataStoreManager,
     onNameLoaded: (String) -> Unit,
@@ -226,7 +252,11 @@ fun convertCmToFeet(cm: Float): Float = cm /30.48f
 fun convertKgToLbs(kg: Float): Float = kg * 2.20462f
 fun convertFeetToCm(feet: Float): Float = feet * 30.48f
 
+/*
+ProfileInputField()
 
+allows the user to input a name : checks name is within acceptable range
+ */
 @Composable
 fun ProfileInputField(
     icon: ImageVector,
@@ -262,6 +292,18 @@ fun ProfileInputField(
         )
     }
 }
+
+/*
+FloatInputField()
+
+allows the user to input a float value : checks it is within acceptable range
+
+converts the data from stored value to prefered unit
+
+Example:
+
+Height is stored in database as feet, if a user has height unit set to Cm, the page converts data to Cm
+ */
 @Composable
 fun FloatInputField(
     icon: ImageVector,

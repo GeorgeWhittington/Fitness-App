@@ -143,7 +143,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                         triggerSave.value = true
                         isModified = false
                     }
-                    //saves the newly changed data to datastore
+                    //once the save option is clicked -> causes data to be saved
                     LaunchedEffect(triggerSave.value) {
                         if (triggerSave.value) {
                             dataStoreManager.saveIntSetting("CalorieGoalKey", currentCalorieGoal)
@@ -399,7 +399,7 @@ fun CreateGoalPopup(isPopupOpen: MutableState<Boolean>,
                     Spacer(modifier = Modifier.height(8.dp))
 
 
-                    // Goal TextField: changes based on the goal type chosen
+                    // TextField for user input: changes based on the goal type chosen
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
@@ -480,13 +480,15 @@ fun CreateGoalPopup(isPopupOpen: MutableState<Boolean>,
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Button(onClick = {
+
+                            //ensures that the values are safely converted to be stored into db
                             val g = Goal()
                             goalHourValue = hourInput.toIntOrNull() ?: 0
                             goalMainValue = mainInput.toIntOrNull() ?: 0
                             goaldistanceValue = distanceInput.toFloatOrNull()?: 0f
 
 
-
+                            // if the selected goal type is 'duration' ensure the inputted value is within range
                             if (goalType == GoalType.DURATION && goalMainValue in 1..60|| goalHourValue in 1..743) {
 
                                 g.activityTypeId = activityType?.id!!
@@ -505,6 +507,7 @@ fun CreateGoalPopup(isPopupOpen: MutableState<Boolean>,
                                 }
                                 onChange()
                             }
+                            // if the selected goal type is 'distance' ensure the inputted value is within range
                             else if(goalType == GoalType.DISTANCE && goaldistanceValue in 0.1..1000.0) {
                                 g.activityTypeId = activityType?.id!!
                                 g.frequency = frequency
@@ -528,6 +531,7 @@ fun CreateGoalPopup(isPopupOpen: MutableState<Boolean>,
                                 }
                                 onChange()
                             }
+                            // if the selected goal type is something else ensure the inputted value is within range
                             else if(goalType !== GoalType.DURATION && goalMainValue in 1..999999) {
                                 g.activityTypeId = activityType?.id!!
                                 g.frequency = frequency

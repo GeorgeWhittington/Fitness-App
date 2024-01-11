@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.map
 
 val Context.dataStore by preferencesDataStore(name = "SettingsDatastore")
 
+
 object Settings {
     const val CALORIES_ENABLED = "CalorieKey"
     const val DARK_MODE = "DarkmodeKey"
@@ -41,8 +42,13 @@ object Settings {
         CALORIE_GOAL to Int,
         CALORIE_UNIT to String
     )
-}
+    }
 
+/*
+SettingsDataStoreManager()
+
+Class is used to get and save data to preference datastore: uses a key and the correct type of data
+ */
 class SettingsDataStoreManager(private val context: Context) {
     // Function to save a string value
     suspend fun saveStringSetting(key: String, value: String) {
@@ -130,6 +136,7 @@ class SettingsDataStoreManager(private val context: Context) {
             }
             .asLiveData())
     }
+
 
     fun getSettingFlow(settingKey: String): Flow<Any?> {
         val key = when(Settings.SettingType[settingKey]) {

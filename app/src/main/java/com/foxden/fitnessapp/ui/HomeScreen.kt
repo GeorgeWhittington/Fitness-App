@@ -48,7 +48,7 @@ import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.ActivityWidget
 import com.foxden.fitnessapp.ui.components.HomeGoalWidget
-import com.foxden.fitnessapp.ui.components.HomeWidget
+import com.foxden.fitnessapp.ui.components.HomeActivityWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.components.NutritionProgress
 import com.foxden.fitnessapp.utils.Evaluate
@@ -187,7 +187,7 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                     Text(text = "Statistics", fontSize = 20.sp)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                HomeWidget(
+                HomeActivityWidget(
                     activities = totalActivities,
                     distance = totalDistance,
                     duration = totalDuration
