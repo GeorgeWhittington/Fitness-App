@@ -4,6 +4,7 @@ import android.Manifest
 import android.location.Location
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -78,6 +79,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import io.jenetics.jpx.GPX
 import kotlinx.coroutines.delay
 import java.time.ZonedDateTime
+import kotlin.math.ceil
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -110,9 +112,16 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
     var ticks by remember { mutableStateOf(0) }
     val locations = remember { mutableStateListOf<LatLng>() }
     var totalDistance by remember { mutableStateOf(0.0f) } // in meters
+    val splitPaceLocations = remember { mutableStateListOf(0) } // ticks
     val timeString = String.format("%01d:%02d:%02d", ticks / 3600, (ticks % 3600) / 60, ticks % 60)
     val distanceString = String.format("%.2f", if (distanceUnit == "Meters") totalDistance * 0.00062137f else totalDistance / 1000.0f)
     val calorieString = String.format("%d", ticks / 60 * 65 * 7)
+    val splitPaceString = if (splitPaceLocations.count() > 1) {
+        val delta = splitPaceLocations[splitPaceLocations.size - 1] - splitPaceLocations[splitPaceLocations.size - 2]
+        String.format("%02d:%02d", (delta % 3600) / 60, delta % 60)
+    } else {
+        "-:--"
+    }
     LaunchedEffect(Unit) {
         while (true) {
             delay(1.seconds)
@@ -152,10 +161,17 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
             // otherwise leave prev location as it is, and wait until the current location is far enough away
             // to be worth storing. This should stop the distance from rocketing when someone is at a standstill
             if (results[0] >= 2.0f) {
+                val prevTotalDistance = if (distanceUnit == "Meters") totalDistance * 0.00062137f else totalDistance / 1000.0f
                 totalDistance += results[0]
                 previousLocationIndex = locations.lastIndex
 
                 // TODO: Keep track of split pace (speed of last kilometer/mile)
+                val newTotalDistance = if (distanceUnit == "Meters") totalDistance * 0.00062137f else totalDistance / 1000.0f
+                // a mile or kilometer has been completed
+                if (newTotalDistance >= ceil(prevTotalDistance) && prevTotalDistance != ceil(prevTotalDistance)) {
+                    Log.d("FIT", "prevTotalDistance: ${prevTotalDistance}, newTotalDistance: ${newTotalDistance}, ceil: ${ceil(prevTotalDistance)}")
+                    splitPaceLocations.add(ticks)
+                }
             }
         }
     }
@@ -293,7 +309,7 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
                         )
                     } else if (selectedCard == 1) {
                         StatsCard(
-                            value = "15:03", unit = "/$distanceUnitCorrected", index = 1,
+                            value = splitPaceString, unit = "/$distanceUnitCorrected", index = 1,
                             totalCards = totalCards, incrementSelectedCard = incrementSelectedCard
                         )
                     } else if (caloriesEnabled == true && selectedCard == 2) {

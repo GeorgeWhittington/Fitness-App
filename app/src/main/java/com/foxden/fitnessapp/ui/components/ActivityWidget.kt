@@ -22,9 +22,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,22 +39,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
 import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
+import com.foxden.fitnessapp.ui.theme.DarkBlue
 import com.foxden.fitnessapp.utils.formatDistance
+import io.jenetics.jpx.GPX
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.Path
 
 class SlideshowImage(val image: ImageBitmap, val imageDescription: String?)
+class SlideshowImage2(val url: String, val imageDescription: String?)
 
 @Composable
-fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
+fun ActivitySlideshow(modifier: Modifier, images: MutableList<Any>) {
     var imageIndex by remember { mutableIntStateOf(0) }
     val numImages = images.count() - 1
 
@@ -60,11 +67,21 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
         Box(modifier = modifier.clickable {
             if (imageIndex + 1 > numImages) imageIndex = 0 else imageIndex++
         }) {
-            Image(
-                bitmap = images[imageIndex].image,
-                contentDescription = images[imageIndex].imageDescription,
-                contentScale = ContentScale.Crop
-            )
+            val slideshowImage = images[imageIndex]
+            if (slideshowImage is SlideshowImage) {
+                Image(
+                    bitmap = slideshowImage.image,
+                    contentDescription = slideshowImage.imageDescription,
+                    contentScale = ContentScale.Crop
+                )
+            } else if (slideshowImage is SlideshowImage2) {
+                Image(
+                    painter = rememberAsyncImagePainter(slideshowImage.url) ,
+                    contentDescription = slideshowImage.imageDescription,
+                    contentScale = ContentScale.Crop
+                )
+            }
+
             ImageSteppers(
                 numImages = numImages + 1, selectedImage = imageIndex,
                 modifier = Modifier
@@ -78,35 +95,51 @@ fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modifier = Modifier) {
-    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
-    val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
-    val caloriesEnabled by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED).collectAsState(initial = true)
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
+    val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT)
+        .collectAsState(initial = "")
+    val caloriesEnabled by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED)
+        .collectAsState(initial = true)
+    val darkMode = MaterialTheme.colorScheme.secondary == DarkBlue
 
-    val startDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())
-    val endDT: ZonedDateTime? = ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime + log.duration), ZoneId.systemDefault())
+    val startDT: ZonedDateTime? =
+        ZonedDateTime.ofInstant(Instant.ofEpochSecond(log.startTime), ZoneId.systemDefault())
+    val endDT: ZonedDateTime? = ZonedDateTime.ofInstant(
+        Instant.ofEpochSecond(log.startTime + log.duration),
+        ZoneId.systemDefault()
+    )
     val duration: Duration? = Duration.between(startDT, endDT)
     val totalSeconds = duration?.seconds
     val durationString = if (totalSeconds != null)
         String.format("%dh %dm", totalSeconds / 3600, (totalSeconds % 3600) / 60)
-        else ""
+    else ""
     val activityDistance: Float = formatDistance(log.distance, distanceUnit)
 
-    val img = mutableListOf<SlideshowImage>()
-    val filesDir = LocalContext.current.filesDir.path
-    if (log.gpx.isNotEmpty()) {
-        // TODO: fetch and render gpx path image
-        // https://developers.google.com/maps/documentation/maps-static/start
-        // https://maps.googleapis.com/maps/api/staticmap?
-        // open gpx file from ${filesDir}/gpx/${log.gpx}
-        // parse it using the GPX library, and construct a param string for the staticmap endpoint
-        // plop the returned image into a bitmapdrawable, and wahoo, yipee, etc
+    val images = remember { mutableStateListOf<Any>() }
+    LaunchedEffect(Unit) {
+        val filesDir = context.filesDir.path
+        if (log.gpx.isNotEmpty()) {
+            var apiUrl = "https://maps.googleapis.com/maps/api/staticmap?size=1000x1000"
+            apiUrl += "&key=AIzaSyBdxPDBDXEgyBCkiFYTztLMQNJnUYDzsgI"
+            if (darkMode)
+                apiUrl += "&map_id=80a2ba4bcd1dc68f"
+
+            var pathStr = "&path=color:red|"
+            val gpx = GPX.read(Path("${filesDir}/gpx/${log.gpx}"))
+            gpx.tracks().flatMap { it.segments() }.flatMap { it.points() }.forEach {
+                pathStr += "${it.latitude},${it.longitude}|"
+            }
+            pathStr = pathStr.dropLast(1)
+            apiUrl += pathStr
+            images.add(SlideshowImage2(apiUrl, "Route map"))
+        }
+        for (path: String in log.images) {
+            val bitmap = BitmapDrawable(context.resources, "${filesDir}/${path}").bitmap
+            if (bitmap != null)
+                images.add(SlideshowImage(bitmap.asImageBitmap(), null))
+        }
     }
-    for (path: String in log.images) {
-        val bitmap = BitmapDrawable(LocalContext.current.resources, "${filesDir}/${path}").bitmap
-        if (bitmap != null)
-            img.add(SlideshowImage(bitmap.asImageBitmap(), null))
-    }
-    val images = img.toList()
 
     Row (
         modifier = modifier
