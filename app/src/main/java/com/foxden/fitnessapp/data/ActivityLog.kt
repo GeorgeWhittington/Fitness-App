@@ -93,6 +93,17 @@ object ActivityLogDAO : DAO(
         return ret
     }
 
+    fun fetchOne(db: SQLiteDatabase?, id: Int) : ActivityLog? {
+        var ret: ActivityLog? = null
+        val cursor = db?.rawQuery("SELECT * FROM $tableName WHERE id = ?", arrayOf(id.toString()))
+
+        if (cursor!!.moveToFirst()) {
+            ret = ActivityLogDAO.cursorToObject(cursor, db)
+        }
+        cursor.close()
+        return ret
+    }
+
     /* Get all activity logs between specified date range */
     @RequiresApi(Build.VERSION_CODES.O)
     fun fetchBetween(db: SQLiteDatabase?, startTime: LocalDateTime, endTime: LocalDateTime): List<ActivityLog> {
