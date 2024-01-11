@@ -64,6 +64,8 @@ import com.foxden.fitnessapp.utils.PermissionEvent
 import com.foxden.fitnessapp.utils.ViewState
 import com.foxden.fitnessapp.utils.centerOnLocation
 import com.foxden.fitnessapp.utils.hasLocationPermission
+import com.foxden.fitnessapp.utils.saveGPXToInternalStorage
+import com.foxden.fitnessapp.utils.saveImageToInternalStorage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.maps.GoogleMapOptions
@@ -73,6 +75,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.rememberCameraPositionState
+import io.jenetics.jpx.GPX
 import kotlinx.coroutines.delay
 import java.time.ZonedDateTime
 import kotlin.time.Duration.Companion.seconds
@@ -81,13 +84,14 @@ import kotlin.time.Duration.Companion.seconds
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, dbHelper: DBHelper, locationViewModel: LocationViewModel) {
-    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
     val caloriesEnabled by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED).collectAsState(initial = true)
     val calorieUnit by dataStoreManager.getSettingFlow(Settings.CALORIE_UNIT).collectAsState(initial = "")
     val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
     val distanceUnitCorrected = if (distanceUnit == "Miles") "Mile" else distanceUnit
 
-    if (!LocalContext.current.hasLocationPermission()) {
+    if (!context.hasLocationPermission()) {
         // this shouldn't happen, but if it does just exit immediately
         navigation.popBackStack()
     }
@@ -190,6 +194,21 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
             return
         }
 
+        val savedUris = mutableListOf<String>()
+        imageURIs.forEach {
+            savedUris.add(saveImageToInternalStorage(context, it))
+        }
+
+        val gpx = GPX.builder()
+            .addTrack { track -> track
+                .addSegment { segment ->
+                    locations.forEach { latLng ->
+                        segment.addPoint { p -> p.lat(latLng.latitude).lon(latLng.longitude)}
+                    }
+                }
+            }
+            .build()
+
         ActivityLogDAO.insert(dbHelper.writableDatabase, ActivityLog(
             title = title,
             activityTypeId = selectedActivity.id,
@@ -199,7 +218,9 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
             // convert distance from meters to miles in order to store it
             distance = totalDistance * 0.00062137f,
             // TODO: make this actually accurate, since relative effort can actually be calculated here
-            calories = ticks / 60 * 65 * 7
+            calories = ticks / 60 * 65 * 7,
+            images = savedUris,
+            gpx = saveGPXToInternalStorage(context, gpx)
         ))
         navigation.popBackStack()
     }
@@ -295,7 +316,6 @@ fun ActivityRecordingGPSScreen(activityTypeId: Int, navigation: NavController, d
                         .size(55.dp)
                         .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                     onClick = {
-                        // TODO: Add Activity
                         timerPaused = true
                         showFinalisationPopUp = true
                     }

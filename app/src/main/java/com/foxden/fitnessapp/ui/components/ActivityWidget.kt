@@ -1,5 +1,6 @@
 package com.foxden.fitnessapp.ui.components
 
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -29,13 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.foxden.fitnessapp.R
 import com.foxden.fitnessapp.data.ActivityLog
 import com.foxden.fitnessapp.data.ActivityType
 import com.foxden.fitnessapp.data.Constants
@@ -48,24 +49,29 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class SlideshowImage(val image: Painter, val imageDescription: String?)
+class SlideshowImage(val image: ImageBitmap, val imageDescription: String?)
 
 @Composable
 fun ActivitySlideshow(modifier: Modifier, images: List<SlideshowImage>) {
     var imageIndex by remember { mutableIntStateOf(0) }
     val numImages = images.count() - 1
 
-    Box (modifier = modifier.clickable { if (imageIndex + 1 > numImages) imageIndex = 0 else imageIndex++ }) {
-        Image(
-            painter = images[imageIndex].image,
-            contentDescription = images[imageIndex].imageDescription
-        )
-        ImageSteppers(
-            numImages = numImages + 1, selectedImage = imageIndex,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 5.dp)
-        )
+    if (images.isNotEmpty()) {
+        Box(modifier = modifier.clickable {
+            if (imageIndex + 1 > numImages) imageIndex = 0 else imageIndex++
+        }) {
+            Image(
+                bitmap = images[imageIndex].image,
+                contentDescription = images[imageIndex].imageDescription,
+                contentScale = ContentScale.Crop
+            )
+            ImageSteppers(
+                numImages = numImages + 1, selectedImage = imageIndex,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 5.dp)
+            )
+        }
     }
 }
 
@@ -85,13 +91,22 @@ fun ActivityWidget(log: ActivityLog, activityType: ActivityType, modifier: Modif
         else ""
     val activityDistance: Float = formatDistance(log.distance, distanceUnit)
 
-    // TODO: Source this from db
-    val images = listOf(
-        SlideshowImage(painterResource(R.drawable.hiking_route), "map showing route taken"),
-        SlideshowImage(painterResource(R.drawable.hiking_picture), null),
-        SlideshowImage(painterResource(R.drawable.hiking_picture), null),
-        SlideshowImage(painterResource(R.drawable.hiking_picture), null)
-    )
+    val img = mutableListOf<SlideshowImage>()
+    val filesDir = LocalContext.current.filesDir.path
+    if (log.gpx.isNotEmpty()) {
+        // TODO: fetch and render gpx path image
+        // https://developers.google.com/maps/documentation/maps-static/start
+        // https://maps.googleapis.com/maps/api/staticmap?
+        // open gpx file from ${filesDir}/gpx/${log.gpx}
+        // parse it using the GPX library, and construct a param string for the staticmap endpoint
+        // plop the returned image into a bitmapdrawable, and wahoo, yipee, etc
+    }
+    for (path: String in log.images) {
+        val bitmap = BitmapDrawable(LocalContext.current.resources, "${filesDir}/${path}").bitmap
+        if (bitmap != null)
+            img.add(SlideshowImage(bitmap.asImageBitmap(), null))
+    }
+    val images = img.toList()
 
     Row (
         modifier = modifier

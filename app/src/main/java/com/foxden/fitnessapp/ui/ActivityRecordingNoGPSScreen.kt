@@ -52,6 +52,7 @@ import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.AddActivityAttachmentsWidget
+import com.foxden.fitnessapp.utils.saveImageToInternalStorage
 import kotlinx.coroutines.delay
 import java.time.ZonedDateTime
 import kotlin.time.Duration.Companion.seconds
@@ -61,7 +62,8 @@ private class Set(val setNumber: Int, val totalSeconds: Int)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ActivityRecordingNoGPSScreen(activityTypeId: Int, navigation: NavController, dbHelper: DBHelper) {
-    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
     val caloriesEnabled by dataStoreManager.getSettingFlow(Settings.CALORIES_ENABLED).collectAsState(initial = true)
     val calorieUnit by dataStoreManager.getSettingFlow(Settings.CALORIE_UNIT).collectAsState(initial = "")
 
@@ -106,6 +108,10 @@ fun ActivityRecordingNoGPSScreen(activityTypeId: Int, navigation: NavController,
         }
 
         val duration = if (selectedActivity.setsEnabled) completedSets.sumOf { it.totalSeconds } else ticks
+        val savedUris = mutableListOf<String>()
+        imageURIs.forEach {
+            savedUris.add(saveImageToInternalStorage(context, it))
+        }
 
         ActivityLogDAO.insert(dbHelper.writableDatabase, ActivityLog(
             title = title,
@@ -114,7 +120,8 @@ fun ActivityRecordingNoGPSScreen(activityTypeId: Int, navigation: NavController,
             startTime = startTime.toEpochSecond(),
             duration = duration,
             distance = 0.0f,
-            calories = duration / 60 * 65 * 7
+            calories = duration / 60 * 65 * 7,
+            images = savedUris
         ))
         navigation.popBackStack()
     }

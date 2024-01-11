@@ -45,7 +45,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 
-// TODO: Check over my styling here, I don't think the fullscreen image viewer will look good on dark mode
 @Composable
 fun AddActivityAttachmentsWidget(
     imageURIs: MutableList<Uri>, addImageUri: (uri: Uri) -> Unit,

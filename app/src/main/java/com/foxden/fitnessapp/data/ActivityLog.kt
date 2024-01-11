@@ -54,10 +54,12 @@ object ActivityLogDAO : DAO(
         var imageString = cursor.getString(cursor.getColumnIndex("images"))
 
         try {
-            var loopIdx = 0
-            var imageArr = JSONArray("{$imageString}")
-            while (loopIdx < imageArr.length()) {
-                ret.images.add(imageArr.getString(loopIdx))
+            imageString = if (imageString.isNullOrEmpty()) "[]" else imageString
+            val jsonObj = JSONObject("{\"images\": $imageString}")
+            val imageArray = jsonObj.getJSONArray("images")
+
+            for (i in 0 until imageArray.length()) {
+                ret.images.add(imageArray.getString(i))
             }
         } catch (e: JSONException) {
             // handler

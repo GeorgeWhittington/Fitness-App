@@ -1,6 +1,7 @@
 package com.foxden.fitnessapp.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -70,6 +71,7 @@ import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.ui.components.AddActivityAttachmentsWidget
+import com.foxden.fitnessapp.utils.saveImageToInternalStorage
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -94,7 +96,8 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
     }
 
     // get unit preference
-    val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
+    val context = LocalContext.current
+    val dataStoreManager = SettingsDataStoreManager(context)
     val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
 
     // other state
@@ -350,7 +353,7 @@ fun AddManualActivityScreen(navigation: NavController, dbHelper: DBHelper) {
                     }
                 }
 
-                if (AddManualActivity(dbHelper, title, activityType, notes, datetime, d1, distanceFloat)) {
+                if (AddManualActivity(dbHelper, context, title, activityType, notes, datetime, d1, distanceFloat, imageURIs)) {
                     navigation.popBackStack()
                 }
 
@@ -465,10 +468,14 @@ private fun ValidateForm(title: String?, activityType: ActivityType?, startTime:
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: ActivityType?, notes: String?, startTime: ZonedDateTime?, duration: Int, distance: Float?) : Boolean {
-
+private fun AddManualActivity(dbHelper: DBHelper, context: Context, title: String?, activityType: ActivityType?, notes: String?, startTime: ZonedDateTime?, duration: Int, distance: Float?, imageUris: MutableList<Uri>) : Boolean {
     if (!ValidateForm(title, activityType, startTime, duration, distance))
         return false
+
+    val savedUris = mutableListOf<String>()
+    imageUris.forEach {
+        savedUris.add(saveImageToInternalStorage(context, it))
+    }
 
     val log = ActivityLog(
         title=title!!,
@@ -477,7 +484,8 @@ private fun AddManualActivity(dbHelper: DBHelper, title: String?, activityType: 
         startTime = startTime!!.toEpochSecond(),
         duration = duration,
         distance = distance!!,
-        calories = duration / 60 * 65 * 7 // not very accurate
+        calories = duration / 60 * 65 * 7, // not very accurate
+        images = savedUris
     )
 
     if (!ActivityLogDAO.insert(dbHelper.writableDatabase, log)) {
