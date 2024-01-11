@@ -4,8 +4,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
+/* 
+    Constants, used for storing miscellaneous data that doesn't change 
+*/
 object Constants {
 
+    /* ActivityIcon Enum - All icons available to the user to select */
     enum class ActivityIcons(val image: ImageVector, val displayText: String = "") {
         DIRECTIONS_BOAT(Icons.Outlined.DirectionsBoat, "Boat"),
         FITNESS_CENTER(Icons.Outlined.FitnessCenter, "Gym"),
@@ -59,18 +63,4 @@ object Constants {
         BEACH_ACCESS(Icons.Outlined.BeachAccess, "Beach"),
         GOLF_COURSE(Icons.Outlined.GolfCourse, "Golf 2"),
     }
-
-    enum class Floofer() {
-        FOX,
-        RACOON,
-        CAT
-    }
-
-    /*
-    val ACTIVITY_TYPE_BUILTIN = listOf<ActivityType>(
-        ActivityType(0, "Jogging", ActivityIcons.FITNESS_CENTER.ordinal),
-        ActivityType(0, "Hiking", ActivityIcons.FITNESS_CENTER.ordinal),
-        ActivityType(0, "Cycling", ActivityIcons.FITNESS_CENTER.ordinal),
-    )
-     */
 }

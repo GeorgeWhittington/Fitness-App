@@ -11,6 +11,9 @@ import org.json.JSONObject
 import org.json.JSONArray
 import org.json.JSONException
 
+/*  ActivityLog entity
+    Represents an activity that the user can log
+*/
 data class ActivityLog(
     var id : Int = 0,
     var title : String = "Untitled Activity",
@@ -24,6 +27,9 @@ data class ActivityLog(
     var gpx: String = "",
 )
 
+/*  ActivityLogDAO 
+    Represents / Interfaces with the ActivityLog table
+*/
 object ActivityLogDAO : DAO(
     "activity_log",
     listOf(
@@ -39,6 +45,8 @@ object ActivityLogDAO : DAO(
         ColumnDesc("gpx", "TEXT"),
     )
 ) {
+
+    /* Returns ActivityLog from SQLite cursor */
     @SuppressLint("Range")
     private fun cursorToObject(cursor: android.database.Cursor, db: SQLiteDatabase) : ActivityLog {
         val ret = ActivityLog()
@@ -70,6 +78,7 @@ object ActivityLogDAO : DAO(
         return ret
     }
 
+    /* Get all activity logs from the database */
     fun fetchAll(db: SQLiteDatabase?) : List<ActivityLog> {
         val ret: MutableList<ActivityLog> = ArrayList()
         val queryCursor = db?.rawQuery("SELECT * FROM $tableName", null)
@@ -82,6 +91,7 @@ object ActivityLogDAO : DAO(
         return ret
     }
 
+    /* Get all activity logs between specified date range */
     @RequiresApi(Build.VERSION_CODES.O)
     fun fetchBetween(db: SQLiteDatabase?, startTime: LocalDateTime, endTime: LocalDateTime): List<ActivityLog> {
         assert(startTime < endTime)
@@ -108,6 +118,7 @@ object ActivityLogDAO : DAO(
         return ret
     }
 
+    /* Insert a single activity log into the database */
     fun insert(db: SQLiteDatabase?, activityLog: ActivityLog) : Boolean {
         val contentValues = ContentValues()
         contentValues.put(tableColumns[1].name, activityLog.title)
@@ -133,6 +144,7 @@ object ActivityLogDAO : DAO(
         return (result != (0).toLong())
     }
 
+    /* Delete an activity log from database */
     fun delete(db: SQLiteDatabase?, activityLog: ActivityLog): Boolean {
         val affected = db?.delete(tableName, "id = ?", arrayOf(activityLog.id.toString()))
         if (affected != null) {

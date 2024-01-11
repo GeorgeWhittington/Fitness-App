@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+/* NutritionType enum - represents the time of day for a nutrition log */
 enum class NutritionType {
     BREAKFAST,
     LUNCH,
@@ -15,6 +16,7 @@ enum class NutritionType {
     SNACK
 }
 
+/* Nutrition log entity */
 @RequiresApi(Build.VERSION_CODES.O)
 class NutritionLog() {
     var id: Int = 0
@@ -23,7 +25,10 @@ class NutritionLog() {
     var calories: Int = 0
 }
 
-
+/*
+    NutritionLogDAO
+    Represents nutrition table
+*/
 object NutritionLogDAO : DAO(
     "nutrition_log",
     listOf(
@@ -34,6 +39,7 @@ object NutritionLogDAO : DAO(
     )
 ) {
 
+    /* Convert SQLite cursor to NutritionLog object */
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("Range")
     private fun cursorToObject(cursor: android.database.Cursor, db: SQLiteDatabase) : NutritionLog {
@@ -46,6 +52,7 @@ object NutritionLogDAO : DAO(
         return ret
     }
 
+    /* Get nutrition logs by date range */
     @RequiresApi(Build.VERSION_CODES.O)
     fun fetchRange(db: SQLiteDatabase?, start: LocalDate, end: LocalDate) : List<NutritionLog> {
         val ret: MutableList<NutritionLog> = ArrayList()
@@ -61,6 +68,7 @@ object NutritionLogDAO : DAO(
         return ret
     }
 
+    /* Insert a single nutrition log into the database */
     @RequiresApi(Build.VERSION_CODES.O)
     fun insert(db: SQLiteDatabase?, nutritionLog: NutritionLog) : Boolean {
         val contentValues = ContentValues()
