@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 
-
+/*
+    Goal Frequency Enum
+*/
 enum class GoalFrequency(val displayName: String)
 {
     DAILY("Daily"),
@@ -18,6 +20,9 @@ enum class GoalFrequency(val displayName: String)
     }
 }
 
+/*
+    Goal Type Enum
+*/
 enum class GoalType(val displayName: String)
 {
     STEPS("Steps"),
@@ -32,6 +37,9 @@ enum class GoalType(val displayName: String)
     }
 }
 
+/*
+    Goal Data Class
+*/
 data class Goal (
     var id : Int = 0,
     var activityTypeId: Int = 0,
@@ -43,6 +51,9 @@ data class Goal (
 
 )
 
+/*
+    GoalDAO
+*/
 object GoalDAO : DAO(
     "goals",
     listOf(
