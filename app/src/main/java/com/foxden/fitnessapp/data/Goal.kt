@@ -36,7 +36,7 @@ data class Goal (
     var id : Int = 0,
     var activityTypeId: Int = 0,
     var frequency: GoalFrequency = GoalFrequency.DAILY,
-    var type: GoalType = GoalType.DURATION,
+    var type: GoalType = GoalType.DISTANCE,
     var value: Int = 1,
     var distance: Float = 0.0f,
     var hours: Int = 0

@@ -23,7 +23,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -36,6 +35,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -73,12 +73,20 @@ import com.foxden.fitnessapp.ui.components.GoalsWidget
 import com.foxden.fitnessapp.ui.components.NavBar
 import kotlinx.coroutines.flow.first
 
+/*
+GoalsSettings()
+
+Allows the user to create goals for activities
+if a user has calorie tracking enabled, the user can also create a goal for their daily calories
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
-    val isDialogOpen = remember { mutableStateOf(false) }
 
-    //link to datastore
+    //used to tell when the add goal button is clicked
+    val isPopupOpen = remember { mutableStateOf(false) }
+
+    //used to access datastore
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
 
@@ -101,10 +109,10 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
     }
 
     //remove goals
-    var showDialog by remember { mutableStateOf(false) }
+    var delGoalPopup by remember { mutableStateOf(false) }
     var selectedGoal by remember { mutableStateOf<Goal?>(null) }
 
-    // get data from datastore
+    // update variables once data has been collected from datastore
     LaunchedEffect(Unit) {
         GetGoalsData(
             dataStoreManager,
@@ -127,11 +135,15 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 navigationIcon = { BackIcon { navigation.popBackStack() } },
                 backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.height(56.dp),
+
+                //the save option appears in the top bar once 'isModified' value is set to true by an action
                 actions = {
+
                     SaveOption(isModified = isModified) {
                         triggerSave.value = true
                         isModified = false
                     }
+                    //saves the newly changed data to datastore
                     LaunchedEffect(triggerSave.value) {
                         if (triggerSave.value) {
                             dataStoreManager.saveIntSetting("CalorieGoalKey", currentCalorieGoal)
@@ -167,6 +179,8 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                //checks if user has calorie tracking turned on, if so: displays default/users goal
                 if(calorieChoice){
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "Daily calorie goal", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
@@ -193,8 +207,9 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                if (isDialogOpen.value) {
-                    CreateGoalPopup(isDialogOpen,
+                //upon the user clicking the floating button: run popup composable to add goals
+                if (isPopupOpen.value) {
+                    CreateGoalPopup(isPopupOpen,
                         dbHelper,
                         onChange = { goalAdded = true },
                         distanceUnit = distanceUnit)
@@ -207,16 +222,17 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 }
                 Spacer(modifier = Modifier.height(20.dp))
 
+                //once a goal has been added from the popup: fetch the new goal list
                 LaunchedEffect(goalAdded) {
                     if (goalAdded) {
                         GoalList = GoalDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
                         goalAdded = false // Reset the flag
                     }
                 }
-                //goals
 
+                //Display the goals using a widget component : also allows for a long press action
                 for (log in GoalList) {
-                    // Wrap your GoalsWidget with a Modifier for long press
+
                     GoalsWidget(log,
                         activityType = activityTypeList.filter { it.id == log.activityTypeId }.first(),
                         distanceUnit = distanceUnit,
@@ -224,22 +240,25 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                             detectTapGestures(
                                 onLongPress = {
                                     selectedGoal = log
-                                    showDialog = true
+                                    delGoalPopup = true
                                 }
                             )
                         }
                     )
                     Spacer(modifier = Modifier.size(10.dp))
+
                 }
-                if (showDialog) {
+
+                //upon long press action: open a popup for option to delete selected goal
+                if (delGoalPopup) {
                     AlertDialog(
-                        onDismissRequest = { showDialog = false },
+                        onDismissRequest = { delGoalPopup = false },
                         title = { Text("Delete Goal") },
                         text = { Text("Are you sure you want to delete this goal?") },
                         confirmButton = {
                             Button(
                                 onClick = {
-                                    showDialog = false
+                                    delGoalPopup = false
                                     selectedGoal?.let { goal ->
                                         GoalList.remove(goal)
                                         GoalDAO.delete(dbHelper.writableDatabase, goal)
@@ -250,7 +269,7 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                             }
                         },
                         dismissButton = {
-                            Button(onClick = { showDialog = false }) {
+                            Button(onClick = { delGoalPopup = false }) {
                                 Text("Cancel")
                             }
                         }
@@ -258,9 +277,9 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
                 }
             }
 
-            // Floating Action Button
+            // Button used to open popup to add goals
             IconButton(
-                onClick = { isDialogOpen.value = true },
+                onClick = { isPopupOpen.value = true },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
@@ -279,16 +298,24 @@ fun GoalsSettings(navigation: NavController, dbHelper: DBHelper) {
 }
 
 
+/*
+CreateGoalPopup()
 
+Composable creates popup and decides the options showed and the data saved
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
+fun CreateGoalPopup(isPopupOpen: MutableState<Boolean>,
                     dbHelper: DBHelper,
                     onChange: () -> Unit,
                     distanceUnit: String){
+
+    //used to check for errors before a user can add a goal to db
     var isError by remember { mutableStateOf(false) }
 
-
+    //used for dropdown options
+    var frequency by rememberSaveable { mutableStateOf(GoalFrequency.DAILY) }
+    var goalType by rememberSaveable { mutableStateOf(GoalType.DISTANCE) }
     var activityTypeList = remember {
         ActivityTypeDAO.fetchAll(dbHelper.writableDatabase).toMutableStateList()
     }
@@ -296,7 +323,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
     var activityTypeExpanded by remember { mutableStateOf(false) }
 
 
-    //database
+    //used for saving data to database
     var goalMainValue by remember { mutableStateOf(0) }
     var goalHourValue by remember { mutableStateOf(0) }
     var goaldistanceValue by remember { mutableFloatStateOf(0.0f) }
@@ -304,14 +331,12 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
     var mainInput by remember { mutableStateOf("") }
     var distanceInput by remember { mutableStateOf("") }
 
-    var frequency by rememberSaveable { mutableStateOf(GoalFrequency.DAILY) }
-    var goalType by rememberSaveable { mutableStateOf(GoalType.DURATION) }
 
-    //popup
-    if (isDialogOpen.value) {
-        Dialog(onDismissRequest = { isDialogOpen.value = false }) {
+    if (isPopupOpen.value) {
+        Dialog(onDismissRequest = { isPopupOpen.value = false }) {
             Surface{
                 Column(modifier = Modifier.padding(16.dp)) {
+
                     // Activity Dropdown
                     ExposedDropdownMenuBox(
                         expanded = activityTypeExpanded, onExpandedChange = {activityTypeExpanded = it},
@@ -353,6 +378,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                     Spacer(modifier = Modifier.height(8.dp))
 
 
+                    //create a dropdown with the appropriate options
                     GoalsDropdown(options = listOf(GoalFrequency.DAILY.displayName, GoalFrequency.WEEKLY.displayName, GoalFrequency.MONTHLY.displayName),
                         label = "Frequency",
                         selectedOptionText = frequency.displayName,
@@ -360,10 +386,6 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                         modifier = Modifier.fillMaxWidth(),
                         dropdownWidth = 405.dp
                     )
-
-
-
-
                     Spacer(modifier = Modifier.height(8.dp))
                     GoalsDropdown(options = listOf(GoalType.STEPS.displayName, GoalType.DISTANCE.displayName, GoalType.SETS.displayName,GoalType.DURATION.displayName),
                         label = "Goal",
@@ -375,12 +397,15 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    // Goal TextField
+
+
+                    // Goal TextField: changes based on the goal type chosen
                     Row(
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
 
-                        Spacer(modifier = Modifier.width(5.dp))
+
 
                         if (goalType == GoalType.DURATION) {
                             TextField(
@@ -416,12 +441,13 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                                 singleLine = true,
                                 trailingIcon = { Text(text = distanceUnit) },
 
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.fillMaxWidth()
                             )
 
                         }
                         else{
                             TextField(
+                                modifier = Modifier.fillMaxWidth(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 placeholder = { Text(text = goalMainValue.toString()) },
                                 value = mainInput,
@@ -446,9 +472,10 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    //when 'add' button is clicked: check values and if ok -> add goal to db
                     Row {
                         Spacer(modifier = Modifier.weight(1f))
-                        Button(onClick = { isDialogOpen.value = false}) {
+                        Button(onClick = { isPopupOpen.value = false}) {
                             Text("CLOSE")
                         }
                         Spacer(modifier = Modifier.width(10.dp))
@@ -473,7 +500,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                                     Log.d("FIT", "Failed to insert goal into the database")
                                 } else {
                                     Log.d("FIT", "Inserted goal into the database!")
-                                    isDialogOpen.value = false
+                                    isPopupOpen.value = false
 
                                 }
                                 onChange()
@@ -496,7 +523,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                                     Log.d("FIT", "Failed to insert goal into the database")
                                 } else {
                                     Log.d("FIT", "Inserted goal into the database!")
-                                    isDialogOpen.value = false
+                                    isPopupOpen.value = false
 
                                 }
                                 onChange()
@@ -513,7 +540,7 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
                                     Log.d("FIT", "Failed to insert goal into the database")
                                 } else {
                                     Log.d("FIT", "Inserted goal into the database!")
-                                    isDialogOpen.value = false
+                                    isPopupOpen.value = false
 
                                 }
                                 onChange()
@@ -541,7 +568,11 @@ fun CreateGoalPopup(isDialogOpen: MutableState<Boolean>,
     }
 }
 
+/*
+GetGoalsData()
 
+gets the data from datastore
+ */
 suspend fun GetGoalsData (
     dataStoreManager: SettingsDataStoreManager,
     onCalorieGoalLoaded: (Int) -> Unit,
@@ -557,6 +588,11 @@ suspend fun GetGoalsData (
 }
 
 
+/*
+GoalsDropdown()
+
+Create dropdowns using the objects from db
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoalsDropdown(
@@ -581,7 +617,7 @@ fun GoalsDropdown(
                         .menuAnchor()
                         .clickable(onClick = { expanded = false }),
                     value = selectedOptionText, onValueChange = {}, label = {
-                        androidx.compose.material3.Text(
+                        Text(
                             label
                         )
                     },
@@ -614,3 +650,4 @@ fun GoalsDropdown(
             }
     }
 }
+
