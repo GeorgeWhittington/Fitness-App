@@ -139,7 +139,7 @@ fun HomeScreen(navigation: NavController, dbHelper: DBHelper) {
                     if (image != 0) {
                         Image(
                             painter = painterResource(evaluation.image),
-                            contentDescription = stringResource(id = R.string.cat_alt_text)
+                            contentDescription = stringResource(id = R.string.animal_alt_text)
                         )
                     } else {
                         Icon(
