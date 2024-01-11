@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.foxden.fitnessapp.Routes
 import com.foxden.fitnessapp.data.DBHelper
+import com.foxden.fitnessapp.data.GoalDAO
 import com.foxden.fitnessapp.ui.components.NavBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -118,6 +120,7 @@ fun SettingsScreen(navigation: NavController, locationViewModel: LocationViewMod
                 } else if (it && alreadyAskedPermission) {
                     ContextCompat.startActivity(context, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), null)
                 } else {
+
                     ContextCompat.startActivity(context, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), null)
                 }
             }
@@ -162,12 +165,17 @@ Used to be able to delete the user's data stored within the database
 fun DeleteButton(dbHelper: DBHelper) {
     var isClicked by remember { mutableStateOf(false) }
 
-    Button(
-        onClick = {
-            dbHelper.deleteAndReset()
-            isClicked = true
-        }
-    ) {
+    if (isClicked) {
+        delDataPopup(
+            onConfirm = {
+                isClicked = false
+                dbHelper.deleteAndReset()
+            },
+            onCancel = { isClicked = false }
+        )
+    }
+
+    Button(onClick = { isClicked = true }) {
         Text(text = "Delete all data")
         Icon(
             Icons.Outlined.Delete,
@@ -175,10 +183,27 @@ fun DeleteButton(dbHelper: DBHelper) {
             tint = MaterialTheme.colorScheme.onPrimary
         )
     }
-    if (isClicked) {
-        Text(text = "Data deleted", color = MaterialTheme.colorScheme.tertiary )
-    }
 }
+
+@Composable
+fun delDataPopup(onConfirm: () -> Unit, onCancel: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { androidx.compose.material.Text("Delete Data") },
+        text = { androidx.compose.material.Text("Are you sure you want to delete data?") },
+        confirmButton = {
+            androidx.compose.material.Button(onClick = onConfirm) {
+                androidx.compose.material.Text("Confirm")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material.Button(onClick = onCancel) {
+                androidx.compose.material.Text("Cancel")
+            }
+        }
+    )
+}
+
 
 /*
 GPSOption()

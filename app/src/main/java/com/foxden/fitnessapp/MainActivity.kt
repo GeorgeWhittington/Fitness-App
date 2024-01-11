@@ -51,7 +51,11 @@ object Routes {
     const val NUTRITION_ADD_PRESET_SCREEN = "NutritionAddPresetScreen"
 }
 
+/*
+MainActivity()
 
+The main class which controls the application
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
