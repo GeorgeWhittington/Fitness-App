@@ -41,10 +41,15 @@ import com.foxden.fitnessapp.data.DBHelper
 import com.foxden.fitnessapp.data.NutritionMealPreset
 import com.foxden.fitnessapp.data.NutritionMealPresetDAO
 
+/*  Nutrition Add Preset Screen 
+    Allows the user to add a preset meal they can use when tracking nutrition
+*/
 @RequiresApi(Build.VERSION_CODES.S)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun NutritionAddPresetScreen(navigation: NavController, dbHelper: DBHelper) {
+
+    // form state
     var name by remember { mutableStateOf("") }
     var calories by remember { mutableStateOf(0) }
 
@@ -113,6 +118,7 @@ fun NutritionAddPresetScreen(navigation: NavController, dbHelper: DBHelper) {
     }
 }
 
+/* Adds a preset into the database, with validation */
 private fun AddPresetMeal(dbHelper: DBHelper, name: String, calories: Int) : Boolean
 {
     if (calories <= 0)

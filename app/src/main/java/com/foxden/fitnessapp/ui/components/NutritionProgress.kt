@@ -26,16 +26,21 @@ import androidx.compose.ui.unit.dp
 import com.foxden.fitnessapp.data.Settings
 import com.foxden.fitnessapp.data.SettingsDataStoreManager
 
+/*  NutritionProgress component
+    Shows a nice progress bar showing the calories logged / calories remaining 
+*/
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionProgress(numCalories: Int) {
 
+    // Get calorie target from data store
     val context = LocalContext.current
     val dataStoreManager = SettingsDataStoreManager(context)
     val calorieTarget by dataStoreManager.getSettingFlow(Settings.CALORIE_GOAL).collectAsState(initial = 0)
 
     var progress by remember { mutableStateOf(0.0f) }
 
+    // calculate progress
     if (calorieTarget != 0) {
         progress = numCalories.toFloat() / calorieTarget.toFloat()
     }
