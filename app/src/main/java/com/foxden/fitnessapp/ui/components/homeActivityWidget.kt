@@ -25,10 +25,18 @@ import com.foxden.fitnessapp.data.SettingsDataStoreManager
 import com.foxden.fitnessapp.utils.formatDistance
 import com.foxden.fitnessapp.utils.formatDuration
 
+/*
+HomeActivityWidget()
+
+This widget is used in order to display collected data from activity log onto the home screen
+ */
 @Composable
-fun HomeWidget(activities: Int, distance: Float, duration: Int){
+fun HomeActivityWidget(activities: Int, distance: Float, duration: Int){
+
+    //get distance unit from datastore
     val dataStoreManager = SettingsDataStoreManager(LocalContext.current)
     val distanceUnit by dataStoreManager.getSettingFlow(Settings.DISTANCE_UNIT).collectAsState(initial = "")
+
 
     val totalDistance: Float = formatDistance(distance, distanceUnit)
     val durationString = formatDuration(duration)

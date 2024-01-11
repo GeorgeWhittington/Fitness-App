@@ -3,6 +3,9 @@ package com.foxden.fitnessapp.data
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 
+/*  NutritionMealPreset Entity
+    Represents a single meal the user can re-use when logging nutrition
+*/
 data class NutritionMealPreset(
     var id: Int = 0,
     var name: String = "",
@@ -10,12 +13,16 @@ data class NutritionMealPreset(
     var barcode: Int = 0,
 )
 
+/*  NutritionMealPresetDAO 
+    Represents nutrition table
+*/
 object NutritionMealPresetDAO : DAO("nutrition_presets", listOf(
     ColumnDesc("id", "INTEGER", "PRIMARY KEY AUTOINCREMENT"),
     ColumnDesc("name", "TEXT"),
     ColumnDesc("calories", "INTEGER"),
     ColumnDesc("barcode", "INTEGER"))) {
 
+    /* Returns NutritionMealPreset from SQLite cursor object */
     private fun cursorToObject(cursor: android.database.Cursor) : NutritionMealPreset {
         val ret = NutritionMealPreset()
         ret.id = cursor.getInt(0)
@@ -25,6 +32,7 @@ object NutritionMealPresetDAO : DAO("nutrition_presets", listOf(
         return ret
     }
 
+    /* Get all nutrition meal presets from the database */
     fun fetchAll(db: SQLiteDatabase?) : List<NutritionMealPreset> {
         val ret: MutableList<NutritionMealPreset> = ArrayList()
         val queryCursor = db?.rawQuery("SELECT * FROM ${tableName}", null)
@@ -36,6 +44,8 @@ object NutritionMealPresetDAO : DAO("nutrition_presets", listOf(
         queryCursor.close()
         return ret
     }
+
+    /* Insert a NutritionMealPreset into the database */
     fun insert(db: SQLiteDatabase?, nutritionPreset: NutritionMealPreset) : Boolean {
         val contentValues = ContentValues()
         contentValues.put(tableColumns[1].name, nutritionPreset.name)

@@ -27,14 +27,18 @@ import com.foxden.fitnessapp.data.NutritionType
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+/* Nutrition display component  */
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun NutritionDisplay(date: LocalDate, logs :List<NutritionLog>, advancedView: Boolean = false) {
+
+    // filter nutrition logs by specified date
     val nutritionLogFiltered = remember {
         logs.filter { it.date!! == date }
     }
 
+    // Calculate sum of each type
     val totalSum = remember { nutritionLogFiltered.sumOf { it.calories } }
     val breakfastSum = remember { nutritionLogFiltered.filter { it.type == NutritionType.BREAKFAST }.sumOf { it.calories } }
     val lunchSum = remember { nutritionLogFiltered.filter { it.type == NutritionType.LUNCH }.sumOf { it.calories } }
@@ -81,7 +85,8 @@ fun NutritionDisplay(date: LocalDate, logs :List<NutritionLog>, advancedView: Bo
                         }
                     }
                 }
-
+                
+                // Render extra details if advanced view
                 if (advancedView) {
                     if (nutritionLogFiltered.isEmpty()) {
                         Row {

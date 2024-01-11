@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 
+/* Activity Type Entity */
 data class ActivityType(
     var id : Int = 0,
     var name : String = "Untitled Activity Type",
@@ -13,6 +14,10 @@ data class ActivityType(
     var setsEnabled : Boolean = false,
 )
 
+/*
+    ActivityTypeDAO
+    Represents / interfaces with ActivityType database table
+*/
 object ActivityTypeDAO : DAO("activity_type", listOf(
     ColumnDesc("id", "INTEGER", "PRIMARY KEY AUTOINCREMENT"),
     ColumnDesc("name", "TEXT", "UNIQUE NOT NULL"),
@@ -22,6 +27,7 @@ object ActivityTypeDAO : DAO("activity_type", listOf(
 )) {
 
 
+    /* Returns ActivityType from SQLite cursor */
     @SuppressLint("Range")
     private fun cursorToObject(cursor: android.database.Cursor) : ActivityType {
         val ret = ActivityType()
@@ -33,6 +39,7 @@ object ActivityTypeDAO : DAO("activity_type", listOf(
         return ret
     }
 
+    /* Get a single ActivityType from the database by id */
     fun fetchOne(db: SQLiteDatabase?, id: Int) : ActivityType? {
         var ret: ActivityType? = null
         val cursor = db?.rawQuery("SELECT * FROM $tableName WHERE id = ?", arrayOf(id.toString()))
@@ -44,6 +51,7 @@ object ActivityTypeDAO : DAO("activity_type", listOf(
         return ret
     }
 
+    /* Get all activity types from the database */
     fun fetchAll(db: SQLiteDatabase?) : List<ActivityType> {
         val ret: MutableList<ActivityType> = ArrayList()
         val queryCursor = db?.rawQuery("SELECT * FROM $tableName", null)
@@ -56,6 +64,7 @@ object ActivityTypeDAO : DAO("activity_type", listOf(
         return ret
     }
 
+    /* Insert a new activity type into the database */
     fun insert(db: SQLiteDatabase?, activityType: ActivityType) : Boolean {
         val contentValues = ContentValues()
         contentValues.put(tableColumns[1].name, activityType.name)

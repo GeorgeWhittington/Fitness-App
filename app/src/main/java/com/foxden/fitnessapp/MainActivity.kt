@@ -31,6 +31,7 @@ import com.foxden.fitnessapp.ui.theme.FitnessAppTheme
 import com.foxden.fitnessapp.utils.LocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+/* List of all navigation routes available in the app */
 object Routes {
     const val HOME_SCREEN = "HomeScreen"
 
@@ -51,7 +52,11 @@ object Routes {
     const val NUTRITION_ADD_PRESET_SCREEN = "NutritionAddPresetScreen"
 }
 
+/*
+MainActivity()
 
+The main class which controls the application
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
@@ -59,9 +64,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val locationViewModel: LocationViewModel by viewModels()
+
+        // Create instance of database helper, which is passed around via navigation
         val db = DBHelper(this)
 
-        //datastore
+        // datastore
         val settingsDataStoreManager = SettingsDataStoreManager(context = this)
         //theme
         val darkModeLiveData = settingsDataStoreManager.checkDarkmode
@@ -69,7 +76,8 @@ class MainActivity : ComponentActivity() {
         darkModeLiveData.observe(this, Observer { isDarkMode ->
             setContent {
                 val navController = rememberNavController()
-
+                
+                // Create navigation host for each page
                 FitnessAppTheme(darkTheme = isDarkMode) {
                     NavHost(navController = navController, startDestination = Routes.HOME_SCREEN) {
                         composable(

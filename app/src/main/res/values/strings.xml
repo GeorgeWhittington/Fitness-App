@@ -3,4 +3,5 @@
     <string name="fox_alt_text">A cartoon fox</string>
     <string name="racoon_alt_text">A cartoon racoon</string>
     <string name="cat_alt_text">A cartoon cat</string>
+    <string name="animal_alt_text">A cartoon animal</string>
 </resources>

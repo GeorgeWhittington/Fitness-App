@@ -41,7 +41,17 @@ import com.foxden.fitnessapp.ui.components.NavBar
 import com.foxden.fitnessapp.ui.theme.MidBlue
 import kotlinx.coroutines.flow.first
 
+/*
+DisplaySettings()
 
+This page allows users to change their preferences for their app
+
+switches can be used to turn on/off features :
+Calorie tracking
+Darkmode
+
+dropdowns can be used in order to change units or the chosen character
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DisplaySettings(navigation: NavController) {
@@ -58,7 +68,6 @@ fun DisplaySettings(navigation: NavController) {
 
 
     //Switch options:
-        var animationsSwitch by rememberSaveable { mutableStateOf(false) }
         var CalorieSwitch by rememberSaveable { mutableStateOf(false) }
         var DarkmodeSwitch by rememberSaveable { mutableStateOf(false) }
 
@@ -79,11 +88,9 @@ fun DisplaySettings(navigation: NavController) {
         val CharacterOptions = listOf("Fox","Cat","Racoon")
         var currentCharacter by rememberSaveable { mutableStateOf("") }
 
-    //ensures data is only retrieved once per creation
+    // update variables once data has been collected from datastore
     LaunchedEffect(Unit) {
         GetData(dataStoreManager,
-            onAnimationOptionLoaded = { loadedAnimations ->
-                animationsSwitch = loadedAnimations},
             onCalorieOptionLoaded = { loadedCalorie ->
                 CalorieSwitch = loadedCalorie},
             onDarkmodeOptionLoaded = { loadedDarkmode ->
@@ -106,9 +113,10 @@ fun DisplaySettings(navigation: NavController) {
             }
         )
     }
+
+    //upon switch being changed it will save the new preference to datastore
     LaunchedEffect(saveSwitch.value) {
         if (saveSwitch.value) {
-            dataStoreManager.saveSwitchSetting("AnimationsKey", animationsSwitch)
             dataStoreManager.saveSwitchSetting("CalorieKey", CalorieSwitch)
             dataStoreManager.saveSwitchSetting("DarkmodeKey", DarkmodeSwitch)
 
@@ -123,13 +131,13 @@ fun DisplaySettings(navigation: NavController) {
                 navigationIcon = { BackIcon{navigation.popBackStack()} },
                 actions = {
 
-                    //if a change is detected, will give an option to save - launch effect
+                    //if a change is detected, will give an option to save -> launch effect
                     SaveOption(isModified = isModified) {
 
                         triggerSave.value = true
                         isModified = false
                     }
-                    //saves the data to datastore
+                    //once the save option is clicked -> causes data to be saved
                     LaunchedEffect(triggerSave.value) {
                         if (triggerSave.value) {
 
@@ -166,14 +174,6 @@ fun DisplaySettings(navigation: NavController) {
         ) {
 
             //Switches:
-            SettingSwitch(
-                label = "Animations",
-                isChecked = animationsSwitch,
-                onCheckedChange = { newValue ->
-                    animationsSwitch = newValue
-                    saveSwitch.value = true
-                }
-            )
             SettingSwitch(
                 label = "Calorie/Nutrition Tracking",
                 isChecked = CalorieSwitch,
@@ -238,10 +238,13 @@ fun DisplaySettings(navigation: NavController) {
 
 
 
-//Used to retrieve stored data
+/*
+GetData()
+
+gets data from datastore
+ */
 suspend fun GetData (
     dataStoreManager: SettingsDataStoreManager,
-    onAnimationOptionLoaded: (Boolean) -> Unit,
     onCalorieOptionLoaded: (Boolean) -> Unit,
     onDarkmodeOptionLoaded: (Boolean) -> Unit,
     onCharacterLoaded: (String) -> Unit,
@@ -250,8 +253,6 @@ suspend fun GetData (
     onCalorieUnitLoaded: (String) -> Unit,
     onHeightUnitLoaded: (String) -> Unit
 ){
-    val animationsSwitch = dataStoreManager.getSwitchSetting("AnimationsKey", true).first()
-    onAnimationOptionLoaded(animationsSwitch)
     val calorieSwitch = dataStoreManager.getSwitchSetting("CalorieKey", true).first()
     onCalorieOptionLoaded(calorieSwitch)
     val darkmodeSwitch = dataStoreManager.getSwitchSetting("DarkmodeKey", false).first()
@@ -270,6 +271,12 @@ suspend fun GetData (
 
 }
 
+
+/*
+SettingSwitch()
+
+Used for switches, upon change it will update a variable and cause a save
+ */
 @Composable
 fun SettingSwitch(
     label: String,
@@ -284,7 +291,11 @@ fun SettingSwitch(
 
 
 
+/*
+DropdownOption()
 
+Displays the dropdown options 
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropdownOption(options: List<String>, label: String, selectedOptionText: String, updateSelection: (newSelection: String) -> Unit,onChange: () -> Unit) {

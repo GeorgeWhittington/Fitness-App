@@ -72,12 +72,16 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+/*  Nutrition Log Meal Screen 
+    Allows the user to log a meal to track
+*/
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
-
+    
+    // State for the input, with default values
     var selectedMealType by remember { mutableStateOf(NutritionType.BREAKFAST) }
     var selectedMealTypeExpanded by remember { mutableStateOf(false) }
     var datetime: ZonedDateTime? by remember { mutableStateOf(ZonedDateTime.now()) }
@@ -95,7 +99,7 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
         initialSelectedDateMillis = ZonedDateTime.now().toEpochSecond() * 1000
     )
 
-    // Date Picker
+    // Date picker component
     if (datePickerExpanded) {
         DatePickerDialog(
             onDismissRequest = { datePickerExpanded = false },
@@ -149,7 +153,7 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
                     .verticalScroll(rememberScrollState())
             ) {
 
-                // Meal Type
+                // Meal type comments
                 ExposedDropdownMenuBox(
                     expanded = selectedMealTypeExpanded, onExpandedChange = {selectedMealTypeExpanded = it},
                     modifier = Modifier.fillMaxWidth()
@@ -185,8 +189,7 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
                     }
                 }
 
-                // -- Date -- //
-
+                // Date time picker component
                 OutlinedTextField(
                     value = datetime!!.format(DateTimeFormatter.ofPattern("d LLLL yyyy")), onValueChange = {}, label = {
                         androidx.compose.material3.Text(
@@ -208,7 +211,7 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
 
                 )
 
-                //  -- Preset Meal Type  -- //
+                //  Preset meal dropdown box - allows the user to automatically fill calories from presets
                 ExposedDropdownMenuBox(
                     expanded = mealPresetExpanded, onExpandedChange = {mealPresetExpanded = it},
                     modifier = Modifier.fillMaxWidth()
@@ -248,8 +251,7 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
                     }
                 }
 
-                // -- Calories -- //
-
+                // Calories field
                 OutlinedTextField(
                     value = calories.toString(), suffix = { androidx.compose.material3.Text("kcal") }, label = {
                         androidx.compose.material3.Text(
@@ -274,9 +276,8 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
                 )
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Log meal
+                // Log meal 
                 Button(onClick = {
-
                     if (AddNutritionLog(dbHelper, selectedMealType, datetime, calories)) {
                         navigation.navigate(Routes.NUTRITION_TRACKING_SCREEN)
                     }
@@ -290,6 +291,7 @@ fun NutritionLogMealScreen(navigation: NavController, dbHelper: DBHelper) {
     }
 }
 
+/* Attempt to add a nutrition log into the database, returns if successful */
 @RequiresApi(Build.VERSION_CODES.O)
 private fun AddNutritionLog(dbHelper: DBHelper, type: NutritionType?, date: ZonedDateTime?, calories: Int?) : Boolean
 {

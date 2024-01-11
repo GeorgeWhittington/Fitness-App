@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 
-
+/*
+    Goal Frequency Enum
+*/
 enum class GoalFrequency(val displayName: String)
 {
     DAILY("Daily"),
@@ -18,6 +20,9 @@ enum class GoalFrequency(val displayName: String)
     }
 }
 
+/*
+    Goal Type Enum
+*/
 enum class GoalType(val displayName: String)
 {
     STEPS("Steps"),
@@ -26,12 +31,16 @@ enum class GoalType(val displayName: String)
     SETS("Sets");
 
     companion object {
+        // returns goal type enum from string
         fun byName(input: String): GoalType? {
             return GoalType.values().firstOrNull { it.name.equals(input, true) }
         }
     }
 }
 
+/*
+    Goal Data Class / Entity
+*/
 data class Goal (
     var id : Int = 0,
     var activityTypeId: Int = 0,
@@ -43,6 +52,10 @@ data class Goal (
 
 )
 
+/*
+    GoalDAO
+    Represents goal table
+*/
 object GoalDAO : DAO(
     "goals",
     listOf(
@@ -56,6 +69,7 @@ object GoalDAO : DAO(
     )
 ) {
 
+    /* Convert cursor object into Goal */
     @SuppressLint("Range")
     private fun cursorToObject(cursor: android.database.Cursor, db: SQLiteDatabase) : Goal {
         val ret = Goal(
@@ -70,6 +84,7 @@ object GoalDAO : DAO(
         return ret
     }
 
+    /* Get all goals from the database */
     fun fetchAll(db: SQLiteDatabase?) : List<Goal> {
         val ret: MutableList<Goal> = ArrayList()
         val queryCursor = db?.rawQuery("SELECT * FROM $tableName", null)
@@ -82,6 +97,8 @@ object GoalDAO : DAO(
         return ret
     }
 
+
+    /* Insert a goal into the database */
     fun insert(db: SQLiteDatabase?, goal: Goal) : Boolean {
         val contentValues = ContentValues()
         contentValues.put(tableColumns[1].name, goal.activityTypeId)
@@ -95,6 +112,7 @@ object GoalDAO : DAO(
         return (result != (0).toLong())
     }
 
+    /* Delete a goal from the database */
     fun delete(db: SQLiteDatabase?, goal: Goal): Boolean {
         val affected = db?.delete(tableName, "id = ?", arrayOf(goal.id.toString()))
         if (affected != null) {
